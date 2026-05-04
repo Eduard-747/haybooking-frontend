@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Heart, Star, MapPin, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -101,10 +102,13 @@ export function BusinessCard({ business }: BusinessCardProps) {
             <span>{business.distance}</span>
             <span>away</span>
           </div>
-          <button className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+          <Link 
+            href={`/booking/${business.id}`}
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
             View Details
             <ChevronRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       </div>
     </article>

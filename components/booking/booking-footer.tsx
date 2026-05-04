@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 interface BookingFooterProps {
@@ -13,6 +14,12 @@ export function BookingFooter({
   selectedDate,
   selectedTime,
 }: BookingFooterProps) {
+  const router = useRouter()
+
+  const handleConfirmBooking = () => {
+    router.push("/booking/confirmation")
+  }
+
   const formatDate = () => {
     if (!selectedDate) return null
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -49,6 +56,7 @@ export function BookingFooter({
             size="lg"
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
             disabled={!selectedTime}
+            onClick={handleConfirmBooking}
           >
             Confirm Booking
           </Button>

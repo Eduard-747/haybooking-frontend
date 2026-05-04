@@ -59,6 +59,8 @@ export function AuthForm({ activeTab, onTabChange }: AuthFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Form submitted:", formData)
+    // Navigate to discover page after form submission
+    window.location.href = "/discover"
   }
 
   return (

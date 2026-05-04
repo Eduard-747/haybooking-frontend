@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { MapPin, Phone, Clock, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { EditBranchModal } from "./edit-branch-modal"
 
 interface Branch {
   id: string
@@ -86,6 +87,13 @@ interface BranchListProps {
 
 export function BranchList({ activeFilter }: BranchListProps) {
   const [currentPage, setCurrentPage] = useState(1)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
+
+  const handleEditBranch = (branch: Branch) => {
+    setSelectedBranch(branch)
+    setEditModalOpen(true)
+  }
 
   const filteredBranches = branches.filter((branch) => {
     if (activeFilter === "active") return branch.isActive
@@ -148,6 +156,7 @@ export function BranchList({ activeFilter }: BranchListProps) {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
+                onClick={() => handleEditBranch(branch)}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -205,6 +214,20 @@ export function BranchList({ activeFilter }: BranchListProps) {
           </Button>
         </div>
       </div>
+
+      {/* Edit Branch Modal */}
+      <EditBranchModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        branch={selectedBranch ? {
+          id: selectedBranch.id,
+          name: selectedBranch.name,
+          address: selectedBranch.address,
+          city: selectedBranch.city,
+          zipCode: selectedBranch.zip,
+          phone: selectedBranch.phone,
+        } : undefined}
+      />
     </div>
   )
 }

@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { EditSpecialistModal } from "./edit-specialist-modal"
 
 interface Specialist {
   id: string
@@ -64,6 +65,13 @@ interface SpecialistsGridProps {
 
 export function SpecialistsGrid({ searchQuery }: SpecialistsGridProps) {
   const [currentPage, setCurrentPage] = useState(1)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedSpecialist, setSelectedSpecialist] = useState<Specialist | null>(null)
+
+  const handleAddSpecialist = () => {
+    setSelectedSpecialist(null)
+    setEditModalOpen(true)
+  }
 
   const filteredSpecialists = specialists.filter((specialist) =>
     specialist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -134,7 +142,10 @@ export function SpecialistsGrid({ searchQuery }: SpecialistsGridProps) {
         ))}
 
         {/* Add New Card */}
-        <button className="border-2 border-dashed border-border rounded-xl p-6 hover:border-primary/50 hover:bg-muted/50 transition-all group min-h-[250px] flex flex-col items-center justify-center">
+        <button 
+          onClick={handleAddSpecialist}
+          className="border-2 border-dashed border-border rounded-xl p-6 hover:border-primary/50 hover:bg-muted/50 transition-all group min-h-[250px] flex flex-col items-center justify-center"
+        >
           <div className="h-12 w-12 rounded-full bg-muted group-hover:bg-primary/10 flex items-center justify-center mb-4 transition-colors">
             <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
@@ -192,6 +203,18 @@ export function SpecialistsGrid({ searchQuery }: SpecialistsGridProps) {
           </span>
         </div>
       </div>
+
+      {/* Edit/Add Specialist Modal */}
+      <EditSpecialistModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        specialist={selectedSpecialist ? {
+          id: selectedSpecialist.id,
+          name: selectedSpecialist.name,
+          branches: selectedSpecialist.locations,
+          services: selectedSpecialist.services,
+        } : undefined}
+      />
     </div>
   )
 }

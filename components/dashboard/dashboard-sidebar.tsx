@@ -22,8 +22,13 @@ const navItems = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
 ]
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  activePath?: string
+}
+
+export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const currentPath = activePath || pathname
 
   return (
     <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-background">
@@ -51,7 +56,7 @@ export function DashboardSidebar() {
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = currentPath === item.href || currentPath.startsWith(item.href + "/")
             return (
               <li key={item.href}>
                 <Link

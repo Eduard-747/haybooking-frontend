@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutGrid, Monitor, Settings, LogOut } from "lucide-react"
 
+import { Logo } from "@/components/ui/logo"
 const navItems = [
   {
     label: "Partner Onboarding",
@@ -35,10 +36,7 @@ export function AdminSidebar({ activePath }: AdminSidebarProps) {
       {/* Logo */}
       <div className="p-6">
         <Link href="/admin/onboarding" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-amber-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">H</span>
-          </div>
-          <span className="font-semibold text-foreground">HayBooking Dashboard</span>
+          <Logo />
         </Link>
       </div>
 

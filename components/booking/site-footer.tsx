@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Instagram, Facebook, Twitter, Globe } from "lucide-react"
 
+import { Logo } from "@/components/ui/logo"
 const footerLinks = {
   platform: [
     { label: "Browse Services", href: "/discover" },
@@ -43,7 +44,7 @@ export function SiteFooter() {
                   <path d="M16 2v4" />
                 </svg>
               </div>
-              <span className="text-lg font-semibold text-primary">HayBooking</span>
+              <Logo />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               Simplifying the way you book your favorite services, anytime, anywhere.

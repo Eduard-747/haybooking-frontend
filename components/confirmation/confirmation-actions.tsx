@@ -1,52 +1,42 @@
 "use client"
 
-import Link from "next/link"
-import { Calendar, Bell, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Calendar, Bell, ChevronLeft } from "lucide-react"
+import Link from "next/link"
 
 export function ConfirmationActions() {
-  const handleAddToCalendar = () => {
-    // Generate calendar event
-    console.log("Adding to calendar...")
-  }
-
-  const handleSetReminder = () => {
-    // Set reminder
-    console.log("Setting reminder...")
-  }
-
   return (
-    <div className="mt-8 space-y-6">
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Button
-          onClick={handleAddToCalendar}
-          className="w-full sm:w-auto min-w-[180px] bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 px-6"
+    <div className="w-full flex flex-col items-center gap-8">
+      
+      {/* Buttons Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+        <Button 
+          size="lg" 
+          className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md w-full font-semibold shadow-sm transition-colors"
         >
-          <Calendar className="h-5 w-5" />
+          <Calendar className="mr-2 h-4 w-4" />
           Add to Calendar
         </Button>
-
-        <Button
-          variant="outline"
-          onClick={handleSetReminder}
-          className="w-full sm:w-auto min-w-[180px] border-primary/30 text-primary hover:bg-primary/5 hover:text-primary gap-2 h-12 px-6"
+        
+        <Button 
+          variant="outline" 
+          size="lg" 
+          className="bg-white border-border/60 text-[#C69C9B] hover:bg-[#FAFAFA] hover:text-[#BCAAA4] rounded-md w-full font-semibold shadow-sm transition-colors"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="mr-2 h-4 w-4" />
           Set Reminder
         </Button>
       </div>
 
       {/* Back Link */}
-      <div className="text-center">
-        <Link 
-          href="/bookings"
-          className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to My Bookings
-        </Link>
-      </div>
+      <Link 
+        href="/dashboard" 
+        className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ChevronLeft className="mr-1 h-4 w-4" />
+        Back to My Bookings
+      </Link>
+      
     </div>
   )
 }

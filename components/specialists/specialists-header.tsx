@@ -6,6 +6,7 @@ import { Search, HelpCircle, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+import { Logo } from "@/components/ui/logo"
 interface SpecialistsHeaderProps {
   searchQuery: string
   onSearchChange: (query: string) => void
@@ -17,10 +18,7 @@ export function SpecialistsHeader({ searchQuery, onSearchChange }: SpecialistsHe
       <div className="px-4 md:px-8 lg:px-16 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-            <Users className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <span className="text-xl font-semibold text-primary">HayBooking Staff</span>
+          <Logo />
         </Link>
 
         {/* Search Bar */}

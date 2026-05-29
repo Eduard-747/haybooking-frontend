@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
 import './globals.css'
+import { AuthProvider } from '@/components/auth/auth-provider'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   title: 'HayBooking - Simplify Your Scheduling',
@@ -35,11 +37,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className={`bg-background ${geist.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        <Toaster position="bottom-right" richColors closeButton />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
 }
+

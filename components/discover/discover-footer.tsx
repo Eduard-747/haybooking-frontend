@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+import { Logo } from "@/components/ui/logo"
 const footerLinks = {
   discovery: {
     title: "Discovery",
@@ -57,20 +58,7 @@ export function DiscoverFooter() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-7 w-7 items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-5 w-5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" className="stroke-foreground" />
-                  <path d="M2 17l10 5 10-5" className="stroke-foreground" />
-                  <path d="M2 12l10 5 10-5" className="stroke-foreground" />
-                </svg>
-              </div>
-              <span className="font-semibold text-foreground">HayBooking</span>
+              <Logo />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Connecting you with the best local services in your area.

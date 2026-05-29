@@ -1,17 +1,16 @@
 import { CalendarCheck } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
+import { Logo } from "@/components/ui/logo"
 export function AuthBranding() {
   return (
     <aside className="hidden w-1/2 flex-col bg-muted/30 lg:flex">
       {/* Logo */}
       <div className="p-8">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
-            <CalendarCheck className="h-5 w-5 text-primary" />
-          </div>
-          <span className="text-xl font-semibold text-primary">HayBooking</span>
-        </div>
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity w-fit">
+          <Logo />
+        </Link>
       </div>
 
       {/* Center content */}

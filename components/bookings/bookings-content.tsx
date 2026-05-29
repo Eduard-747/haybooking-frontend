@@ -1,79 +1,85 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { BookingCard } from "./booking-card"
+import { Loader2 } from "lucide-react"
+import api from "@/lib/api"
 
-const upcomingBookings = [
-  {
-    id: "1",
-    serviceName: "Therapeutic Deep Tissue Massage",
-    providerName: "Lumina Wellness Center",
-    date: "Oct 24, 2024",
-    time: "10:00 AM - 11:30 AM",
-    location: "124 Wellness Way, Suite 200",
-    status: "confirmed" as const,
-    image: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=400&h=300&fit=crop",
-  },
-  {
-    id: "2",
-    serviceName: "Cut, Color & Styling Session",
-    providerName: "Studio Bloom Hair",
-    date: "Nov 02, 2024",
-    time: "02:00 PM - 04:30 PM",
-    location: "88 Fashion St, Downtown",
-    status: "confirmed" as const,
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop",
-  },
-  {
-    id: "3",
-    serviceName: "Private Vinyasa Flow",
-    providerName: "Zenith Yoga Studio",
-    date: "Nov 15, 2024",
-    time: "08:00 AM - 09:00 AM",
-    location: "12 Harmony Blvd",
-    status: "pending" as const,
-    image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=300&fit=crop",
-  },
-]
+interface BookingData {
+  _id: string
+  startTime: string
+  endTime: string
+  status: string
+  partnerId: { _id: string; businessName: string } | null
+  serviceIds?: { _id: string; name: string; duration: number; price: number; image?: string }[]
+  serviceId?: { _id: string; name: string; duration: number; price: number; image?: string } | null
+  branchId: { _id: string; address: { line1: string; city: string } } | null
+}
 
-const pastBookings = [
-  {
-    id: "4",
-    serviceName: "Swedish Relaxation Massage",
-    providerName: "Serenity Spa & Wellness",
-    date: "Sep 15, 2024",
-    time: "03:00 PM - 04:00 PM",
-    location: "123 Nordic Way, Stockholm",
-    status: "completed" as const,
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=300&fit=crop",
-  },
-  {
-    id: "5",
-    serviceName: "Executive Haircut & Styling",
-    providerName: "The Velvet Chair",
-    date: "Sep 02, 2024",
-    time: "11:00 AM - 12:00 PM",
-    location: "East Side, Fashion District",
-    status: "completed" as const,
-    image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&h=300&fit=crop",
-  },
-  {
-    id: "6",
-    serviceName: "HydraFacial Treatment",
-    providerName: "Radiant Skin Studio",
-    date: "Aug 20, 2024",
-    time: "10:00 AM - 11:00 AM",
-    location: "56 Beauty Lane",
-    status: "completed" as const,
-    image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=300&fit=crop",
-  },
-]
+function formatBooking(b: BookingData) {
+  const start = new Date(b.startTime)
+  const end = new Date(b.endTime)
+  const date = start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  const time = `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
+  const location = b.branchId ? `${b.branchId.address.line1}, ${b.branchId.address.city}` : "—"
+
+  return {
+    id: b._id,
+    serviceName: b.serviceIds && b.serviceIds.length > 0 
+      ? (b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} + ${b.serviceIds.length - 1} more`) 
+      : (b.serviceId?.name || "Service"),
+    providerName: b.partnerId?.businessName || "Provider",
+    date,
+    time,
+    location,
+    status: b.status as "confirmed" | "pending" | "completed" | "cancelled" | "declined",
+    image: b.serviceIds && b.serviceIds.length > 0 && b.serviceIds[0].image 
+      ? b.serviceIds[0].image 
+      : (b.serviceId?.image || "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=400&h=300&fit=crop"),
+  }
+}
 
 export function BookingsContent() {
+  const [bookings, setBookings] = useState<BookingData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming")
 
+  const fetchBookings = async () => {
+    try {
+      setIsLoading(true)
+      const res = await api.get('/bookings/my')
+      setBookings(res.data)
+    } catch (error) {
+      console.error("Failed to load bookings", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchBookings()
+  }, [])
+
+  const handleCancel = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this booking?")) return
+    try {
+      await api.patch(`/bookings/${id}/status`, { status: "cancelled" })
+      fetchBookings()
+    } catch {
+      console.error("Failed to cancel booking")
+    }
+  }
+
+  const now = new Date()
+  const upcomingBookings = bookings.filter(b =>
+    new Date(b.startTime) >= now && b.status !== "cancelled" && b.status !== "declined"
+  )
+  const pastBookings = bookings.filter(b =>
+    new Date(b.startTime) < now || b.status === "cancelled" || b.status === "declined"
+  )
+
   const activeBookingsCount = upcomingBookings.length
-  const completedBookingsCount = pastBookings.length + 9 // Showing 12 total as in design
+  const completedBookingsCount = pastBookings.length
 
   return (
     <main className="flex-1 bg-background">
@@ -94,7 +100,7 @@ export function BookingsContent() {
               <p className="text-2xl font-bold text-foreground">{activeBookingsCount}</p>
             </div>
             <div className="px-4 py-3">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Completed</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Past</p>
               <p className="text-2xl font-bold text-foreground">{completedBookingsCount}</p>
             </div>
           </div>
@@ -138,24 +144,47 @@ export function BookingsContent() {
         </div>
 
         {/* Bookings List */}
-        <div className="space-y-4">
-          {activeTab === "upcoming" ? (
-            upcomingBookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} showActions />
-            ))
-          ) : (
-            pastBookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} showActions={false} />
-            ))
-          )}
-        </div>
-
-        {/* View Full Schedule Link */}
-        <div className="mt-8 text-center">
-          <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            View full schedule
-          </button>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activeTab === "upcoming" ? (
+              upcomingBookings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-muted-foreground">No upcoming bookings.</p>
+                  <a href="/" className="mt-4 text-sm font-medium text-primary hover:underline">
+                    Browse services to book
+                  </a>
+                </div>
+              ) : (
+                upcomingBookings.map((booking) => (
+                  <BookingCard
+                    key={booking._id}
+                    booking={formatBooking(booking)}
+                    showActions
+                    onCancel={() => handleCancel(booking._id)}
+                  />
+                ))
+              )
+            ) : (
+              pastBookings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-muted-foreground">No past bookings yet.</p>
+                </div>
+              ) : (
+                pastBookings.map((booking) => (
+                  <BookingCard
+                    key={booking._id}
+                    booking={formatBooking(booking)}
+                    showActions={false}
+                  />
+                ))
+              )
+            )}
+          </div>
+        )}
       </div>
     </main>
   )

@@ -2,57 +2,61 @@
 
 import Link from "next/link"
 import { Search, HelpCircle } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
 
+import { Logo } from "@/components/ui/logo"
 export function BookingHeader() {
+  const { user } = useAuth();
+  const router = useRouter();
+
   return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="w-5 h-5 text-primary-foreground"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="3" y="4" width="18" height="16" rx="2" />
-                <path d="M3 10h18" />
-                <path d="M8 2v4" />
-                <path d="M16 2v4" />
-              </svg>
-            </div>
-            <span className="text-lg font-semibold text-primary">HayBooking</span>
-          </Link>
+    <header className="w-full bg-white border-b border-border/40 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        {/* Left: Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <Logo />
+        </Link>
 
-          {/* Search */}
-          <div className="flex-1 max-w-md hidden sm:block">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search for services or locations..."
-                className="pl-10 h-10 bg-muted/50 border-transparent focus:border-input focus:bg-background transition-colors"
-              />
-            </div>
+        {/* Middle: Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-lg mx-8 relative">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Search className="h-4 w-4" />
           </div>
+          <input 
+            type="text" 
+            placeholder="Search for services or locations..." 
+            className="w-full h-10 pl-10 pr-4 bg-[#FAFAFA] border-none rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[#E5555E]/50"
+          />
+        </div>
 
-          {/* Right actions */}
+        {/* Right: Auth / Actions */}
+        <div className="flex items-center gap-4">
+          <button className="text-muted-foreground hover:text-foreground transition-colors p-2">
+            <HelpCircle className="h-5 w-5" />
+          </button>
+          
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <HelpCircle className="h-5 w-5" />
-            </Button>
-            <Avatar className="h-9 w-9 cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all">
-              <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" alt="User" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            {user ? (
+              <Avatar 
+                className="h-9 w-9 border border-border cursor-pointer hover:ring-2 hover:ring-[#E5555E]/50 transition-all"
+                onClick={() => router.push('/client/discover')}
+              >
+                <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : user.phoneNumber?.substring(0, 2) || "U"}</AvatarFallback>
+                {(user.image || user.name) && (
+                  <AvatarImage src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent((user.name || '') + ' ' + (user.surname || ''))}&background=FDF6F6&color=C69C9B&size=100`} />
+                )}
+              </Avatar>
+            ) : (
+              <Link href="/auth" className="text-sm font-semibold text-foreground hover:text-[#E5555E]">
+                Log In
+              </Link>
+            )}
           </div>
         </div>
+
       </div>
     </header>
   )

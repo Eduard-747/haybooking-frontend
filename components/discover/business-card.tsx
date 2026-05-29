@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, Star, MapPin, ChevronRight } from "lucide-react"
+import { Heart, Star, MapPin, ChevronRight, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
@@ -97,11 +97,13 @@ export function BusinessCard({ business }: BusinessCardProps) {
 
         {/* Distance and View Details */}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5" />
-            <span>{business.distance}</span>
-            <span>away</span>
-          </div>
+          <Link
+            href={`/b/${business.id}?tab=about`}
+            className="flex items-center text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors py-1.5 px-3 rounded-md shadow-sm"
+          >
+            <Info className="h-3.5 w-3.5 mr-1.5" />
+            About Us
+          </Link>
           <Link 
             href={`/booking/${business.id}`}
             className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"

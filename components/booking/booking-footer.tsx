@@ -1,66 +1,73 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
+import { formatPrice } from "@/lib/currency"
 
 interface BookingFooterProps {
   totalPrice: number
-  selectedDate: Date | null
+  selectedDate: Date | undefined
   selectedTime: string | null
+  onConfirm: () => void
+  isSubmitting?: boolean
+  currency?: string
 }
 
 export function BookingFooter({
   totalPrice,
   selectedDate,
   selectedTime,
+  onConfirm,
+  isSubmitting = false,
+  currency
 }: BookingFooterProps) {
-  const router = useRouter()
-
-  const handleConfirmBooking = () => {
-    router.push("/booking/confirmation")
-  }
-
-  const formatDate = () => {
-    if (!selectedDate) return null
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    return `${months[selectedDate.getMonth()]} ${selectedDate.getDate()}`
-  }
-
-  const formattedSlot = selectedDate && selectedTime 
-    ? `${formatDate()}, ${selectedTime}` 
-    : "No slot selected"
+  const isReady = selectedDate && selectedTime && totalPrice > 0
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-40">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-8">
-            <div>
-              <span className="text-xs text-muted-foreground uppercase tracking-wide block">
-                Total Price
-              </span>
-              <span className="text-2xl font-bold text-foreground">
-                ${totalPrice.toFixed(2)}
-              </span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-xs text-muted-foreground uppercase tracking-wide block">
-                Selected Slot
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                {formattedSlot}
-              </span>
-            </div>
+    <div className="fixed bottom-0 left-0 right-0 border-t border-border/40 bg-white shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] z-40 py-4">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        
+        {/* Left: Total Price */}
+        <div className="hidden sm:block">
+          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Total Price</p>
+          <p className="text-xl font-bold text-foreground">{formatPrice(totalPrice, currency)}</p>
+        </div>
+
+        {/* Middle: Selected Slot */}
+        <div className="text-center hidden md:block">
+          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Selected Slot</p>
+          <p className="text-sm font-semibold text-foreground">
+            {selectedDate 
+              ? `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${selectedTime || '--:--'}`
+              : "No slot selected"}
+          </p>
+        </div>
+
+        {/* Right: Action */}
+        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+          {/* Mobile Price Display */}
+          <div className="sm:hidden">
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Total</p>
+            <p className="text-lg font-bold text-foreground">{formatPrice(totalPrice, currency)}</p>
           </div>
-          <Button
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-            disabled={!selectedTime}
-            onClick={handleConfirmBooking}
+
+          <Button 
+            size="lg" 
+            onClick={onConfirm}
+            disabled={!isReady || isSubmitting}
+            className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md px-8 font-semibold shadow-sm w-full sm:w-auto transition-colors"
           >
-            Confirm Booking
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Confirm Booking"
+            )}
           </Button>
         </div>
+
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import { ConfirmationHeader } from "@/components/confirmation/confirmation-heade
 import { ConfirmationHero } from "@/components/confirmation/confirmation-hero"
 import { BookingSummaryCard } from "@/components/confirmation/booking-summary-card"
 import { ConfirmationActions } from "@/components/confirmation/confirmation-actions"
-import { ConfirmationFooter } from "@/components/confirmation/confirmation-footer"
+import { SiteFooter } from "@/components/landing/site-footer"
 
 // Sample booking data
 const bookingData = {
@@ -20,24 +20,18 @@ const bookingData = {
 
 export default function BookingConfirmationPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
       <ConfirmationHeader />
       
-      <main className="flex-1">
-        {/* Hero Section with gray background */}
-        <div className="bg-muted/40 pt-16 pb-32">
-          <ConfirmationHero />
-        </div>
+      <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-16 md:py-24 space-y-12">
+        <ConfirmationHero />
         
-        {/* Booking Summary - overlaps with hero */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-20">
-          <BookingSummaryCard booking={bookingData} />
-          
-          <ConfirmationActions />
-        </div>
+        <BookingSummaryCard booking={bookingData} />
+        
+        <ConfirmationActions />
       </main>
       
-      <ConfirmationFooter />
+      <SiteFooter />
     </div>
   )
 }

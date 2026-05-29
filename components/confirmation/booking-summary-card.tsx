@@ -1,128 +1,102 @@
-import { User, Clock, MapPin, CreditCard, Timer } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-
-interface BookingData {
-  id: string
-  bookedOn: string
-  service: string
-  provider: string
-  dateTime: string
-  location: string
-  totalPaid: string
-  duration: string
-}
+import { User, Building2, Calendar, MapPin, CreditCard, Clock } from "lucide-react"
 
 interface BookingSummaryCardProps {
-  booking: BookingData
+  booking: {
+    id: string
+    bookedOn: string
+    service: string
+    provider: string
+    dateTime: string
+    location: string
+    totalPaid: string
+    duration: string
+  }
 }
 
 export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
   return (
-    <Card className="shadow-lg border-border/50">
-      {/* Card Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <span className="text-xs font-medium tracking-wider text-primary uppercase">
+    <div className="w-full bg-white rounded-2xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-[#FAFAFA]/50">
+        <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase">
           Booking ID: {booking.id}
-        </span>
-        <span className="text-sm text-muted-foreground">
+        </p>
+        <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
           Booked on {booking.bookedOn}
-        </span>
+        </p>
       </div>
 
-      <CardContent className="p-6">
-        {/* Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Service */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <User className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Service
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                {booking.service}
-              </p>
-            </div>
+      {/* Grid Content */}
+      <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+        
+        {/* Service */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <User className="h-4 w-4 text-[#C69C9B]" />
           </div>
-
-          {/* Provider */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <User className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Provider
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                {booking.provider}
-              </p>
-            </div>
-          </div>
-
-          {/* Date & Time */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Date & Time
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                {booking.dateTime}
-              </p>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <MapPin className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Location
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                {booking.location}
-              </p>
-            </div>
-          </div>
-
-          {/* Total Paid */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <CreditCard className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Total Paid
-              </p>
-              <p className="text-sm font-semibold text-foreground">
-                {booking.totalPaid}
-              </p>
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
-              <Timer className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                Duration
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                {booking.duration}
-              </p>
-            </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Service</p>
+            <p className="text-sm font-semibold text-foreground">{booking.service}</p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Provider */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <Building2 className="h-4 w-4 text-[#C69C9B]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Provider</p>
+            <p className="text-sm font-semibold text-foreground">{booking.provider}</p>
+          </div>
+        </div>
+
+        {/* Date & Time */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <Calendar className="h-4 w-4 text-[#C69C9B]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Date & Time</p>
+            <p className="text-sm font-semibold text-foreground">{booking.dateTime}</p>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <MapPin className="h-4 w-4 text-[#C69C9B]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Location</p>
+            <p className="text-sm font-semibold text-foreground">{booking.location}</p>
+          </div>
+        </div>
+
+        {/* Total Paid */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <CreditCard className="h-4 w-4 text-[#C69C9B]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Total Paid</p>
+            <p className="text-sm font-semibold text-foreground">{booking.totalPaid}</p>
+          </div>
+        </div>
+
+        {/* Duration */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
+            <Clock className="h-4 w-4 text-[#C69C9B]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Duration</p>
+            <p className="text-sm font-semibold text-foreground">{booking.duration}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
   )
 }

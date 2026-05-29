@@ -2,23 +2,18 @@ import { Check } from "lucide-react"
 
 export function ConfirmationHero() {
   return (
-    <div className="text-center">
-      {/* Success Checkmark */}
-      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted border-4 border-background shadow-sm mb-6">
-        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-          <Check className="h-8 w-8 text-muted-foreground" strokeWidth={2.5} />
-        </div>
+    <div className="flex flex-col items-center text-center space-y-6">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm border border-border/40">
+        <Check className="h-10 w-10 text-[#C69C9B]" strokeWidth={2.5} />
       </div>
-
-      {/* Heading */}
-      <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-        Booking Confirmed!
-      </h1>
-
-      {/* Subtext */}
-      <p className="text-muted-foreground max-w-md mx-auto px-4">
-        Your appointment has been successfully scheduled. A confirmation email has been sent to your inbox.
-      </p>
+      <div className="space-y-3 max-w-md mx-auto">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Booking Confirmed!
+        </h1>
+        <p className="text-[15px] text-muted-foreground leading-relaxed">
+          Your appointment has been successfully scheduled. A confirmation email has been sent to your inbox.
+        </p>
+      </div>
     </div>
   )
 }

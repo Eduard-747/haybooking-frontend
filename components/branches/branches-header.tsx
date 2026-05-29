@@ -6,24 +6,14 @@ import { Search, Globe } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+import { Logo } from "@/components/ui/logo"
 export function BranchesHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="px-4 md:px-8 lg:px-16 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-5 w-5 text-primary-foreground"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-          </div>
-          <span className="text-xl font-semibold text-primary">HayBooking</span>
+          <Logo />
         </Link>
 
         {/* Search Bar */}

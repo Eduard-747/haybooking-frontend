@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { Search, HelpCircle, Menu, X } from "lucide-react"
 
+import { Logo } from "@/components/ui/logo"
 export function AdminHeader() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -21,10 +22,7 @@ export function AdminHeader() {
 
         {/* Mobile Logo */}
         <div className="lg:hidden flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg bg-amber-500 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">H</span>
-          </div>
-          <span className="font-semibold text-foreground text-sm">HayBooking Dashboard</span>
+          <Logo />
         </div>
 
         {/* Search Bar */}

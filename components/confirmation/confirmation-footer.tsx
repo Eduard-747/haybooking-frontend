@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Instagram, Twitter, Facebook } from "lucide-react"
 
+import { Logo } from "@/components/ui/logo"
 const footerLinks = {
   platform: [
     { label: "How it works", href: "/how-it-works" },
@@ -30,22 +31,7 @@ export function ConfirmationFooter() {
           {/* Brand */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-transparent border-2 border-primary rounded-lg flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="w-5 h-5 text-primary"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M3 10h18" />
-                  <path d="M8 2v4" />
-                  <path d="M16 2v4" />
-                  <path d="M8 14l2 2 4-4" />
-                </svg>
-              </div>
-              <span className="text-xl font-semibold text-primary">HayBooking</span>
+              <Logo />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs leading-relaxed">
               Seamless booking management for individuals and professionals.

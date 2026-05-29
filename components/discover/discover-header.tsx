@@ -1,44 +1,26 @@
 "use client"
 
-import { Search, Bell } from "lucide-react"
+import { Search, Bell, LogOut } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
+import { useAuth } from "@/components/auth/auth-provider"
 
+import { Logo } from "@/components/ui/logo"
 interface DiscoverHeaderProps {
   searchQuery: string
   onSearchChange: (value: string) => void
 }
 
 export function DiscoverHeader({ searchQuery, onSearchChange }: DiscoverHeaderProps) {
+  const { user, logout } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="flex h-16 items-center justify-between px-4 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-6 w-6"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5z"
-                className="stroke-foreground"
-              />
-              <path
-                d="M2 17l10 5 10-5"
-                className="stroke-foreground"
-              />
-              <path
-                d="M2 12l10 5 10-5"
-                className="stroke-foreground"
-              />
-            </svg>
-          </div>
-          <span className="text-lg font-semibold text-foreground">HayBooking</span>
+          <Logo />
         </Link>
 
         {/* Search Bar */}
@@ -62,17 +44,46 @@ export function DiscoverHeader({ searchQuery, onSearchChange }: DiscoverHeaderPr
             <Search className="h-5 w-5 text-muted-foreground" />
           </button>
 
-          {/* Notifications */}
-          <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
-            <Bell className="h-5 w-5 text-muted-foreground" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-          </button>
+          {user ? (
+            <>
+              {/* Notifications */}
+              <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
+              </button>
 
-          {/* User Avatar */}
-          <Avatar className="h-9 w-9 cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all">
-            <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
+              {/* User Avatar & Logout */}
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9 cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all">
+                  <AvatarFallback>{user.phoneNumber ? user.phoneNumber.substring(0, 2) : "U"}</AvatarFallback>
+                </Avatar>
+                <button 
+                  onClick={logout} 
+                  className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Sign In & Sign Up Buttons */}
+              <Link 
+                href="/auth" 
+                className="hidden sm:flex text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/auth" 
+                className="hidden sm:flex px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

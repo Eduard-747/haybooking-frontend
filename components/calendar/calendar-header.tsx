@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, Search, Bell, CalendarDays } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+import { Logo } from "@/components/ui/logo"
 interface CalendarHeaderProps {
   currentDate: Date
   onDateChange: (date: Date) => void
@@ -45,10 +46,7 @@ export function CalendarHeader({
       <div className="flex items-center justify-between px-4 md:px-6 py-3">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <CalendarDays className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-semibold text-primary hidden sm:block">HayBooking</span>
+          <Logo />
         </Link>
 
         {/* Date Navigation */}

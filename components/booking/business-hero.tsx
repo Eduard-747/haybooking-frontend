@@ -1,47 +1,56 @@
 "use client"
 
-import Image from "next/image"
 import { Star, MapPin, List, Map } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface BusinessHeroProps {
   name: string
+  image?: string
   rating: number
   reviewCount: number
   address: string
   status: string
   estimatedWait: string
+  viewMode?: "list" | "map"
+  onViewChange?: (view: "list" | "map") => void
 }
 
 export function BusinessHero({
   name,
+  image,
   rating,
   reviewCount,
   address,
   status,
   estimatedWait,
+  viewMode = "list",
+  onViewChange,
 }: BusinessHeroProps) {
   return (
-    <div className="space-y-4">
-      {/* Hero Image */}
-      <div className="relative h-48 sm:h-64 rounded-xl overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=1200&h=400&fit=crop"
+    <div className="w-full mb-10">
+      {/* Hero Image Container */}
+      <div className="relative w-full aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden shadow-sm mb-6">
+        <img
+          src={image || "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200&h=400&fit=crop"}
           alt={name}
-          fill
-          className="object-cover"
-          priority
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4 text-white">
-          <h1 className="text-2xl sm:text-3xl font-bold">{name}</h1>
-          <div className="flex items-center gap-4 mt-2 text-sm">
-            <div className="flex items-center gap-1">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        
+        {/* Text Overlay */}
+        <div className="absolute bottom-0 left-0 w-full p-6 md:p-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
+            {name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+            <div className="flex items-center gap-1.5">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{rating}</span>
-              <span className="text-white/80">({reviewCount} reviews)</span>
+              <span className="font-semibold text-white">{rating}</span>
+              <span className="text-white/70">({reviewCount} reviews)</span>
             </div>
-            <div className="flex items-center gap-1 text-white/80">
+            <div className="hidden md:block w-1 h-1 rounded-full bg-white/50" />
+            <div className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4" />
               <span>{address}</span>
             </div>
@@ -50,26 +59,38 @@ export function BusinessHero({
       </div>
 
       {/* Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 border-b border-border">
-        <div className="flex items-center gap-6 text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-8">
           <div>
-            <span className="text-muted-foreground uppercase tracking-wide text-xs">Status</span>
-            <p className="font-medium text-foreground">{status}</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Status</p>
+            <p className="text-sm font-semibold text-foreground">{status}</p>
           </div>
           <div>
-            <span className="text-muted-foreground uppercase tracking-wide text-xs">Estimated Wait</span>
-            <p className="font-medium text-foreground">{estimatedWait}</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Estimated Wait</p>
+            <p className="text-sm font-semibold text-foreground">{estimatedWait}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+
+        {/* List / Map Toggle */}
+        <div className="flex items-center bg-[#FAFAFA] border border-border/60 rounded-full p-1">
+          <button 
+            onClick={() => onViewChange && onViewChange("list")}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              viewMode === "list" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
             <List className="h-4 w-4" />
             List
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2">
+          </button>
+          <button 
+            onClick={() => onViewChange && onViewChange("map")}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              viewMode === "map" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
             <Map className="h-4 w-4" />
             Map
-          </Button>
+          </button>
         </div>
       </div>
     </div>

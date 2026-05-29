@@ -11,16 +11,17 @@ interface Booking {
   date: string
   time: string
   location: string
-  status: "confirmed" | "pending" | "completed" | "cancelled"
+  status: "confirmed" | "pending" | "completed" | "cancelled" | "declined"
   image: string
 }
 
 interface BookingCardProps {
   booking: Booking
   showActions?: boolean
+  onCancel?: () => void
 }
 
-export function BookingCard({ booking, showActions = true }: BookingCardProps) {
+export function BookingCard({ booking, showActions = true, onCancel }: BookingCardProps) {
   const getStatusBadge = () => {
     switch (booking.status) {
       case "confirmed":
@@ -45,6 +46,12 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
             Cancelled
+          </span>
+        )
+      case "declined":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-500 border border-red-200">
+            Declined
           </span>
         )
       default:
@@ -81,21 +88,15 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
             </div>
 
             {/* Action Buttons - Desktop */}
-            {showActions && (
+            {showActions && (booking.status === "pending" || booking.status === "confirmed") && (
               <div className="hidden sm:flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-primary border-primary/30 hover:bg-primary/5 hover:border-primary"
-                >
-                  Reschedule
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  onClick={onCancel}
                 >
-                  Cancel
+                  Cancel Booking
                 </Button>
               </div>
             )}
@@ -118,21 +119,15 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
           </div>
 
           {/* Action Buttons - Mobile */}
-          {showActions && (
+          {showActions && (booking.status === "pending" || booking.status === "confirmed") && (
             <div className="flex sm:hidden gap-3 mt-4 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-primary border-primary/30 hover:bg-primary/5 hover:border-primary"
-              >
-                Reschedule
-              </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
+                className="flex-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={onCancel}
               >
-                Cancel
+                Cancel Booking
               </Button>
             </div>
           )}

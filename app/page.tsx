@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/landing/site-footer"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const ITEMS_PER_PAGE = 9;
 
@@ -71,6 +72,7 @@ const fallbackBusinesses = [
 
 export default function HomePage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [businesses, setBusinesses] = useState<any[]>(fallbackBusinesses)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("All")
@@ -198,10 +200,10 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="inline-block px-3 py-1 bg-muted rounded-full text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-4">
-                {searchQuery || activeCategory !== "All" ? "Search Results" : "Hand-Picked for You"}
+                {searchQuery || activeCategory !== "All" ? t("landing.searchResults", "Search Results") : t("landing.handPicked", "Hand-Picked for You")}
               </span>
               <h2 className="text-3xl font-bold text-foreground mb-3">
-                {searchQuery || activeCategory !== "All" ? "Matching Businesses" : "Featured Businesses"}
+                {searchQuery || activeCategory !== "All" ? t("landing.matching", "Matching Businesses") : t("landing.featured", "Featured Businesses")}
               </h2>
               {searchQuery && (
                 <p className="text-foreground font-medium mb-3">

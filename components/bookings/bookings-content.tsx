@@ -20,7 +20,7 @@ function formatBooking(b: BookingData) {
   const start = new Date(b.startTime)
   const end = new Date(b.endTime)
   const date = start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-  const time = `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
+  const time = `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`
   const location = b.branchId ? `${b.branchId.address.line1}, ${b.branchId.address.city}` : "—"
 
   return {

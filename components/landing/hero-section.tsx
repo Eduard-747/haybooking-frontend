@@ -3,6 +3,7 @@
 import { Search, Utensils, Scissors, Stethoscope, Car, Activity } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 interface HeroSectionProps {
   onSearch?: (query: string) => void
@@ -12,6 +13,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All" }: HeroSectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const { t } = useTranslation()
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -27,11 +29,9 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
   }
   return (
     <section className="w-full flex flex-col items-center justify-center py-20 px-4 text-center">
-      <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#1C1F26] mb-4">
-        Book Your Next <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#b3888b] to-[#d6b4b6]">Service</span><br/>Instantly
-      </h1>
+      <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#1C1F26] mb-4" dangerouslySetInnerHTML={{ __html: t("landing.heroTitle", "Book Your Next <span class=\"bg-clip-text text-transparent bg-gradient-to-r from-[#b3888b] to-[#d6b4b6]\">Service</span><br/>Instantly") }} />
       <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-10">
-        Discover and book appointments with top-rated local professionals. From your morning coffee to your next hair appointment, we&apos;ve got you covered.
+        {t("landing.heroDesc", "Discover and book appointments with top-rated local professionals. From your morning coffee to your next hair appointment, we've got you covered.")}
       </p>
 
       {/* Search Bar */}
@@ -41,7 +41,7 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
         </div>
         <Input 
           type="text" 
-          placeholder="Search for services, businesses, or locations..." 
+          placeholder={t("landing.searchPlaceholder", "Search for services, businesses, or locations...") as string} 
           className="w-full h-14 pl-12 pr-32 rounded-full border-border/60 shadow-sm text-base focus-visible:ring-1 focus-visible:ring-[#BC9B9E]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -50,7 +50,7 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
           type="submit"
           className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-[#BC9B9E] text-white rounded-full font-medium hover:bg-[#a68689] transition-colors"
         >
-          Search
+          {t("common.search", "Search")}
         </button>
       </form>
 

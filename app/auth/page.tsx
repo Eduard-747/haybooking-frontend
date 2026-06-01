@@ -22,13 +22,10 @@ function AuthPageContent() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Branding */}
-      <AuthBranding />
-
-      {/* Right side - Form */}
-      <main className="flex flex-1 flex-col items-center justify-center px-6 py-12 lg:px-8 relative">
-        {/* Mobile Logo */}
-        <Link href="/" className="absolute top-8 left-6 flex items-center gap-2 hover:opacity-80 transition-opacity lg:hidden">
+      {/* Left side - Form */}
+      <main className="flex w-full lg:w-[45%] flex-col items-center justify-center px-6 py-12 lg:px-8 relative bg-white z-10 shadow-2xl">
+        {/* Desktop Logo */}
+        <Link href="/" className="absolute top-8 left-8 hidden lg:flex items-center gap-2 hover:opacity-80 transition-opacity">
           <Logo />
         </Link>
         
@@ -36,6 +33,9 @@ function AuthPageContent() {
           <AuthForm activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </main>
+
+      {/* Right side - Branding */}
+      <AuthBranding />
     </div>
   )
 }

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import api from "@/lib/api"
 import { useAuth } from "@/components/auth/auth-provider"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
-import { MapPin, Info, Calendar, Phone, Clock, CheckSquare, Map } from "lucide-react"
+import { MapPin, Info, Calendar, Phone, Clock, CheckSquare, Map, Coffee } from "lucide-react"
 
 import { BookingHeader } from "@/components/booking/booking-header"
 import { BookingFooter } from "@/components/booking/booking-footer"
@@ -77,9 +78,11 @@ export default function PublicBookingPage() {
   const [allSpecialists, setAllSpecialists] = useState<SpecialistData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-
-  // Layout View Mode
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "map">("list")
+
+  const { t } = useTranslation()
   const initialTab = searchParams.get("tab") === "about" ? "about" : "book"
   const [activeTab, setActiveTab] = useState<"book" | "about">(initialTab)
 
@@ -174,13 +177,14 @@ export default function PublicBookingPage() {
   // Fetch booked slots when specialist or date changes
   useEffect(() => {
     const fetchBookedSlots = async () => {
-      if (!selectedSpecialist || !selectedDate) {
+      if (!selectedDate || !selectedBranch) {
         setBookedSlots([])
         return
       }
       try {
         const dateStr = selectedDate.toISOString()
-        const res = await api.get(`/bookings/availability?specialistId=${selectedSpecialist}&date=${dateStr}`)
+        const specialistQuery = selectedSpecialist ? `specialistId=${selectedSpecialist}&` : ''
+        const res = await api.get(`/bookings/availability?${specialistQuery}branchId=${selectedBranch}&date=${dateStr}`)
         setBookedSlots(res.data.bookedSlots || [])
         // If the currently selected time is now booked, deselect it
         if (selectedTime && res.data.bookedSlots?.includes(selectedTime)) {
@@ -192,7 +196,7 @@ export default function PublicBookingPage() {
       }
     }
     fetchBookedSlots()
-  }, [selectedSpecialist, selectedDate])
+  }, [selectedSpecialist, selectedDate, selectedBranch, selectedTime])
 
   // Filters
   const branchServices = allServices.filter(s => {
@@ -420,7 +424,7 @@ export default function PublicBookingPage() {
             }`}
           >
             <Calendar className="h-4 w-4" />
-            Book Appointment
+            {t("role.customerDesc", "Book Appointment")}
           </button>
           <button
             onClick={() => setActiveTab("about")}
@@ -431,7 +435,7 @@ export default function PublicBookingPage() {
             }`}
           >
             <Info className="h-4 w-4" />
-            About Us
+            {t("book.yourInfo", "About Us")} {/* Approximate, needs a new key if not perfect */}
           </button>
         </div>
 
@@ -461,7 +465,7 @@ export default function PublicBookingPage() {
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">1</div>
-                  <h2 className="text-lg font-bold text-foreground">Branch Location</h2>
+                  <h2 className="text-lg font-bold text-foreground">{t("book.selectBranch")}</h2>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {branches.map(b => (
@@ -497,7 +501,7 @@ export default function PublicBookingPage() {
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
                     {branches.length > 0 ? "2" : "1"}
                   </div>
-                  <h2 className="text-lg font-bold text-foreground">Services</h2>
+                  <h2 className="text-lg font-bold text-foreground">{t("book.selectServices")}</h2>
                 </div>
                 <ServiceSelection
                   services={branchServices as any}
@@ -515,7 +519,7 @@ export default function PublicBookingPage() {
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
                     {branches.length > 0 ? "3" : "2"}
                   </div>
-                  <h2 className="text-lg font-bold text-foreground">Specialist</h2>
+                  <h2 className="text-lg font-bold text-foreground">{t("book.selectSpecialist")}</h2>
                 </div>
                 <SpecialistSelection
                   specialists={filteredSpecialists as any}
@@ -553,14 +557,14 @@ export default function PublicBookingPage() {
         {activeTab === "about" && viewMode === "list" && (
           <div className="mt-8 space-y-10 animate-in fade-in duration-500">
             <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-foreground mb-4">About Us</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">{t("book.yourInfo", "About Us")}</h2>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {partner.publicDescription || "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible."}
               </p>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">Our Locations</h2>
+              <h2 className="text-xl font-bold text-foreground">{t("book.locations", "Our Locations")}</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {branches.map(b => (
                   <div key={b._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-2">
@@ -582,7 +586,19 @@ export default function PublicBookingPage() {
                         <div className="flex items-start gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4 shrink-0 mt-0.5" />
                           <div className="flex flex-col">
-                            <span>Open today: {b.workingHours[0].openTime} - {b.workingHours[0].closeTime}</span>
+                            <span>{t("book.workingHours", "Open today")}: {b.workingHours[0].openTime} - {b.workingHours[0].closeTime}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {b.breaks && b.breaks.length > 0 && (
+                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <Coffee className="h-4 w-4 shrink-0 mt-0.5" />
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-xs">Break Times:</span>
+                            {Array.from(new Set(b.breaks.map((br: any) => `${br.startTime} - ${br.endTime}`))).map((timeStr: any, i: number) => (
+                              <span key={i} className="text-xs">{timeStr}</span>
+                            ))}
                           </div>
                         </div>
                       )}
@@ -753,7 +769,7 @@ export default function PublicBookingPage() {
                     className="w-full mt-6 py-2.5 bg-[#E5555E] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
-                    Continue
+                    {t("book.nextVerify", "Continue")}
                   </button>
                 </form>
               ) : (
@@ -779,7 +795,7 @@ export default function PublicBookingPage() {
                     className="w-full mt-6 py-2.5 bg-[#E5555E] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
-                    Confirm Booking
+                    {t("book.confirmBooking", "Confirm Booking")}
                   </button>
                   
                   <button 
@@ -787,7 +803,7 @@ export default function PublicBookingPage() {
                     onClick={() => setGuestStep("details")}
                     className="w-full mt-2 py-2 text-muted-foreground font-semibold text-xs hover:text-foreground"
                   >
-                    Back to edit details
+                    {t("common.back", "Back to edit details")}
                   </button>
                 </form>
               )}

@@ -10,6 +10,7 @@ import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
 
 interface Booking {
   _id: string
@@ -36,7 +37,7 @@ const statusColors: Record<string, string> = {
 }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+  return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
 }
 
 function formatDate(iso: string) {
@@ -46,6 +47,7 @@ function formatDate(iso: string) {
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
   const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
+  const { t } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -112,8 +114,8 @@ export default function BusinessDashboardPage() {
             <div className="flex-1 min-w-0">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Bookings</h1>
-                  <p className="text-sm text-muted-foreground mt-0.5">{bookings.length} total bookings</p>
+                  <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")}</h1>
+                  <p className="text-sm text-muted-foreground mt-0.5">{bookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
                 </div>
               </div>
 
@@ -123,7 +125,7 @@ export default function BusinessDashboardPage() {
                 </div>
               ) : bookings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
-                  <p className="text-muted-foreground text-sm">No bookings yet. Share your booking link to get started.</p>
+                  <p className="text-muted-foreground text-sm">{t("dashboard.noBookings", "No bookings yet. Share your booking link to get started.")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -163,13 +165,13 @@ export default function BusinessDashboardPage() {
                             {booking.status === "confirmed" && (
                               <>
                                 <button onClick={() => updateStatus(booking._id, "declined")} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 border border-red-100 rounded-lg transition-colors">
-                                  <XCircle className="w-3.5 h-3.5" /> Decline
+                                  <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
                                 </button>
                               </>
                             )}
                             {booking.status !== "confirmed" && booking.status !== "cancelled" && (
                               <button onClick={() => updateStatus(booking._id, "confirmed")} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 border border-emerald-100 rounded-lg transition-colors">
-                                <CheckCircle className="w-3.5 h-3.5" /> Accept
+                                <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
                               </button>
                             )}
                           </div>
@@ -253,7 +255,7 @@ export default function BusinessDashboardPage() {
             {/* Right Column: Widgets */}
             <div className="w-full xl:w-80 shrink-0 space-y-6">
               <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-4 shadow-inner">
-                <h2 className="text-xl font-bold text-foreground mb-4 px-2">Calendar</h2>
+                <h2 className="text-xl font-bold text-foreground mb-4 px-2">{t("nav.calendar", "Calendar")}</h2>
                 <div className="bg-white rounded-xl shadow-sm border border-border/40 p-2 flex justify-center">
                   <Calendar
                     mode="single"
@@ -271,14 +273,14 @@ export default function BusinessDashboardPage() {
               </div>
 
               <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-6 shadow-inner">
-                <h2 className="text-xl font-bold text-foreground mb-5">Statistics</h2>
+                <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.statistics", "Statistics")}</h2>
                 <div className="space-y-3">
                   {[
-                    { label: "Total Bookings", value: stats.total },
-                    { label: "Confirmed", value: stats.confirmed },
-                    { label: "Declined", value: stats.declined },
-                    { label: "Cancelled", value: stats.cancelled },
-                    { label: "Today", value: todayBookings.length },
+                    { label: t("dashboard.statTotal", "Total Bookings"), value: stats.total },
+                    { label: t("dashboard.statConfirmed", "Confirmed"), value: stats.confirmed },
+                    { label: t("dashboard.statDeclined", "Declined"), value: stats.declined },
+                    { label: t("dashboard.statCancelled", "Cancelled"), value: stats.cancelled },
+                    { label: t("dashboard.statToday", "Today"), value: todayBookings.length },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">{label}</span>

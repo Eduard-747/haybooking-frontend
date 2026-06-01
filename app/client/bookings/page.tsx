@@ -25,7 +25,7 @@ function formatDate(iso: string) {
 }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+  return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
 }
 
 const statusColors: Record<string, string> = {

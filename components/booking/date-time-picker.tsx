@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Clock, CheckCircle2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
 interface DateTimePickerProps {
@@ -26,6 +27,7 @@ export function DateTimePicker({
   breaks = [],
   totalDuration = 30,
 }: DateTimePickerProps) {
+  const { t } = useTranslation()
 
   const disabledDays = (date: Date) => {
     const today = new Date();
@@ -87,7 +89,7 @@ export function DateTimePicker({
           3
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">Date & Time</h2>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">{t("book.step3", "Date & Time")}</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Available slots are updated in real-time based on your specialist choice.
           </p>
@@ -116,7 +118,7 @@ export function DateTimePicker({
         {/* Right: Time Slots */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Available Slots</h3>
+            <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.availableSlots", "Available Slots")}</h3>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-md">
               <Clock className="h-3.5 w-3.5" />
               <span>Times are in CEST</span>

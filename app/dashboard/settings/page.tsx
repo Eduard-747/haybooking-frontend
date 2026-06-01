@@ -5,13 +5,15 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { usePartner } from "@/hooks/usePartner"
 import { useAuth } from "@/components/auth/auth-provider"
-import { Building2, User, Save, Loader2, Camera, Globe, Phone, Mail, Bell, Key, LogOut } from "lucide-react"
+import { Building2, User, Save, Loader2, Camera, Globe, Phone, Mail, Bell, Key, LogOut, Copy } from "lucide-react"
 import api from "@/lib/api"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 export default function SettingsPage() {
   const { partner, partnerId, loading: partnerLoading } = usePartner()
   const { user, logout } = useAuth()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<"business" | "user">("business")
   const [saving, setSaving] = useState(false)
 
@@ -158,8 +160,8 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: "business" as const, label: "Business", icon: Building2 },
-    { id: "user" as const, label: "Account", icon: User },
+    { id: "business" as const, label: t("nav.business", "Business"), icon: Building2 },
+    { id: "user" as const, label: t("nav.account", "Account"), icon: User },
   ]
 
   return (
@@ -175,15 +177,15 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-                <p className="text-muted-foreground mt-1">Manage your business and account settings.</p>
+                <h1 className="text-3xl font-bold text-foreground">{t("nav.settings", "Settings")}</h1>
+                <p className="text-muted-foreground mt-1">{t("dashboard.settingsDesc", "Manage your business and account settings.")}</p>
               </div>
               <button
                 onClick={() => logout()}
                 className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 font-semibold rounded-lg transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                Sign Out
+                {t("nav.signOut", "Sign Out")}
               </button>
             </div>
 
@@ -232,7 +234,7 @@ export default function SettingsPage() {
 
                 {/* Business Name */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Business Name</label>
+                  <label className="text-sm font-medium text-foreground">{t("dashboard.businessName", "Business Name")}</label>
                   <input
                     type="text"
                     value={businessForm.businessName}
@@ -293,18 +295,32 @@ export default function SettingsPage() {
                 {/* Business URL */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Business URL</label>
-                  <div className="flex items-center gap-0 rounded-lg border border-border overflow-hidden">
-                    <span className="px-3 py-2.5 bg-gray-50 text-sm text-muted-foreground border-r border-border whitespace-nowrap">
-                      haybooking.com/b/
-                    </span>
-                    <input
-                      type="text"
-                      value={businessForm.slug}
-                      readOnly
-                      className="flex-1 px-3 py-2.5 bg-white text-sm text-muted-foreground cursor-not-allowed"
-                    />
+                  <div 
+                    onClick={async () => {
+                      const url = `https://haybooking.com/b/${businessForm.slug}`;
+                      try {
+                        await navigator.clipboard.writeText(url);
+                        toast.success("URL copied to clipboard!");
+                      } catch (err) {
+                        toast.error("Failed to copy URL");
+                      }
+                    }}
+                    className="flex items-center justify-between gap-3 p-3.5 rounded-lg border border-border/60 bg-[#FAFAFA] hover:bg-[#FDF6F6] hover:border-[#E5555E]/30 cursor-pointer transition-all group shadow-sm"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="p-1.5 bg-white rounded-md border border-border/50 shrink-0">
+                        <Globe className="h-4 w-4 text-[#C69C9B]" />
+                      </div>
+                      <span className="text-sm font-medium text-slate-700 break-all">
+                        https://haybooking.com/b/{businessForm.slug}
+                      </span>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white border border-border/50 text-xs font-semibold text-muted-foreground group-hover:text-[#E5555E] group-hover:border-[#E5555E]/30 transition-all shadow-sm">
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Auto-generated from your business name. Contact support to change.</p>
+                  <p className="text-xs text-muted-foreground mt-2">This is your public booking page. Share this link directly with your clients.</p>
                 </div>
 
                 <div className="pt-4 border-t border-border/40 space-y-5">
@@ -355,7 +371,7 @@ export default function SettingsPage() {
                     className="flex items-center gap-2 px-6 py-2.5 bg-[#E5555E] hover:bg-[#d44850] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save Changes
+                    {t("dashboard.saveChanges", "Save Changes")}
                   </button>
                 </div>
               </div>
@@ -462,7 +478,7 @@ export default function SettingsPage() {
                     className="flex items-center gap-2 px-6 py-2.5 bg-[#E5555E] hover:bg-[#d44850] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save Changes
+                    {t("dashboard.saveChanges", "Save Changes")}
                   </button>
                 </div>
               </div>

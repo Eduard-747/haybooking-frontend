@@ -3,6 +3,7 @@
 import { Clock, CheckSquare, Square } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
 
 interface Service {
   id: string
@@ -26,6 +27,7 @@ export function ServiceSelection({
   onToggle,
   currency
 }: ServiceSelectionProps) {
+  const { t } = useTranslation()
   return (
     <section>
       {/* Header */}
@@ -34,7 +36,7 @@ export function ServiceSelection({
           1
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">Branch & Service</h2>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">{t("book.step2", "Branch & Service")}</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Choose your preferred branch location and the services you'd like to book.
           </p>

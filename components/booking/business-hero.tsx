@@ -2,6 +2,7 @@
 
 import { Star, MapPin, List, Map } from "lucide-react"
 import Image from "next/image"
+import { useTranslation } from "react-i18next"
 
 interface BusinessHeroProps {
   name: string
@@ -26,6 +27,8 @@ export function BusinessHero({
   viewMode = "list",
   onViewChange,
 }: BusinessHeroProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="w-full mb-10">
       {/* Hero Image Container */}
@@ -47,7 +50,7 @@ export function BusinessHero({
             <div className="flex items-center gap-1.5">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               <span className="font-semibold text-white">{rating}</span>
-              <span className="text-white/70">({reviewCount} reviews)</span>
+              <span className="text-white/70">({reviewCount} {t("landing.reviews", "reviews")})</span>
             </div>
             <div className="hidden md:block w-1 h-1 rounded-full bg-white/50" />
             <div className="flex items-center gap-1.5">
@@ -62,11 +65,11 @@ export function BusinessHero({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-8">
           <div>
-            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Status</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("book.status", "Status")}</p>
             <p className="text-sm font-semibold text-foreground">{status}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Estimated Wait</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("book.wait", "Estimated Wait")}</p>
             <p className="text-sm font-semibold text-foreground">{estimatedWait}</p>
           </div>
         </div>
@@ -80,7 +83,7 @@ export function BusinessHero({
             }`}
           >
             <List className="h-4 w-4" />
-            List
+            {t("book.list", "List")}
           </button>
           <button 
             onClick={() => onViewChange && onViewChange("map")}
@@ -89,7 +92,7 @@ export function BusinessHero({
             }`}
           >
             <Map className="h-4 w-4" />
-            Map
+            {t("book.map", "Map")}
           </button>
         </div>
       </div>

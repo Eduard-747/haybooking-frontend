@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { Search, HelpCircle } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -33,12 +34,10 @@ export function BookingHeader() {
         </div>
 
         {/* Right: Auth / Actions */}
-        <div className="flex items-center gap-4">
-          <button className="text-muted-foreground hover:text-foreground transition-colors p-2">
-            <HelpCircle className="h-5 w-5" />
-          </button>
-          
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
+          <LanguageSwitcher />
+
+          {/* User Account / Sign In */}    <div className="flex items-center gap-3">
             {user ? (
               <Avatar 
                 className="h-9 w-9 border border-border cursor-pointer hover:ring-2 hover:ring-[#E5555E]/50 transition-all"

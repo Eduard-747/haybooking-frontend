@@ -8,6 +8,7 @@ import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface Booking {
   _id: string
@@ -35,11 +36,34 @@ const statusColors: Record<string, string> = {
 
 export default function CalendarPage() {
   const { partnerId, loading: partnerLoading } = usePartner()
-  const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
+  const { branches, selectedBranchId, isLoading: branchesLoading } = useBranchContext()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<"Week" | "Day">("Week")
+  const { t } = useTranslation()
+
+  const isBreakSlot = (day: Date, hourString: string) => {
+    if (!selectedBranchId) return false;
+    const branch = branches.find(b => b._id === selectedBranchId);
+    if (!branch || !branch.breaks || branch.breaks.length === 0) return false;
+
+    const dayOfWeek = day.getDay();
+    const breaks = branch.breaks.filter(b => b.weekday === dayOfWeek);
+    
+    const hour = parseInt(hourString.split(':')[0], 10);
+    const slotStartMins = hour * 60;
+    const slotEndMins = hour * 60 + 60;
+
+    for (const b of breaks) {
+      const [sh, sm] = b.startTime.split(':').map(Number);
+      const [eh, em] = b.endTime.split(':').map(Number);
+      const breakStartMins = sh * 60 + sm;
+      const breakEndMins = eh * 60 + em;
+      if (slotStartMins < breakEndMins && slotEndMins > breakStartMins) return true;
+    }
+    return false;
+  }
 
   const fetchBookings = async () => {
     if (!partnerId) return
@@ -74,7 +98,8 @@ export default function CalendarPage() {
 
   const getWeekDays = () => {
     const start = new Date(currentDate)
-    start.setDate(start.getDate() - start.getDay())
+    const dayOfWeek = start.getDay() === 0 ? 6 : start.getDay() - 1 // Make Monday 0, Sunday 6
+    start.setDate(start.getDate() - dayOfWeek)
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(start)
       d.setDate(start.getDate() + i)
@@ -130,23 +155,23 @@ export default function CalendarPage() {
                   onClick={() => setViewMode("Week")}
                   className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Week" ? "bg-[#C69C9B] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
                 >
-                  Week
+                  {t("calendar.week", "Week")}
                 </button>
                 <button
                   onClick={() => setViewMode("Day")}
                   className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Day" ? "bg-[#C69C9B] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
                 >
-                  Day
+                  {t("calendar.day", "Day")}
                 </button>
               </div>
             </div>
 
-            {/* Week Grid */}
+            {/* Calendar Grid & Day View */}
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
               </div>
-            ) : (
+            ) : viewMode === "Week" ? (
               <div className="flex-1 overflow-auto">
                 <div className="grid" style={{ gridTemplateColumns: `60px repeat(${activeDays.length}, 1fr)` }}>
                   {/* Day headers */}
@@ -178,22 +203,97 @@ export default function CalendarPage() {
                       </div>
                       {activeDays.map((day, di) => {
                         const slotBookings = getBookingsForSlot(day, hour)
+                        const isBreak = isBreakSlot(day, hour)
                         return (
-                          <div key={`${di}-${hour}`} className="border-t border-l border-border/20 min-h-[52px] p-1 relative">
-                            {slotBookings.map(b => (
-                              <div key={b._id} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
-                                {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}
-                                {b.serviceIds && b.serviceIds.length > 0 
-                                  ? ` · ${b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} +${b.serviceIds.length - 1}`}`
-                                  : (b.serviceId ? ` · ${b.serviceId.name}` : "")
-                                }
-                              </div>
-                            ))}
+                          <div key={`${di}-${hour}`} onClick={() => { setCurrentDate(day); setViewMode("Day"); }} className={`border-t border-l border-border/20 min-h-[52px] p-1 relative cursor-pointer transition-colors ${isBreak ? 'bg-slate-100/60 hover:bg-slate-200/50' : 'hover:bg-gray-50/50'}`}>
+                            {isBreak && slotBookings.length === 0 && (
+                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">Break</span>
+                               </div>
+                            )}
+                            <div className="relative z-10">
+                              {slotBookings.map(b => (
+                                <div key={b._id} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
+                                  {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}
+                                  {b.serviceIds && b.serviceIds.length > 0 
+                                    ? ` · ${b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} +${b.serviceIds.length - 1}`}`
+                                    : (b.serviceId ? ` · ${b.serviceId.name}` : "")
+                                  }
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )
                       })}
                     </React.Fragment>
                   ))}
+                </div>
+              </div>
+            ) : (
+              /* NEW DAY VIEW */
+              <div className="flex-1 overflow-auto bg-[#FAFAFA]/30 relative">
+                <div className="w-max min-w-full p-6">
+                  {/* Day Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <button onClick={() => setViewMode("Week")} className="text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors bg-white px-3 py-1.5 border border-border/60 rounded-lg shadow-sm">
+                        <ChevronLeft className="w-4 h-4" /> Back to Week
+                      </button>
+                      <h3 className="text-xl font-bold text-foreground">
+                        {DAYS[currentDate.getDay()]}, {MONTHS[currentDate.getMonth()]} {currentDate.getDate()}, {currentDate.getFullYear()}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Timeline */}
+                  <div className="bg-white border border-border/60 rounded-xl shadow-sm flex">
+                    {HOURS.map((hour, idx) => {
+                      const slotBookings = getBookingsForSlot(currentDate, hour);
+                      const isBreak = isBreakSlot(currentDate, hour);
+                      return (
+                        <div key={hour} className={`flex-1 min-w-[140px] flex flex-col ${idx !== HOURS.length - 1 ? 'border-r border-border/40' : ''}`}>
+                          {/* Time Header */}
+                          <div className={`text-center py-3 bg-[#FAFAFA] border-b border-border/40 text-xs font-bold uppercase tracking-wider ${isBreak ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {hour}:00
+                          </div>
+                          
+                          {/* Bookings Area */}
+                          <div className={`flex-1 min-h-[400px] p-2 flex flex-col gap-2 relative transition-colors group ${isBreak ? 'bg-slate-50/80 hover:bg-slate-100/50' : 'hover:bg-slate-50/50'}`}>
+                            {isBreak && slotBookings.length === 0 && (
+                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">Break</span>
+                               </div>
+                            )}
+                            <div className="relative z-10 flex flex-col gap-2">
+                              {slotBookings.map(b => (
+                                <div key={b._id} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-sm transition-transform hover:scale-[1.02] cursor-pointer`}>
+                                  <div className="truncate font-bold mb-0.5">{b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}</div>
+                                  <div className="truncate text-[10px] opacity-90">
+                                    {b.serviceIds && b.serviceIds.length > 0 
+                                      ? b.serviceIds.map((s: any) => s.name).join(', ')
+                                      : (b.serviceId ? (b.serviceId as any).name : "")
+                                    }
+                                  </div>
+                                  {b.specialistId && (
+                                    <div className="truncate text-[10px] opacity-75 mt-1 border-t border-current/10 pt-1">
+                                      {(b.specialistId as any).name}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Empty State placeholder on hover */}
+                            {!isBreak && slotBookings.length === 0 && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">+ Add Slot</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -203,14 +303,14 @@ export default function CalendarPage() {
           <div className="w-full lg:w-80 shrink-0">
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-5 h-full">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-foreground">Booking Requests</h3>
+                <h3 className="font-bold text-foreground">{t("dashboard.bookingRequests", "Booking Requests")}</h3>
                 <span className="bg-[#FDF6F6] text-[#E5555E] text-xs font-bold px-2 py-0.5 rounded-full">
                   {pendingBookings.length}
                 </span>
               </div>
 
               {pendingBookings.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No pending requests</p>
+                <p className="text-sm text-muted-foreground text-center py-8">{t("dashboard.noRequests", "No pending requests")}</p>
               ) : (
                 <div className="space-y-4 overflow-auto max-h-[calc(100vh-260px)]">
                   {pendingBookings.map(b => {
@@ -234,13 +334,13 @@ export default function CalendarPage() {
                             onClick={() => updateStatus(b._id, "confirmed")}
                             className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" /> Accept
+                            <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
                           </button>
                           <button
                             onClick={() => updateStatus(b._id, "declined")}
                             className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors"
                           >
-                            <XCircle className="w-3.5 h-3.5" /> Decline
+                            <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
                           </button>
                         </div>
                       </div>

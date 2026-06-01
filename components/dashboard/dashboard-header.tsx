@@ -2,6 +2,7 @@
 
 import { Bell, Globe } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { usePartner } from "@/hooks/usePartner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
@@ -67,13 +68,7 @@ export function DashboardHeader() {
       <div className="flex items-center gap-6">
         
         {/* Language Selector */}
-        <button className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-          <Globe className="h-4 w-4" />
-          EN
-          <svg className="w-3 h-3 ml-0.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+        <LanguageSwitcher />
 
         {/* Notifications */}
         <NotificationsPopover />

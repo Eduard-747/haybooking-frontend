@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
+import { I18nProvider } from '@/components/i18n-provider'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/auth-provider'
 
@@ -40,12 +41,13 @@ export default function RootLayout({
     <html lang="en" className={`bg-background ${geist.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-background text-foreground">
         <AuthProvider>
-          {children}
+          <I18nProvider>
+            {children}
+            <Toaster position="top-center" />
+          </I18nProvider>
         </AuthProvider>
-        <Toaster position="bottom-right" richColors closeButton />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
 }
-

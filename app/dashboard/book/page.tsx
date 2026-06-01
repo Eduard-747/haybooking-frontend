@@ -5,7 +5,7 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { usePartner } from "@/hooks/usePartner"
 import { useAuth } from "@/components/auth/auth-provider"
-import { MapPin, Clock, ChevronRight, CheckCircle, User } from "lucide-react"
+import { MapPin, Clock, ChevronRight, ChevronLeft, CheckCircle, User } from "lucide-react"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
@@ -73,13 +73,14 @@ export default function DashboardBookPage() {
 
   useEffect(() => {
     const fetchBookedSlots = async () => {
-      if (!selectedSpecialist || !selectedDate) {
+      if (!selectedDate || !selectedBranch) {
         setBookedSlots([])
         return
       }
       try {
         const dateStr = selectedDate.toISOString()
-        const res = await api.get(`/bookings/availability?specialistId=${selectedSpecialist}&date=${dateStr}`)
+        const specialistQuery = selectedSpecialist ? `specialistId=${selectedSpecialist}&` : ''
+        const res = await api.get(`/bookings/availability?${specialistQuery}branchId=${selectedBranch}&date=${dateStr}`)
         setBookedSlots(res.data.bookedSlots || [])
         if (selectedTime && res.data.bookedSlots?.includes(selectedTime)) {
           setSelectedTime(null)
@@ -90,7 +91,7 @@ export default function DashboardBookPage() {
       }
     }
     fetchBookedSlots()
-  }, [selectedSpecialist, selectedDate])
+  }, [selectedSpecialist, selectedDate, selectedBranch, selectedTime])
 
   const branchServices = services.filter(s => {
     if (!selectedBranch) return true
@@ -119,8 +120,10 @@ export default function DashboardBookPage() {
     .filter(s => selectedServices.includes(s._id))
     .reduce((sum, s) => sum + s.duration, 0)
 
+  const [dateOffset, setDateOffset] = useState(0)
+
   const dates = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() + i); return d
+    const d = new Date(); d.setDate(d.getDate() + i + dateOffset); return d
   })
 
   const handleSubmit = async () => {
@@ -286,7 +289,56 @@ export default function DashboardBookPage() {
 
             {/* Date & Time */}
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">Date & Time</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h3 className="font-semibold text-foreground">Date & Time</h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-muted-foreground bg-[#FAFAFA] px-3 py-1.5 rounded-lg border border-border/40">
+                    {dates[0].toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </span>
+                  
+                  {/* Jump to Date Picker */}
+                  <div className="relative group cursor-pointer">
+                    <input 
+                      type="date"
+                      min={new Date().toISOString().split('T')[0]}
+                      value={selectedDate.toISOString().split('T')[0]}
+                      onChange={(e) => {
+                        const d = new Date(e.target.value);
+                        if (!isNaN(d.getTime())) {
+                          // Keep the same time, but change the date
+                          setSelectedDate(d);
+                          // Adjust offset so the selected date is visible
+                          const today = new Date();
+                          today.setHours(0,0,0,0);
+                          const newD = new Date(d);
+                          newD.setHours(0,0,0,0);
+                          const diffTime = newD.getTime() - today.getTime();
+                          const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+                          // Set offset so the selected date is roughly at the start of the visible list
+                          setDateOffset(Math.floor(diffDays / 7) * 7);
+                        }
+                      }}
+                      className="text-xs px-2 py-1.5 rounded-md border border-border/60 text-muted-foreground cursor-pointer outline-none focus:border-[#C69C9B]"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-[#FAFAFA] rounded-lg p-1 border border-border/40">
+                    <button 
+                      onClick={() => setDateOffset(d => Math.max(0, d - 7))} 
+                      disabled={dateOffset === 0} 
+                      className="p-1.5 hover:bg-white rounded-md text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent transition-colors shadow-sm"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setDateOffset(d => d + 7)} 
+                      className="p-1.5 hover:bg-white rounded-md text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {dates.map((d, i) => {
                   const isSelected = selectedDate.toDateString() === d.toDateString()

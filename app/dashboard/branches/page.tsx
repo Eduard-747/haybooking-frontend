@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Plus, Pencil, Trash2, MapPin, Phone, Clock, X, Loader2, Search } from "lucide-react"
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
+import { TimePicker } from "@/components/ui/time-picker"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
 
@@ -18,6 +19,7 @@ interface Branch {
   address: { line1: string; city: string; country: string; zipCode: string }
   phoneNumber: string
   workingHours: { weekday: number; openTime: string; closeTime: string }[]
+  breaks?: { weekday: number; startTime: string; endTime: string }[]
   location?: { latitude: number; longitude: number }
 }
 
@@ -47,6 +49,7 @@ const emptyForm = {
   openTime: "09:00", closeTime: "18:00",
   workdays: [1, 2, 3, 4, 5],
   latitude: 0, longitude: 0,
+  breaks: [] as { weekday: number; startTime: string; endTime: string }[],
 }
 
 export default function BranchesPage() {
@@ -92,6 +95,7 @@ export default function BranchesPage() {
       workdays: b.workingHours.map(h => h.weekday),
       latitude: b.location?.latitude || 0,
       longitude: b.location?.longitude || 0,
+      breaks: b.breaks || [],
     })
     setCountrySearch(b.address.country)
     setEditId(b._id)
@@ -168,11 +172,23 @@ export default function BranchesPage() {
     if (!partnerId) return
     setSaving(true)
     try {
+      const finalBreaks: { weekday: number, startTime: string, endTime: string }[] = [];
+      form.breaks.forEach(b => {
+        if (b.weekday === -1) {
+          form.workdays.forEach(wd => {
+            finalBreaks.push({ weekday: wd, startTime: b.startTime, endTime: b.endTime });
+          });
+        } else {
+          finalBreaks.push(b);
+        }
+      });
+
       const payload: any = {
         partnerId,
         address: { line1: form.line1, city: form.city, country: form.country, zipCode: form.zipCode },
         phoneNumber: form.phoneNumber,
         workingHours: form.workdays.map(wd => ({ weekday: wd, openTime: form.openTime, closeTime: form.closeTime })),
+        breaks: finalBreaks,
       }
       if (form.latitude && form.longitude) {
         payload.location = { latitude: form.latitude, longitude: form.longitude }
@@ -387,18 +403,61 @@ export default function BranchesPage() {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Open Time</label>
-                  <input type="time" value={form.openTime} onChange={e => setForm(p => ({...p, openTime: e.target.value}))}
-                    className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Close Time</label>
-                  <input type="time" value={form.closeTime} onChange={e => setForm(p => ({...p, closeTime: e.target.value}))}
-                    className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Operating Hours</label>
+                <div className="flex gap-2">
+                  <TimePicker value={form.openTime} onChange={(val) => setForm(p => ({...p, openTime: val}))} />
+                  <span className="text-muted-foreground self-center">-</span>
+                  <TimePicker value={form.closeTime} onChange={(val) => setForm(p => ({...p, closeTime: val}))} />
                 </div>
               </div>
+
+              {/* Break Periods */}
+              <div className="pt-4 border-t border-border/40">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Break Periods</label>
+                  <button type="button" onClick={() => setForm(p => ({ ...p, breaks: [...p.breaks, { weekday: -1, startTime: "13:00", endTime: "14:00" }] }))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline">
+                    <Plus className="h-3 w-3" /> Add Break
+                  </button>
+                </div>
+                {form.breaks.map((b, idx) => (
+                  <div key={idx} className="flex gap-2 items-center mb-2">
+                    <select value={b.weekday} onChange={e => {
+                      const newBreaks = [...form.breaks];
+                      newBreaks[idx].weekday = parseInt(e.target.value);
+                      setForm(p => ({ ...p, breaks: newBreaks }));
+                    }} className="flex-1 px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#C69C9B]">
+                      <option value="-1">All Working Days</option>
+                      {WEEKDAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                    </select>
+                    <TimePicker 
+                      value={b.startTime} 
+                      onChange={val => {
+                        const newBreaks = [...form.breaks];
+                        newBreaks[idx].startTime = val;
+                        setForm(p => ({ ...p, breaks: newBreaks }));
+                      }} 
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <TimePicker 
+                      value={b.endTime} 
+                      onChange={val => {
+                        const newBreaks = [...form.breaks];
+                        newBreaks[idx].endTime = val;
+                        setForm(p => ({ ...p, breaks: newBreaks }));
+                      }} 
+                    />
+                    <button type="button" onClick={() => {
+                      const newBreaks = form.breaks.filter((_, i) => i !== idx);
+                      setForm(p => ({ ...p, breaks: newBreaks }));
+                    }} className="p-1.5 text-muted-foreground hover:text-red-500 rounded transition-colors"><X className="h-4 w-4" /></button>
+                  </div>
+                ))}
+                {form.breaks.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">No break periods defined.</p>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">Cancel</button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors">

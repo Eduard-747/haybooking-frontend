@@ -13,17 +13,9 @@ import {
   PlusCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
-const navItems = [
-  { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Calendar", href: "/dashboard/calendar", icon: Calendar },
-  { label: "Create Booking", href: "/dashboard/book", icon: PlusCircle },
-  { label: "Manage Services", href: "/dashboard/services", icon: Store },
-  { label: "Branches", href: "/dashboard/branches", icon: MapPin },
-  { label: "Specialists", href: "/dashboard/specialists", icon: Users },
-  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-]
 
 interface DashboardSidebarProps {
   activePath?: string
@@ -31,7 +23,18 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const { t } = useTranslation()
   const currentPath = activePath || pathname
+
+  const navItems = [
+    { label: t("nav.dashboard", "Home"), href: "/dashboard", icon: Home },
+    { label: t("nav.calendar", "Calendar"), href: "/dashboard/calendar", icon: Calendar },
+    { label: t("nav.createBooking", "Create Booking"), href: "/dashboard/book", icon: PlusCircle },
+    { label: t("nav.services", "Manage Services"), href: "/dashboard/services", icon: Store },
+    { label: t("nav.branches", "Branches"), href: "/dashboard/branches", icon: MapPin },
+    { label: t("nav.specialists", "Specialists"), href: "/dashboard/specialists", icon: Users },
+    { label: t("nav.analytics", "Analytics"), href: "/dashboard/analytics", icon: BarChart3 },
+  ]
 
   return (
     <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-background">
@@ -79,7 +82,7 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
           )}
         >
           <Settings className="h-5 w-5" />
-          Settings
+          {t("nav.settings", "Settings")}
         </Link>
       </div>
     </aside>

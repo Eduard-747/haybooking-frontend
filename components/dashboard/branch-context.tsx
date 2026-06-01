@@ -11,6 +11,11 @@ export interface Branch {
     city: string
     country: string
   }
+  breaks?: {
+    weekday: number
+    startTime: string
+    endTime: string
+  }[]
 }
 
 interface BranchContextType {

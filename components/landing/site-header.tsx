@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LogOut, User } from "lucide-react"
-
+import { useTranslation } from "react-i18next"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { Logo } from "@/components/ui/logo"
 export function SiteHeader() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleAvatarClick = () => {
     if (user?.role === 'partner') {
@@ -30,18 +32,21 @@ export function SiteHeader() {
         {/* Middle: Navigation Links */}
         <nav className="hidden md:flex items-center gap-8">
           <Link href="#services" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            Find Services
+            {t("landing.findServices", "Find Services")}
           </Link>
           <Link href="#list-business" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            List Your Business
+            {t("landing.listBusiness", "List Your Business")}
           </Link>
           <Link href="#pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            Pricing
+            {t("landing.pricing", "Pricing")}
           </Link>
         </nav>
 
         {/* Right: Auth */}
         <div className="flex items-center gap-4">
+          <div className="hidden sm:block">
+            <LanguageSwitcher />
+          </div>
           {user ? (
             <div className="flex items-center gap-4">
               <button 
@@ -52,7 +57,7 @@ export function SiteHeader() {
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                Sign Out
+                {t("auth.logout", "Sign Out")}
               </button>
               <Avatar 
                 onClick={handleAvatarClick}
@@ -69,10 +74,10 @@ export function SiteHeader() {
           ) : (
             <>
               <Link href="/auth" className="text-sm font-semibold text-foreground hover:text-rose-500 transition-colors">
-                Sign In
+                {t("auth.hasAccount", "Sign In")}
               </Link>
               <Link href="/auth?tab=signup" className="px-5 py-2.5 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
-                Sign Up
+                {t("auth.noAccount", "Sign Up").split("? ")[1] || "Sign Up"}
               </Link>
             </>
           )}

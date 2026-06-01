@@ -45,7 +45,7 @@ export default function ManageServicesPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   
   // Form state
-  const defaultForm = { name: "", category: "", duration: 60, price: "" as string | number, image: "", scheduleInterval: 60, assignedBranches: [] as string[] }
+  const defaultForm = { name: "", category: "", duration: 60 as string | number, price: "" as string | number, image: "", scheduleInterval: 60, assignedBranches: [] as string[] }
   const [formData, setFormData] = useState(defaultForm)
 
   // Branches for assignment
@@ -107,7 +107,7 @@ export default function ManageServicesPage() {
     }
     
     return result
-  }, [services, searchQuery, selectedCategory, sortBy])
+  }, [services, searchQuery, selectedCategory, sortBy, selectedBranchId])
 
   // Pagination
   const totalPages = Math.ceil(processedServices.length / rowsPerPage) || 1
@@ -129,7 +129,7 @@ export default function ManageServicesPage() {
       price: service.price,
       image: service.image || "",
       scheduleInterval: 60,
-      assignedBranches: service.assignedBranches || [],
+      assignedBranches: (service.assignedBranches || []).map((b: any) => b._id || b),
     })
     setImagePreview(service.image || "")
     setImageFile(null)
@@ -168,7 +168,7 @@ export default function ManageServicesPage() {
         })
       }
 
-      const payload = { ...formData, price: Number(formData.price) || 0, image: imageData, partnerId: partnerId || undefined }
+      const payload = { ...formData, price: Number(formData.price) || 0, duration: Number(formData.duration) || 5, image: imageData, partnerId: partnerId || undefined }
       
       if (editingId) {
         await api.put(`/services/${editingId}`, payload)
@@ -413,7 +413,7 @@ export default function ManageServicesPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration (min)</label>
-                    <input required type="number" min="5" value={formData.duration} onChange={e => setFormData({...formData, duration: Number(e.target.value)})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                    <input required type="number" min="5" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value === "" ? "" : Number(e.target.value)})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Price ({partner?.currency || 'USD'})</label>

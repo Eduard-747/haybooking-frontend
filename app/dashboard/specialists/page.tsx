@@ -205,7 +205,7 @@ export default function SpecialistsPage() {
 
                     {s.assignedServices.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("dashboard.services", "Services")}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("common.services", "Services")}</p>
                         <div className="flex flex-wrap gap-1.5">
                           {s.assignedServices.map(sv => (
                             <span key={sv._id} className="px-2 py-0.5 bg-[#FAFAFA] border border-border/50 rounded text-xs text-muted-foreground">{sv.name}</span>

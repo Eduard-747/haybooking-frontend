@@ -294,7 +294,10 @@ export const resources = {
         bookingCancelled: "Booking Cancelled",
         clientRequestedNew: "A client has requested a new appointment.",
         userCancelledAppointment: "{{name}} has cancelled their appointment.",
-        allDays: "All Days"
+        allDays: "All Days",
+        topSpecialists: "Top Specialists",
+        completedBookings: "completed",
+        noCompletedBookings: "No completed bookings yet."
       },
       calendar: {
         week: "Week",
@@ -758,7 +761,10 @@ export const resources = {
         bookingCancelled: "Ամրագրումը չեղարկվել է",
         clientRequestedNew: "Հաճախորդը խնդրել է նոր ամրագրում:",
         userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
-        allDays: "Բոլոր օրերը"
+        allDays: "Բոլոր օրերը",
+        topSpecialists: "Լավագույն Մասնագետներ",
+        completedBookings: "ավարտված",
+        noCompletedBookings: "Դեռ ավարտված ամրագրումներ չկան:"
       },
       calendar: {
         week: "Շաբաթ",
@@ -1218,7 +1224,10 @@ export const resources = {
         bookingCancelled: "Бронирование отменено",
         clientRequestedNew: "Клиент запросил новое бронирование.",
         userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
-        allDays: "Все дни"
+        allDays: "Все дни",
+        topSpecialists: "Лучшие специалисты",
+        completedBookings: "завершенных",
+        noCompletedBookings: "Пока нет завершенных бронирований."
       },
       calendar: {
         week: "Неделя",
@@ -1504,7 +1513,10 @@ export const resources = {
         bookingCancelled: "Ամրագրումը չեղարկվել է",
         clientRequestedNew: "Հաճախորդը խնդրել է նոր ամրագրում:",
         userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
-        allDays: "Բոլոր օրերը"
+        allDays: "Բոլոր օրերը",
+        topSpecialists: "Լավագույն Մասնագետներ",
+        completedBookings: "ավարտված",
+        noCompletedBookings: "Դեռ ավարտված ամրագրումներ չկան:"
       },
       calendar: {
         week: "Շաբաթ",
@@ -1959,7 +1971,10 @@ export const resources = {
         bookingCancelled: "Бронирование отменено",
         clientRequestedNew: "Клиент запросил новое бронирование.",
         userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
-        allDays: "Все дни"
+        allDays: "Все дни",
+        topSpecialists: "Лучшие специалисты",
+        completedBookings: "завершенных",
+        noCompletedBookings: "Пока нет завершенных бронирований."
       },
       calendar: {
         week: "Неделя",

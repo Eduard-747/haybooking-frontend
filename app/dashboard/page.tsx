@@ -118,6 +118,22 @@ export default function BusinessDashboardPage() {
   const totalPages = Math.ceil(sortedBookings.length / ITEMS_PER_PAGE);
   const paginatedBookings = sortedBookings.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  // Top 5 Specialists
+  const specialistStats = bookings.reduce((acc, b) => {
+    if (b.status === 'completed' && b.specialistId) {
+      const id = b.specialistId._id;
+      if (!acc[id]) {
+        acc[id] = { name: b.specialistId.name, count: 0 };
+      }
+      acc[id].count += 1;
+    }
+    return acc;
+  }, {} as Record<string, { name: string, count: number }>);
+
+  const topSpecialists = Object.values(specialistStats)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
   return (
     <div className="h-screen bg-[#FAFAFA] flex font-sans overflow-hidden">
       <DashboardSidebar activePath="/dashboard" />
@@ -307,21 +323,19 @@ export default function BusinessDashboardPage() {
               </div>
 
               <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-6 shadow-inner">
-                <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.statistics", "Statistics")}</h2>
-                <div className="space-y-3">
-                  {[
-                    { label: t("dashboard.statTotal", "Total Bookings"), value: stats.total },
-                    { label: t("dashboard.statConfirmed", "Confirmed"), value: stats.confirmed },
-                    { label: t("dashboard.statDeclined", "Declined"), value: stats.declined },
-                    { label: t("dashboard.statCancelled", "Cancelled"), value: stats.cancelled },
-                    { label: t("dashboard.statToday", "Today"), value: todayBookings.length },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{label}</span>
-                      <span className="text-sm font-bold text-foreground">{value}</span>
-                    </div>
-                  ))}
-                </div>
+                <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.topSpecialists", "Top Specialists")}</h2>
+                {topSpecialists.length > 0 ? (
+                  <div className="space-y-3">
+                    {topSpecialists.map(({ name, count }) => (
+                      <div key={name} className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">{name}</span>
+                        <span className="text-xs font-bold text-[#C69C9B] bg-[#C69C9B]/10 px-2 py-1 rounded-md">{count} {t("dashboard.completedBookings", "completed")}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
+                )}
               </div>
             </div>
 

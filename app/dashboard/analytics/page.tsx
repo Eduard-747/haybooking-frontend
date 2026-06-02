@@ -8,6 +8,7 @@ import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
 
 interface Booking {
   _id: string
@@ -26,6 +27,7 @@ interface Stats {
 }
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation()
   const { partnerId, partner, loading: partnerLoading } = usePartner()
   const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -147,8 +149,8 @@ export default function AnalyticsPage() {
 
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Analytics Overview</h1>
-                <p className="text-muted-foreground mt-1 text-sm">Real-time performance data for your business.</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("analyticsPage.analyticsOverview", "Analytics Overview")}</h1>
+                <p className="text-muted-foreground mt-1 text-sm">{t("analyticsPage.realtimePerformance", "Real-time performance data for your business.")}</p>
               </div>
               <div className="relative">
                 <select
@@ -156,11 +158,11 @@ export default function AnalyticsPage() {
                   onChange={(e) => setTimeRange(e.target.value as any)}
                   className="pl-4 pr-10 py-2.5 bg-white border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 appearance-none cursor-pointer transition-colors"
                 >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="year">This Year</option>
+                  <option value="all">{t("analyticsPage.allTime", "All Time")}</option>
+                  <option value="today">{t("analyticsPage.today", "Today")}</option>
+                  <option value="week">{t("analyticsPage.thisWeek", "This Week")}</option>
+                  <option value="month">{t("analyticsPage.thisMonth", "This Month")}</option>
+                  <option value="year">{t("analyticsPage.thisYear", "This Year")}</option>
                 </select>
                 <svg className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -177,10 +179,10 @@ export default function AnalyticsPage() {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   {[
-                    { label: "Total Bookings", value: computedStats.total, icon: Calendar, color: "text-blue-500", bg: "bg-blue-50" },
-                    { label: "Confirmed", value: computedStats.confirmed, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
-                    { label: "Declined", value: computedStats.declined, icon: XCircle, color: "text-red-400", bg: "bg-red-50" },
-                    { label: "Revenue", value: formatPrice(revenue, partner?.currency), icon: TrendingUp, color: "text-[#C69C9B]", bg: "bg-[#FDF6F6]" },
+                    { label: t("analyticsPage.totalBookings", "Total Bookings"), value: computedStats.total, icon: Calendar, color: "text-blue-500", bg: "bg-blue-50" },
+                    { label: t("analyticsPage.confirmed", "Confirmed"), value: computedStats.confirmed, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { label: t("analyticsPage.declined", "Declined"), value: computedStats.declined, icon: XCircle, color: "text-red-400", bg: "bg-red-50" },
+                    { label: t("analyticsPage.revenue", "Revenue"), value: formatPrice(revenue, partner?.currency), icon: TrendingUp, color: "text-[#C69C9B]", bg: "bg-[#FDF6F6]" },
                   ].map(({ label, value, icon: Icon, color, bg }) => (
                     <div key={label} className="bg-white rounded-2xl border border-border/60 shadow-sm p-5">
                       <div className={`h-10 w-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
@@ -198,7 +200,7 @@ export default function AnalyticsPage() {
                   <div className="lg:col-span-2 bg-white rounded-2xl border border-border/60 shadow-sm p-6">
                     <div className="flex items-center gap-2 mb-6">
                       <BarChart3 className="h-5 w-5 text-[#C69C9B]" />
-                      <h2 className="font-bold text-foreground">Bookings – Last 7 Days</h2>
+                      <h2 className="font-bold text-foreground">{t("analyticsPage.bookingsLast7Days", "Bookings – Last 7 Days")}</h2>
                     </div>
                     <div className="flex items-end gap-3 h-40">
                       {perDay.map((d, i) => (
@@ -209,7 +211,7 @@ export default function AnalyticsPage() {
                             <div className="w-full rounded-t-md bg-[#C69C9B] transition-all duration-500"
                               style={{ height: `${(d.count / maxDay) * 100}px` }} />
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-medium">{d.label}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium">{t(`calendar.${d.label.toLowerCase()}`, d.label)}</span>
                         </div>
                       ))}
                     </div>
@@ -219,13 +221,13 @@ export default function AnalyticsPage() {
                   <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 flex flex-col">
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="h-5 w-5 text-[#C69C9B]" />
-                      <h2 className="font-bold text-foreground">Booking Status</h2>
+                      <h2 className="font-bold text-foreground">{t("analyticsPage.bookingStatus", "Booking Status")}</h2>
                     </div>
                     <div className="flex-1 flex flex-col justify-center space-y-4">
                       {[
-                        { label: "Confirmed", value: computedStats.confirmed, color: "bg-emerald-400", pct: computedStats.total ? computedStats.confirmed / computedStats.total : 0 },
-                        { label: "Declined", value: computedStats.declined, color: "bg-red-400", pct: computedStats.total ? computedStats.declined / computedStats.total : 0 },
-                        { label: "Cancelled", value: computedStats.cancelled, color: "bg-gray-300", pct: computedStats.total ? computedStats.cancelled / computedStats.total : 0 },
+                        { label: t("analyticsPage.confirmed", "Confirmed"), value: computedStats.confirmed, color: "bg-emerald-400", pct: computedStats.total ? computedStats.confirmed / computedStats.total : 0 },
+                        { label: t("analyticsPage.declined", "Declined"), value: computedStats.declined, color: "bg-red-400", pct: computedStats.total ? computedStats.declined / computedStats.total : 0 },
+                        { label: t("analyticsPage.cancelled", "Cancelled"), value: computedStats.cancelled, color: "bg-gray-300", pct: computedStats.total ? computedStats.cancelled / computedStats.total : 0 },
                       ].map(({ label, value, color, pct }) => (
                         <div key={label}>
                           <div className="flex items-center justify-between mb-1">
@@ -239,7 +241,7 @@ export default function AnalyticsPage() {
                       ))}
                       <div className="pt-2 text-center">
                         <p className="text-3xl font-bold text-foreground">{confirmRate}%</p>
-                        <p className="text-xs text-muted-foreground">Confirmation Rate</p>
+                        <p className="text-xs text-muted-foreground">{t("analyticsPage.confirmationRate", "Confirmation Rate")}</p>
                       </div>
                     </div>
                   </div>
@@ -248,9 +250,9 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Top Services */}
                   <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6">
-                    <h2 className="font-bold text-foreground mb-4">Top Services</h2>
+                    <h2 className="font-bold text-foreground mb-4">{t("analyticsPage.topServices", "Top Services")}</h2>
                     {topServices.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">No service data yet</p>
+                      <p className="text-sm text-muted-foreground text-center py-6">{t("analyticsPage.noServiceData", "No service data yet")}</p>
                     ) : (
                       <div className="space-y-4">
                         {topServices.map((s, i) => (
@@ -258,7 +260,7 @@ export default function AnalyticsPage() {
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium text-foreground truncate max-w-[200px]">{s.name}</span>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                                <span>{s.count} bookings</span>
+                                <span>{s.count} {t("analyticsPage.bookings", "bookings")}</span>
                                 <span className="font-bold text-foreground">{formatPrice(s.revenue, partner?.currency)}</span>
                               </div>
                             </div>
@@ -273,13 +275,13 @@ export default function AnalyticsPage() {
 
                   {/* Recent Bookings */}
                   <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6">
-                    <h2 className="font-bold text-foreground mb-4">Recent Bookings</h2>
+                    <h2 className="font-bold text-foreground mb-4">{t("analyticsPage.recentBookings", "Recent Bookings")}</h2>
                     {recent.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">No bookings yet</p>
+                      <p className="text-sm text-muted-foreground text-center py-6">{t("analyticsPage.noBookingsYet", "No bookings yet")}</p>
                     ) : (
                       <div className="space-y-3">
                         {recent.map((b, i) => {
-                          const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() : "Guest"
+                          const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() : t("common.guest", "Guest")
                           const statusColor = b.status === "confirmed" ? "text-emerald-600" : b.status === "declined" ? "text-red-500" : "text-gray-400"
                           return (
                             <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
@@ -296,7 +298,7 @@ export default function AnalyticsPage() {
                                   </p>
                                 </div>
                               </div>
-                              <span className={`text-xs font-bold uppercase tracking-wider ${statusColor}`}>{b.status}</span>
+                              <span className={`text-xs font-bold uppercase tracking-wider ${statusColor}`}>{t(`common.${b.status}`, b.status)}</span>
                             </div>
                           )
                         })}

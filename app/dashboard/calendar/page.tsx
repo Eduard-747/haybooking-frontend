@@ -52,7 +52,7 @@ export default function CalendarPage() {
 
     const dayOfWeek = day.getDay();
     const breaks = branch.breaks.filter(b => b.weekday === dayOfWeek);
-    
+
     const slotStartMins = hour * 60;
     const slotEndMins = hour * 60 + 60;
 
@@ -72,7 +72,7 @@ export default function CalendarPage() {
       setIsLoading(true)
       const queryParams = new URLSearchParams({ partnerId })
       if (selectedBranchId) queryParams.append('branchId', selectedBranchId)
-        
+
       const res = await api.get(`/bookings/partner?${queryParams.toString()}`)
       setBookings(res.data)
     } catch {
@@ -183,7 +183,7 @@ export default function CalendarPage() {
                   {activeDays.map((day, i) => {
                     const isToday = day.toDateString() === new Date().toDateString()
                     return (
-                      <button 
+                      <button
                         key={i}
                         onClick={() => {
                           setCurrentDate(day);
@@ -211,15 +211,15 @@ export default function CalendarPage() {
                         return (
                           <div key={`${di}-${hour}`} onClick={() => { setCurrentDate(day); setViewMode("Day"); }} className={`border-t border-l border-border/20 min-h-[52px] p-1 relative cursor-pointer transition-colors ${isBreak ? 'bg-slate-100/60 hover:bg-slate-200/50' : 'hover:bg-gray-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
-                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">{t("calendar.break")}</span>
-                               </div>
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">{t("calendar.break")}</span>
+                              </div>
                             )}
                             <div className="relative z-10">
                               {slotBookings.map(b => (
                                 <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate cursor-pointer transition-transform hover:scale-[1.02] ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
-                                  {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}
-                                  {b.serviceIds && b.serviceIds.length > 0 
+                                  {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || t("common.guest", "Guest") : (b.guestName || t("common.guest", "Guest"))}
+                                  {b.serviceIds && b.serviceIds.length > 0
                                     ? ` · ${b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} +${b.serviceIds.length - 1}`}`
                                     : (b.serviceId ? ` · ${b.serviceId.name}` : "")
                                   }
@@ -260,20 +260,20 @@ export default function CalendarPage() {
                           <div className={`text-center py-3 bg-[#FAFAFA] border-b border-border/40 text-xs font-bold uppercase tracking-wider ${isBreak ? 'text-slate-400' : 'text-slate-500'}`}>
                             {hour}:00
                           </div>
-                          
+
                           {/* Bookings Area */}
                           <div className={`flex-1 min-h-[400px] p-2 flex flex-col gap-2 relative transition-colors group ${isBreak ? 'bg-slate-50/80 hover:bg-slate-100/50' : 'hover:bg-slate-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
-                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">{t("calendar.break")}</span>
-                               </div>
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">{t("calendar.break")}</span>
+                              </div>
                             )}
                             <div className="relative z-10 flex flex-col gap-2">
                               {slotBookings.map(b => (
                                 <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-sm transition-transform hover:scale-[1.02] cursor-pointer`}>
                                   <div className="truncate font-bold mb-0.5">{b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}</div>
                                   <div className="truncate text-[10px] opacity-90">
-                                    {b.serviceIds && b.serviceIds.length > 0 
+                                    {b.serviceIds && b.serviceIds.length > 0
                                       ? b.serviceIds.map((s: any) => s.name).join(', ')
                                       : (b.serviceId ? (b.serviceId as any).name : "")
                                     }
@@ -286,7 +286,7 @@ export default function CalendarPage() {
                                 </div>
                               ))}
                             </div>
-                            
+
                             {/* Empty State placeholder on hover */}
                             {!isBreak && slotBookings.length === 0 && (
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -326,7 +326,7 @@ export default function CalendarPage() {
                       <div key={b._id} onClick={() => setSelectedBooking(b)} className="p-4 bg-[#FAFAFA] rounded-xl border border-border/50 cursor-pointer transition-transform hover:scale-[1.02] hover:bg-white shadow-sm">
                         <p className="font-bold text-sm text-foreground">{name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {b.serviceIds && b.serviceIds.length > 0 
+                          {b.serviceIds && b.serviceIds.length > 0
                             ? b.serviceIds.map(s => s.name).join(', ')
                             : (b.serviceId?.name || "Service")
                           }

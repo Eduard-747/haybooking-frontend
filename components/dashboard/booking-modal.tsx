@@ -36,9 +36,9 @@ const statusColors: Record<string, string> = {
 }
 
 export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD" }: BookingModalProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
-  const name = booking.userId ? `${booking.userId.name} ${booking.userId.surname || ""}`.trim() || "Guest" : (booking.guestName || "Guest")
+  const name = booking.userId ? `${booking.userId.name} ${booking.userId.surname || ""}`.trim() || t("common.guest", "Guest") : (booking.guestName || t("common.guest", "Guest"))
   const phone = booking.userId?.phoneNumber || booking.guestPhone
   const email = booking.userId?.email
 
@@ -48,8 +48,9 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
 
   const startDate = new Date(booking.startTime)
   const endDate = new Date(booking.endTime)
-  const formattedDate = startDate.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-  const formattedTime = `${startDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${endDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`
+  const localeStr = i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
+  const formattedDate = startDate.toLocaleDateString(localeStr, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const formattedTime = `${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })} - ${endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -58,9 +59,9 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border/40 bg-[#FAFAFA]">
           <div>
-            <h2 className="text-lg font-bold text-foreground">Booking Details</h2>
+            <h2 className="text-lg font-bold text-foreground">{t("dashboard.bookingDetails", "Booking Details")}</h2>
             <div className={`mt-1.5 inline-flex text-[10px] font-bold px-2 py-0.5 rounded border tracking-wider uppercase ${statusColors[booking.status] || "bg-gray-100 text-gray-500"}`}>
-              {booking.status}
+              {t(`common.${booking.status}` as any, booking.status)}
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-muted-foreground hover:bg-gray-200 rounded-full transition-colors">
@@ -73,7 +74,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
           
           {/* Customer Info */}
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Customer</h3>
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("role.customer", "Customer")}</h3>
             <div className="flex items-center gap-3 bg-[#FDF6F6] p-3 rounded-xl border border-[#E5555E]/20">
               <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center text-[#E5555E] font-bold shadow-sm shrink-0">
                 {name.charAt(0).toUpperCase()}
@@ -90,7 +91,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
           {/* Time & Specialist */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Date & Time</h3>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("book.dateAndTime", "Date & Time")}</h3>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <CalendarIcon className="h-4 w-4 text-[#C69C9B]" />
@@ -103,29 +104,29 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
               </div>
             </div>
             <div>
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Specialist</h3>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("common.specialist", "Specialist")}</h3>
               <div className="flex items-center gap-2 text-sm text-foreground font-medium">
                 <User className="h-4 w-4 text-[#C69C9B]" />
-                {booking.specialistId?.name || "Any available"}
+                {booking.specialistId?.name || t("book.anyAvailable", "Any available")}
               </div>
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Services</h3>
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("common.services", "Services")}</h3>
             <div className="space-y-2">
               {services.map((s, i) => (
                 <div key={i} className="flex justify-between items-center py-2 border-b border-border/40 last:border-0">
                   <div>
                     <p className="text-sm font-medium text-foreground">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">{s.duration} min</p>
+                    <p className="text-xs text-muted-foreground">{s.duration} {t("common.min", "min")}</p>
                   </div>
                   <p className="text-sm font-bold text-foreground">{formatPrice(s.price, currency)}</p>
                 </div>
               ))}
               <div className="flex justify-between items-center pt-2 mt-2 border-t border-border/60">
-                <p className="text-sm font-bold text-foreground">Total ({totalDuration} min)</p>
+                <p className="text-sm font-bold text-foreground">{t("book.total", "Total")} ({totalDuration} {t("common.min", "min")})</p>
                 <p className="text-base font-bold text-[#E5555E]">{formatPrice(totalPrice, currency)}</p>
               </div>
             </div>
@@ -134,7 +135,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
           {/* Notes */}
           {booking.notes && (
             <div>
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Notes</h3>
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("book.notes", "Notes")}</h3>
               <p className="text-sm text-foreground bg-gray-50 p-3 rounded-lg border border-border/40">{booking.notes}</p>
             </div>
           )}
@@ -146,7 +147,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
           {phone && (
             <a href={`tel:${phone}`} className="flex items-center gap-1.5 px-4 py-2 bg-white border border-border/60 text-foreground hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors mr-auto shadow-sm">
               <PhoneCall className="h-4 w-4 text-[#C69C9B]" />
-              Contact
+              {t("landing.contact", "Contact")}
             </a>
           )}
           
@@ -154,31 +155,31 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
             <>
               {booking.status !== "declined" && booking.status !== "cancelled" && (
                 <button onClick={() => onUpdateStatus(booking._id, "declined")} className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-semibold rounded-lg transition-colors">
-                  <XCircle className="h-4 w-4" /> Reject
+                  <XCircle className="h-4 w-4" /> {t("dashboard.reject", "Reject")}
                 </button>
               )}
               <button onClick={() => onUpdateStatus(booking._id, "confirmed")} className="flex items-center gap-1.5 px-4 py-2 bg-[#E5555E] text-white hover:bg-[#d64c54] text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                <CheckCircle className="h-4 w-4" /> Accept
+                <CheckCircle className="h-4 w-4" /> {t("dashboard.accept", "Accept")}
               </button>
             </>
           )}
 
           {["pending", "cancelled", "declined", "no-show"].includes(booking.status) && endDate.getTime() < new Date().getTime() && (
             <button onClick={() => onUpdateStatus(booking._id, "declined")} className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-semibold rounded-lg transition-colors">
-              <XCircle className="h-4 w-4" /> Reject
+              <XCircle className="h-4 w-4" /> {t("dashboard.reject", "Reject")}
             </button>
           )}
 
           {booking.status === "confirmed" && (
             <>
               <button onClick={() => onUpdateStatus(booking._id, "cancelled")} className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-semibold rounded-lg transition-colors">
-                <XCircle className="h-4 w-4" /> Cancel
+                <XCircle className="h-4 w-4" /> {t("common.cancel", "Cancel")}
               </button>
             </>
           )}
 
           <button onClick={onClose} className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white hover:bg-black text-sm font-semibold rounded-lg transition-colors shadow-sm ml-2">
-            Close
+            {t("common.close", "Close")}
           </button>
         </div>
 

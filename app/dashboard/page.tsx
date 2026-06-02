@@ -134,6 +134,29 @@ export default function BusinessDashboardPage() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
+  // Top 5 Services
+  const serviceStats = bookings.reduce((acc, b) => {
+    if (b.status === 'completed') {
+      const services = b.serviceIds && b.serviceIds.length > 0 
+        ? b.serviceIds 
+        : (b.serviceId ? [b.serviceId] : []);
+      
+      services.forEach(s => {
+        if (s._id) {
+          if (!acc[s._id]) {
+            acc[s._id] = { name: s.name, count: 0 };
+          }
+          acc[s._id].count += 1;
+        }
+      });
+    }
+    return acc;
+  }, {} as Record<string, { name: string, count: number }>);
+
+  const topServices = Object.values(serviceStats)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
   return (
     <div className="h-screen bg-[#FAFAFA] flex font-sans overflow-hidden">
       <DashboardSidebar activePath="/dashboard" />
@@ -330,6 +353,22 @@ export default function BusinessDashboardPage() {
                       <div key={name} className="flex items-center justify-between">
                         <span className="text-sm font-medium text-foreground">{name}</span>
                         <span className="text-xs font-bold text-[#C69C9B] bg-[#C69C9B]/10 px-2 py-1 rounded-md">{count} {t("dashboard.completedBookings", "completed")}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
+                )}
+              </div>
+
+              <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-6 shadow-inner">
+                <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.topServices", "Top Services")}</h2>
+                {topServices.length > 0 ? (
+                  <div className="space-y-3">
+                    {topServices.map(({ name, count }) => (
+                      <div key={name} className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground line-clamp-1 pr-2">{name}</span>
+                        <span className="text-xs font-bold text-[#C69C9B] bg-[#C69C9B]/10 px-2 py-1 rounded-md shrink-0">{count} {t("dashboard.completedBookings", "completed")}</span>
                       </div>
                     ))}
                   </div>

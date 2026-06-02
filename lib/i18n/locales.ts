@@ -296,6 +296,7 @@ export const resources = {
         userCancelledAppointment: "{{name}} has cancelled their appointment.",
         allDays: "All Days",
         topSpecialists: "Top Specialists",
+        topServices: "Top Services",
         completedBookings: "completed",
         noCompletedBookings: "No completed bookings yet."
       },
@@ -763,6 +764,7 @@ export const resources = {
         userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
         allDays: "Բոլոր օրերը",
         topSpecialists: "Լավագույն Մասնագետներ",
+        topServices: "Լավագույն Ծառայություններ",
         completedBookings: "ավարտված",
         noCompletedBookings: "Դեռ ավարտված ամրագրումներ չկան:"
       },
@@ -1226,6 +1228,7 @@ export const resources = {
         userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
         allDays: "Все дни",
         topSpecialists: "Лучшие специалисты",
+        topServices: "Топ услуги",
         completedBookings: "завершенных",
         noCompletedBookings: "Пока нет завершенных бронирований."
       },
@@ -1515,6 +1518,7 @@ export const resources = {
         userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
         allDays: "Բոլոր օրերը",
         topSpecialists: "Լավագույն Մասնագետներ",
+        topServices: "Լավագույն Ծառայություններ",
         completedBookings: "ավարտված",
         noCompletedBookings: "Դեռ ավարտված ամրագրումներ չկան:"
       },
@@ -1973,6 +1977,7 @@ export const resources = {
         userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
         allDays: "Все дни",
         topSpecialists: "Лучшие специалисты",
+        topServices: "Топ услуги",
         completedBookings: "завершенных",
         noCompletedBookings: "Пока нет завершенных бронирований."
       },

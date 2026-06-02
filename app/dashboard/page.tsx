@@ -134,7 +134,7 @@ export default function BusinessDashboardPage() {
                   <p className="text-sm text-muted-foreground mt-0.5">{filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
                 </div>
                 <Link href="/dashboard/book" className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start md:self-auto">
-                  <Plus className="h-4 w-4" /> {t("dashboard.createBooking", "Create Booking")}
+                  <Plus className="h-4 w-4" /> {t("nav.createBooking", "Create Booking")}
                 </Link>
               </div>
 

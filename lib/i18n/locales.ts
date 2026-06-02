@@ -289,7 +289,8 @@ export const resources = {
         newBookingReceived: "New Booking Received",
         bookingCancelled: "Booking Cancelled",
         clientRequestedNew: "A client has requested a new appointment.",
-        userCancelledAppointment: "{{name}} has cancelled their appointment."
+        userCancelledAppointment: "{{name}} has cancelled their appointment.",
+        allDays: "All Days"
       },
       calendar: {
         week: "Week",
@@ -744,7 +745,12 @@ export const resources = {
         urlCopied: "Հղումը պատճենված է!",
         urlCopyFailed: "Չհաջողվեց պատճենել",
         bookingStatusUpdated: "Կարգավիճակը թարմացված է",
-        bookingStatusFailed: "Չհաջողվեց թարմացնել"
+        bookingStatusFailed: "Չհաջողվեց թարմացնել",
+        newBookingReceived: "Նոր ամրագրում",
+        bookingCancelled: "Ամրագրումը չեղարկվել է",
+        clientRequestedNew: "Հաճախորդը խնդրել է նոր ամրագրում:",
+        userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
+        allDays: "Բոլոր օրերը"
       },
       calendar: {
         week: "Շաբաթ",
@@ -1195,7 +1201,12 @@ export const resources = {
         urlCopied: "Ссылка скопирована!",
         urlCopyFailed: "Не удалось скопировать",
         bookingStatusUpdated: "Статус обновлен",
-        bookingStatusFailed: "Не удалось обновить статус"
+        bookingStatusFailed: "Не удалось обновить статус",
+        newBookingReceived: "Новое бронирование",
+        bookingCancelled: "Бронирование отменено",
+        clientRequestedNew: "Клиент запросил новое бронирование.",
+        userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
+        allDays: "Все дни"
       },
       calendar: {
         week: "Неделя",
@@ -1476,7 +1487,12 @@ export const resources = {
         urlCopied: "Հղումը պատճենված է!",
         urlCopyFailed: "Չհաջողվեց պատճենել",
         bookingStatusUpdated: "Կարգավիճակը թարմացված է",
-        bookingStatusFailed: "Չհաջողվեց թարմացնել"
+        bookingStatusFailed: "Չհաջողվեց թարմացնել",
+        newBookingReceived: "Նոր ամրագրում",
+        bookingCancelled: "Ամրագրումը չեղարկվել է",
+        clientRequestedNew: "Հաճախորդը խնդրել է նոր ամրագրում:",
+        userCancelledAppointment: "{{name}} չեղարկել է իր ամրագրումը:",
+        allDays: "Բոլոր օրերը"
       },
       calendar: {
         week: "Շաբաթ",
@@ -1926,7 +1942,12 @@ export const resources = {
         urlCopied: "Ссылка скопирована!",
         urlCopyFailed: "Не удалось скопировать",
         bookingStatusUpdated: "Статус обновлен",
-        bookingStatusFailed: "Не удалось обновить статус"
+        bookingStatusFailed: "Не удалось обновить статус",
+        newBookingReceived: "Новое бронирование",
+        bookingCancelled: "Бронирование отменено",
+        clientRequestedNew: "Клиент запросил новое бронирование.",
+        userCancelledAppointment: "{{name}} отменил(а) свое бронирование.",
+        allDays: "Все дни"
       },
       calendar: {
         week: "Неделя",

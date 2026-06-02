@@ -2,33 +2,59 @@
 
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { Globe } from "lucide-react"
+import { Globe, ChevronDown, Check } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+const languages = [
+  { code: "en", label: "English" },
+  { code: "am", label: "Հայերեն" },
+  { code: "ru", label: "Русский" },
+]
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation()
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const lng = e.target.value
+  const currentLangCode = (i18n.language || "en").substring(0, 2)
+  const currentLang = languages.find((l) => l.code === currentLangCode) || languages[0]
+
+  const handleLanguageChange = (lng: string) => {
     i18n.changeLanguage(lng)
     localStorage.setItem("app_lang", lng)
   }
 
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border/60 rounded-xl text-sm shadow-sm transition-all focus-within:border-[#C69C9B] focus-within:ring-1 focus-within:ring-[#C69C9B]/20">
-      <Globe className="h-4 w-4 text-muted-foreground" />
-      <select
-        value={i18n.language || "en"}
-        onChange={handleLanguageChange}
-        className="bg-transparent border-none outline-none font-semibold text-foreground cursor-pointer appearance-none pr-4"
-        style={{
-          background: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\") no-repeat right center",
-          backgroundSize: "12px"
-        }}
-      >
-        <option value="en">English</option>
-        <option value="am">Հայերեն</option>
-        <option value="ru">Русский</option>
-      </select>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 px-3 py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <span className="text-foreground">{currentLang.label}</span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-36 rounded-xl p-1.5 border-border/60 shadow-lg bg-white">
+        {languages.map((lang) => {
+          const isActive = currentLangCode === lang.code
+          return (
+            <DropdownMenuItem
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
+              className={`flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition-colors focus:bg-[#FAFAFA] ${
+                isActive 
+                  ? "bg-[#FDF6F6] text-[#C69C9B] font-bold focus:bg-[#FDF6F6]" 
+                  : "text-foreground"
+              }`}
+            >
+              {lang.label}
+              {isActive && <Check className="h-4 w-4" />}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

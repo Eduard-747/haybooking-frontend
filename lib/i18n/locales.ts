@@ -96,7 +96,11 @@ export const resources = {
         pending: "pending",
         confirmed: "confirmed",
         declined: "declined",
-        cancelled: "cancelled"
+        cancelled: "cancelled",
+        completed: "completed",
+        "no-show": "no-show",
+        close: "Close",
+        cancel: "Cancel"
       },
       role: {
         customer: "Customer",
@@ -556,7 +560,11 @@ export const resources = {
         pending: "Սպասող",
         confirmed: "Հաստատված",
         declined: "Մերժված",
-        cancelled: "Չեղարկված"
+        cancelled: "Չեղարկված",
+        completed: "Ավարտված",
+        "no-show": "Չներկայացած",
+        close: "Փակել",
+        cancel: "Չեղարկել"
       },
       role: {
         customer: "Հաճախորդ",
@@ -1014,7 +1022,11 @@ export const resources = {
         pending: "В ожидании",
         confirmed: "Подтверждено",
         declined: "Отклонено",
-        cancelled: "Отменено"
+        cancelled: "Отменено",
+        completed: "Завершено",
+        "no-show": "Не явился",
+        close: "Закрыть",
+        cancel: "Отмена"
       },
       role: {
         customer: "Клиент",

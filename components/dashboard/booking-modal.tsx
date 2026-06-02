@@ -2,6 +2,8 @@
 
 import { X, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle, XCircle, MoreVertical, Check, PhoneCall } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import { hy, ru, enUS } from "date-fns/locale"
 import { formatPrice } from "@/lib/currency"
 
 interface Booking {
@@ -48,8 +50,8 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
 
   const startDate = new Date(booking.startTime)
   const endDate = new Date(booking.endTime)
-  const localeStr = i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
-  const formattedDate = startDate.toLocaleDateString(localeStr, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const dateLocale = i18n.language === 'am' ? hy : i18n.language === 'ru' ? ru : enUS
+  const formattedDate = format(startDate, "EEEE, MMMM d, yyyy", { locale: dateLocale })
   const formattedTime = `${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })} - ${endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
 
   return (

@@ -41,7 +41,7 @@ export default function CalendarPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<"Week" | "Day">("Week")
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const isBreakSlot = (day: Date, hourString: string) => {
     if (!selectedBranchId) return false;
@@ -144,7 +144,7 @@ export default function CalendarPage() {
                   <ChevronLeft className="h-5 w-5 text-muted-foreground" />
                 </button>
                 <h2 className="text-lg font-bold text-foreground">
-                  {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+                  {t(`calendar.${MONTHS[currentDate.getMonth()].toLowerCase()}`)} {currentDate.getFullYear()}
                 </h2>
                 <button onClick={() => nav(1)} className="p-1.5 hover:bg-[#FAFAFA] rounded-lg transition-colors">
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -187,7 +187,7 @@ export default function CalendarPage() {
                         }}
                         className="border-b border-l border-border/40 bg-[#FAFAFA] py-3 text-center hover:bg-gray-50 transition-colors w-full flex flex-col items-center justify-center cursor-pointer"
                       >
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{DAYS[day.getDay()]}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t(`calendar.${DAYS[day.getDay()].toLowerCase()}`)}</p>
                         <p className={`text-base font-bold mt-0.5 ${isToday ? "w-8 h-8 bg-[#C69C9B] text-white rounded-full flex items-center justify-center mx-auto" : "text-foreground"}`}>
                           {day.getDate()}
                         </p>
@@ -208,7 +208,7 @@ export default function CalendarPage() {
                           <div key={`${di}-${hour}`} onClick={() => { setCurrentDate(day); setViewMode("Day"); }} className={`border-t border-l border-border/20 min-h-[52px] p-1 relative cursor-pointer transition-colors ${isBreak ? 'bg-slate-100/60 hover:bg-slate-200/50' : 'hover:bg-gray-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">Break</span>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">{t("calendar.break")}</span>
                                </div>
                             )}
                             <div className="relative z-10">
@@ -237,10 +237,10 @@ export default function CalendarPage() {
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
                       <button onClick={() => setViewMode("Week")} className="text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors bg-white px-3 py-1.5 border border-border/60 rounded-lg shadow-sm">
-                        <ChevronLeft className="w-4 h-4" /> Back to Week
+                        <ChevronLeft className="w-4 h-4" /> {t("calendar.backToWeek")}
                       </button>
                       <h3 className="text-xl font-bold text-foreground">
-                        {DAYS[currentDate.getDay()]}, {MONTHS[currentDate.getMonth()]} {currentDate.getDate()}, {currentDate.getFullYear()}
+                        {t(`calendar.${DAYS[currentDate.getDay()].toLowerCase()}`)}, {t(`calendar.${MONTHS[currentDate.getMonth()].toLowerCase()}`)} {currentDate.getDate()}, {currentDate.getFullYear()}
                       </h3>
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export default function CalendarPage() {
                           <div className={`flex-1 min-h-[400px] p-2 flex flex-col gap-2 relative transition-colors group ${isBreak ? 'bg-slate-50/80 hover:bg-slate-100/50' : 'hover:bg-slate-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">Break</span>
+                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">{t("calendar.break")}</span>
                                </div>
                             )}
                             <div className="relative z-10 flex flex-col gap-2">
@@ -286,7 +286,7 @@ export default function CalendarPage() {
                             {/* Empty State placeholder on hover */}
                             {!isBreak && slotBookings.length === 0 && (
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">+ Add Slot</span>
+                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">{t("calendar.addSlot")}</span>
                               </div>
                             )}
                           </div>
@@ -314,8 +314,9 @@ export default function CalendarPage() {
               ) : (
                 <div className="space-y-4 overflow-auto max-h-[calc(100vh-260px)]">
                   {pendingBookings.map(b => {
-                    const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")
-                    const time = new Date(b.startTime).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                    const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || t("common.guest") : (b.guestName || t("common.guest"))
+                    const localeStr = i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
+                    const time = new Date(b.startTime).toLocaleString(localeStr, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                     return (
                       <div key={b._id} className="p-4 bg-[#FAFAFA] rounded-xl border border-border/50">
                         <p className="font-bold text-sm text-foreground">{name}</p>
@@ -326,7 +327,7 @@ export default function CalendarPage() {
                           }
                         </p>
                         {b.specialistId?.name && (
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">With {b.specialistId.name}</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">{t("common.with")} {b.specialistId.name}</p>
                         )}
                         <p className="text-xs text-[#C69C9B] font-medium mt-1">{time}</p>
                         <div className="flex gap-2 mt-3">

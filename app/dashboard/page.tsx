@@ -37,17 +37,18 @@ const statusColors: Record<string, string> = {
 }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+function formatDate(iso: string, language: string = 'en') {
+  const localeStr = language === 'am' ? 'hy-AM' : language === 'ru' ? 'ru-RU' : 'en-US'
+  return new Date(iso).toLocaleDateString(localeStr, { month: "short", day: "numeric", year: "numeric" })
 }
 
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
   const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -131,13 +132,13 @@ export default function BusinessDashboardPage() {
                 <div className="space-y-4">
                   {paginatedBookings.map((booking) => {
                     const userName = booking.userId 
-                      ? `${booking.userId.name || ""} ${booking.userId.surname || ""}`.trim() || "Guest" 
-                      : (booking.guestName || "Guest");
+                      ? `${booking.userId.name || ""} ${booking.userId.surname || ""}`.trim() || t("common.guest") 
+                      : (booking.guestName || t("common.guest"));
                     const userPhone = booking.userId?.phoneNumber || booking.guestPhone;
                     
                     const serviceName = booking.serviceIds && booking.serviceIds.length > 0 
                       ? booking.serviceIds.map(s => s.name).join(', ')
-                      : booking.serviceId?.name || "Service"
+                      : booking.serviceId?.name || t("common.service")
                     
                     const branchObj = booking.branchId && typeof booking.branchId === "object" ? booking.branchId : null;
                     const branchAddress = branchObj?.address ? `${branchObj.address.line1}, ${branchObj.address.city}` : null;
@@ -152,12 +153,12 @@ export default function BusinessDashboardPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-border/40 gap-3">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-3 text-sm font-semibold text-foreground">
-                              <span className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4 text-[#C69C9B]" /> {formatDate(booking.startTime)}</span>
+                              <span className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4 text-[#C69C9B]" /> {formatDate(booking.startTime, i18n.language)}</span>
                               <span className="text-border/60">|</span>
                               <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#C69C9B]" /> {formatTime(booking.startTime)} – {formatTime(booking.endTime)}</span>
                             </div>
                             <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${statusColors[booking.status] || "bg-gray-50 text-gray-400 border border-gray-200"}`}>
-                              {booking.status}
+                              {t(`common.${booking.status}` as any, booking.status)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -182,9 +183,9 @@ export default function BusinessDashboardPage() {
                             <User className="w-4 h-4 text-muted-foreground" />
                             {userName}
                           </div>
-                          <p className="text-xs text-muted-foreground pl-6">Service: {serviceName}</p>
+                          <p className="text-xs text-muted-foreground pl-6">{t("common.service")}: {serviceName}</p>
                           {booking.specialistId?.name && (
-                            <p className="text-xs text-muted-foreground pl-6">Specialist: <span className="font-medium text-foreground">{booking.specialistId.name}</span></p>
+                            <p className="text-xs text-muted-foreground pl-6">{t("common.specialist")}: <span className="font-medium text-foreground">{booking.specialistId.name}</span></p>
                           )}
                         </div>
 

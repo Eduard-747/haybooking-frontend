@@ -10,8 +10,10 @@ import { useBranchContext } from "./branch-context"
 import { MapPin } from "lucide-react"
 import { NotificationsPopover } from "./notifications-popover"
 import Link from "next/link"
+import { useTranslation } from "react-i18next"
 
 export function DashboardHeader() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const { partner } = usePartner()
   const pathname = usePathname()
@@ -49,7 +51,7 @@ export function DashboardHeader() {
                 onChange={(e) => setSelectedBranchId(e.target.value || null)}
                 className="pl-7 pr-8 py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#C69C9B] rounded-lg text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#C69C9B] appearance-none cursor-pointer transition-colors"
               >
-                <option value="">All Branches</option>
+                <option value="">{t("common.allBranches")}</option>
                 {branches.map(b => (
                   <option key={b._id} value={b._id}>
                     {b.address.line1}, {b.address.city}

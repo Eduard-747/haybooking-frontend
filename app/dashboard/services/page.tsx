@@ -10,6 +10,7 @@ import Image from "next/image"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
 
 interface Service {
   _id: string
@@ -24,6 +25,7 @@ interface Service {
 export default function ManageServicesPage() {
   const { partnerId, partner } = usePartner()
   const { selectedBranchId } = useBranchContext()
+  const { t } = useTranslation()
   const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
@@ -137,7 +139,7 @@ export default function ManageServicesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return
+    if (!confirm(t("common.confirmDelete", "Are you sure?"))) return
     try {
       await api.delete(`/services/${id}`)
       fetchServices()
@@ -152,7 +154,7 @@ export default function ManageServicesPage() {
 
     // Enforce at least 1 branch assignment when branches exist
     if (branches.length > 0 && formData.assignedBranches.length === 0) {
-      toast.error("Please select at least 1 branch for this service")
+      toast.error(t("servicesDashboard.selectBranchHint", "Please select at least 1 branch for this service"))
       return
     }
 
@@ -202,8 +204,8 @@ export default function ManageServicesPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Manage Services</h1>
-                <p className="text-muted-foreground mt-1">Define and organize your service catalog across all business locations.</p>
+                <h1 className="text-3xl font-bold text-foreground">{t("servicesDashboard.manageServices")}</h1>
+                <p className="text-muted-foreground mt-1">{t("servicesDashboard.defineAndOrganize")}</p>
               </div>
               <button 
                 onClick={() => {
@@ -214,7 +216,7 @@ export default function ManageServicesPage() {
                 className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Add New Service
+                {t("servicesDashboard.addNewService")}
               </button>
             </div>
 
@@ -228,7 +230,7 @@ export default function ManageServicesPage() {
                   type="text" 
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  placeholder="Search services..." 
+                  placeholder={t("servicesDashboard.searchServices")} 
                   className="w-full h-10 pl-9 pr-4 bg-[#FAFAFA] border-none rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
                 />
               </div>
@@ -239,22 +241,22 @@ export default function ManageServicesPage() {
                   onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
                   className="appearance-none h-10 px-4 pr-8 border border-border/60 rounded-lg text-sm font-medium hover:bg-[#FAFAFA] bg-transparent outline-none cursor-pointer"
                 >
-                  {categories.map(cat => <option key={cat} value={cat}>{cat === "All" ? "All Categories" : cat}</option>)}
+                  {categories.map(cat => <option key={cat} value={cat}>{cat === "All" ? t("servicesDashboard.allCategories") : cat}</option>)}
                 </select>
                 <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
               </div>
 
               <div className="sm:ml-auto flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Sort by:</span>
+                <span className="text-muted-foreground">{t("servicesDashboard.sortBy")}</span>
                 <div className="relative">
                   <select 
                     value={sortBy} 
                     onChange={(e) => setSortBy(e.target.value)}
                     className="appearance-none pl-2 pr-6 font-semibold bg-transparent outline-none cursor-pointer"
                   >
-                    <option value="last-modified">Last Modified</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
+                    <option value="last-modified">{t("servicesDashboard.lastModified")}</option>
+                    <option value="price-asc">{t("servicesDashboard.priceLowToHigh")}</option>
+                    <option value="price-desc">{t("servicesDashboard.priceHighToLow")}</option>
                   </select>
                   <ChevronDown className="w-4 h-4 text-foreground absolute right-0 top-1 pointer-events-none" />
                 </div>
@@ -267,20 +269,20 @@ export default function ManageServicesPage() {
                 <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="border-b border-border/60">
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Service Name</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Duration</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Price</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase text-right">Actions</th>
+                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("servicesDashboard.serviceName")}</th>
+                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("servicesDashboard.duration")}</th>
+                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("servicesDashboard.price")}</th>
+                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase text-right">{t("servicesDashboard.actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
                     {isLoading ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">Loading services...</td>
+                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">{t("servicesDashboard.loadingServices", "Loading services...")}</td>
                       </tr>
                     ) : paginatedServices.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">No services found.</td>
+                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">{t("servicesDashboard.noServicesFound", "No services found.")}</td>
                       </tr>
                     ) : (
                       paginatedServices.map((service) => (
@@ -296,11 +298,11 @@ export default function ManageServicesPage() {
                               </div>
                               <div>
                                 <p className="font-bold text-sm text-foreground">{service.name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">Category: {service.category || 'Uncategorized'}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{t("servicesDashboard.category")}: {service.category || t("servicesDashboard.uncategorized")}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground">{service.duration} min</td>
+                          <td className="px-6 py-4 text-sm text-muted-foreground">{service.duration} {t("common.min")}</td>
                           <td className="px-6 py-4 text-sm font-bold text-foreground">{formatPrice(service.price, partner?.currency)}</td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -323,7 +325,7 @@ export default function ManageServicesPage() {
               {!isLoading && processedServices.length > 0 && (
                 <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between bg-[#FAFAFA]/50">
                   <span className="text-sm text-muted-foreground">
-                    Showing <span className="font-bold text-foreground">{(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, processedServices.length)}</span> of <span className="font-bold text-foreground">{processedServices.length}</span> results
+                    {t("servicesDashboard.showingResults", { start: (currentPage - 1) * rowsPerPage + 1, end: Math.min(currentPage * rowsPerPage, processedServices.length), total: processedServices.length }).replace('{{start}}', String((currentPage - 1) * rowsPerPage + 1)).replace('{{end}}', String(Math.min(currentPage * rowsPerPage, processedServices.length))).replace('{{total}}', String(processedServices.length))}
                   </span>
                   
                   <div className="flex items-center gap-6">
@@ -368,16 +370,16 @@ export default function ManageServicesPage() {
             {/* Bottom Info Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-[#FAFAFA] p-6 rounded-xl border border-border/60">
-                <h3 className="font-bold text-sm mb-2 text-foreground">Global Pricing</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Easily adjust prices across all branches simultaneously from the bulk action menu.</p>
+                <h3 className="font-bold text-sm mb-2 text-foreground">{t("servicesDashboard.globalPricing")}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t("servicesDashboard.globalPricingDesc")}</p>
               </div>
               <div className="bg-[#FAFAFA] p-6 rounded-xl border border-border/60">
-                <h3 className="font-bold text-sm mb-2 text-foreground">Duration Buffer</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Service durations include a mandatory 5-minute setup buffer by default.</p>
+                <h3 className="font-bold text-sm mb-2 text-foreground">{t("servicesDashboard.durationBuffer")}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t("servicesDashboard.durationBufferDesc")}</p>
               </div>
               <div className="bg-[#FAFAFA] p-6 rounded-xl border border-border/60">
-                <h3 className="font-bold text-sm mb-2 text-foreground">Online Booking</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Toggle visibility of specific services on your public booking page.</p>
+                <h3 className="font-bold text-sm mb-2 text-foreground">{t("servicesDashboard.onlineBooking")}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{t("servicesDashboard.onlineBookingDesc")}</p>
               </div>
             </div>
 
@@ -391,7 +393,7 @@ export default function ManageServicesPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             
             <div className="px-6 py-4 border-b border-border flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-lg font-bold">{editingId ? 'Edit Service' : 'Add New Service'}</h2>
+              <h2 className="text-lg font-bold">{editingId ? t("servicesDashboard.editService") : t("servicesDashboard.addNewService")}</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-muted rounded-full">
                 <X className="w-5 h-5" />
               </button>
@@ -401,22 +403,22 @@ export default function ManageServicesPage() {
               <form id="service-form" onSubmit={handleSubmit} className="space-y-4">
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Service Name</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.serviceName")}</label>
                   <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Deep Tissue Massage" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Category</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.category")}</label>
                   <input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Premium Grooming" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration (min)</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.durationMin")}</label>
                     <input required type="number" min="5" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value === "" ? "" : Number(e.target.value)})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Price ({partner?.currency || 'USD'})</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.price")} ({partner?.currency || 'USD'})</label>
                     <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="0.00" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                   </div>
                 </div>
@@ -424,7 +426,7 @@ export default function ManageServicesPage() {
                 {/* Branch Assignment */}
                 {branches.length > 0 && (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Assign to Branches *</label>
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.assignToBranches")}</label>
                     <div className="space-y-2 max-h-32 overflow-y-auto border border-border/60 rounded-lg p-3 bg-[#FAFAFA]">
                       {branches.map(b => (
                         <label key={b._id} className="flex items-center gap-2 cursor-pointer">
@@ -447,13 +449,13 @@ export default function ManageServicesPage() {
                       ))}
                     </div>
                     {formData.assignedBranches.length === 0 && (
-                      <p className="text-xs text-amber-600">Please select at least 1 branch</p>
+                      <p className="text-xs text-amber-600">{t("servicesDashboard.selectBranchHint")}</p>
                     )}
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Service Image</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesDashboard.serviceImage")}</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full border-2 border-dashed border-border/60 hover:border-[#C69C9B] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FDF6F6] gap-2"
@@ -465,13 +467,13 @@ export default function ManageServicesPage() {
                     ) : (
                       <>
                         <Upload className="h-8 w-8 text-[#C69C9B]/60" />
-                        <p className="text-sm font-medium text-muted-foreground">Click to upload image</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG, WEBP up to 5MB</p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("servicesDashboard.clickToUpload")}</p>
+                        <p className="text-xs text-muted-foreground">{t("servicesDashboard.imageFormatHint")}</p>
                       </>
                     )}
                     {imagePreview && (
                       <button type="button" onClick={e => { e.stopPropagation(); setImagePreview(""); setImageFile(null); }} className="text-xs text-red-500 hover:underline mt-1">
-                        Remove image
+                        {t("servicesDashboard.removeImage")}
                       </button>
                     )}
                   </div>
@@ -483,10 +485,10 @@ export default function ManageServicesPage() {
 
             <div className="px-6 py-4 border-t border-border bg-[#FAFAFA]/50 flex justify-end gap-3 sticky bottom-0">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
-                Cancel
+                {t("common.cancel")}
               </button>
               <button type="submit" form="service-form" disabled={isSubmitting} className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
-                {isSubmitting ? "Saving..." : (editingId ? "Update Service" : "Save Service")}
+                {isSubmitting ? t("common.saving") : (editingId ? t("servicesDashboard.updateService") : t("servicesDashboard.saveService"))}
               </button>
             </div>
 

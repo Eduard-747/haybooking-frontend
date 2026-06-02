@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { SmsVerification } from "./sms-verification"
+import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
 interface AuthFormProps {
@@ -38,14 +39,14 @@ interface AuthFormProps {
 }
 
 const businessTypes = [
-  { value: "salon", label: "Salon & Spa" },
-  { value: "medical", label: "Medical Practice" },
-  { value: "fitness", label: "Fitness Studio" },
-  { value: "consulting", label: "Consulting Services" },
-  { value: "restaurant", label: "Restaurant & Dining" },
-  { value: "auto", label: "Auto Service" },
-  { value: "pet", label: "Pet Grooming" },
-  { value: "other", label: "Other" },
+  { value: "salon", labelKey: "landing.salonSpa" },
+  { value: "medical", labelKey: "landing.medicalPractice" },
+  { value: "fitness", labelKey: "landing.fitnessStudio" },
+  { value: "consulting", labelKey: "landing.consultingServices" },
+  { value: "restaurant", labelKey: "landing.restaurantDining" },
+  { value: "auto", labelKey: "landing.autoService" },
+  { value: "pet", labelKey: "landing.petGrooming" },
+  { value: "other", labelKey: "landing.other" },
 ]
 
 const countryCodes = [
@@ -72,6 +73,7 @@ const countryCodes = [
 ]
 
 export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFormProps) {
+  const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
   const [formData, setFormData] = useState({
@@ -170,12 +172,12 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
       {/* Header */}
       <div>
         <h2 className="text-2xl font-semibold text-foreground">
-          {activeTab === "signup" ? "Create an account" : "Welcome back"}
+          {activeTab === "signup" ? t("auth.createAccount") : t("auth.welcome")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {activeTab === "signup"
-            ? "Start your journey with us today"
-            : "Sign in to continue to your account"}
+            ? t("auth.createAccountDesc")
+            : t("auth.welcomeDesc")}
         </p>
       </div>
 
@@ -190,7 +192,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Sign In
+          {t("auth.signIn")}
           {activeTab === "signin" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
           )}
@@ -204,7 +206,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Sign Up
+          {t("auth.signUp")}
           {activeTab === "signup" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
           )}
@@ -230,7 +232,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           size="lg"
           disabled={loading}
         >
-          {loading ? "Processing..." : (activeTab === "signup" ? "Create Account" : "Sign In")}
+          {loading ? t("auth.processing") : (activeTab === "signup" ? t("auth.createAccount") : t("auth.signIn"))}
           {!loading && <ChevronRight className="ml-1 h-4 w-4" />}
         </Button>
 
@@ -241,7 +243,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-3 text-muted-foreground">
-              Or continue with
+              {t("auth.orContinueWith")}
             </span>
           </div>
         </div>
@@ -272,18 +274,18 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7 1.23746264,17.3349879 L5.27698177,14.2678769 Z"
             />
           </svg>
-          Continue with Google
+          {t("auth.continueGoogle")}
         </Button>
 
         {/* Terms */}
         <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to HayBooking&apos;s{" "}
+          {t("auth.termsAgree")}{" "}
           <Link href="#" className="underline hover:text-foreground">
-            Terms of Service
+            {t("auth.terms")}
           </Link>{" "}
-          and{" "}
+          {t("auth.and")}{" "}
           <Link href="#" className="underline hover:text-foreground">
-            Privacy Policy
+            {t("auth.privacy")}
           </Link>
           .
         </p>
@@ -293,9 +295,9 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-muted">
             <User className="h-4 w-4" />
           </div>
-          <span>Need help?</span>
+          <span>{t("auth.needHelp")}</span>
           <Link href="#" className="text-foreground underline hover:text-primary">
-            Contact our concierge
+            {t("auth.contactConcierge")}
           </Link>
         </div>
       </form>
@@ -326,6 +328,7 @@ function SignUpForm({
   isBusinessPartner,
   setIsBusinessPartner,
 }: SignUpFormProps) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -334,7 +337,7 @@ function SignUpForm({
       {/* Name Fields */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Name</Label>
+          <Label htmlFor="firstName">{t("auth.name")}</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -347,7 +350,7 @@ function SignUpForm({
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Surname</Label>
+          <Label htmlFor="lastName">{t("auth.surname")}</Label>
           <Input
             id="lastName"
             placeholder="Doe"
@@ -359,7 +362,7 @@ function SignUpForm({
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email">{t("common.email")}</Label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -375,7 +378,7 @@ function SignUpForm({
 
       {/* Phone with Country Code */}
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone">{t("common.phone")}</Label>
         <div className="flex gap-2">
           <Select
             value={formData.countryCode}
@@ -408,7 +411,7 @@ function SignUpForm({
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("common.password")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -431,7 +434,7 @@ function SignUpForm({
 
       {/* Confirm Password */}
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword">{t("auth.confirmPass")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -451,7 +454,7 @@ function SignUpForm({
           </button>
         </div>
         {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-          <p className="text-xs text-red-500">Passwords do not match</p>
+          <p className="text-xs text-red-500">{t("auth.passwordsNoMatch")}</p>
         )}
       </div>
 
@@ -464,7 +467,7 @@ function SignUpForm({
           className="data-[state=checked]:bg-[#E5555E] data-[state=checked]:border-[#E5555E] data-[state=checked]:text-white"
         />
         <Label htmlFor="business" className="cursor-pointer text-sm font-normal">
-          Register as a Business Partner
+          {t("auth.registerBusiness")}
         </Label>
       </div>
 
@@ -473,11 +476,11 @@ function SignUpForm({
         <div className="rounded-lg border border-dashed border-[#E5555E]/30 bg-[#E5555E]/5 p-4 space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[#E5555E] tracking-wider uppercase">
             <Building2 className="h-4 w-4" />
-            BUSINESS DETAILS
+            {t("auth.businessDetails")}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="businessName">Business Name</Label>
+            <Label htmlFor="businessName">{t("dashboard.businessName")}</Label>
             <Input
               id="businessName"
               placeholder="HayBooking Solutions Ltd."
@@ -487,18 +490,18 @@ function SignUpForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="businessType">Business Type</Label>
+            <Label htmlFor="businessType">{t("dashboard.businessType")}</Label>
             <Select
               value={formData.businessType}
               onValueChange={(value) => onInputChange("businessType", value)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select business type" />
+                <SelectValue placeholder={t("dashboard.selectType")} />
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                    {t(type.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -521,13 +524,14 @@ interface SignInFormProps {
 }
 
 function SignInForm({ formData, onInputChange }: SignInFormProps) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <>
       {/* Phone Number with Country Code */}
       <div className="space-y-2">
-        <Label htmlFor="signin-phone">Phone Number</Label>
+        <Label htmlFor="signin-phone">{t("common.phone")}</Label>
         <div className="flex gap-2">
           <Select
             value={formData.countryCode}
@@ -561,9 +565,9 @@ function SignInForm({ formData, onInputChange }: SignInFormProps) {
       {/* Password with eye toggle */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="signin-password">Password</Label>
+          <Label htmlFor="signin-password">{t("common.password")}</Label>
           <Link href="#" className="text-xs text-primary hover:underline">
-            Forgot password?
+            {t("auth.forgotPassword")}
           </Link>
         </div>
         <div className="relative">

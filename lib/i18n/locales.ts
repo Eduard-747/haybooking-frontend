@@ -448,7 +448,6 @@ export const resources = {
         bookingCancelled: "Booking cancelled",
         cancelFailed: "Failed to cancel booking",
         more: "more"
->>>>>>> origin/translations
       }
     }
   },
@@ -901,7 +900,6 @@ export const resources = {
         bookingCancelled: "Ամրագրումը չեղարկված է",
         cancelFailed: "Չհաջողվեց չեղարկել",
         more: "այլ"
->>>>>>> origin/translations
       }
     }
   },
@@ -2080,7 +2078,6 @@ export const resources = {
         bookingCancelled: "Бронь отменена",
         cancelFailed: "Не удалось отменить",
         more: "еще"
->>>>>>> origin/translations
       }
     }
   }

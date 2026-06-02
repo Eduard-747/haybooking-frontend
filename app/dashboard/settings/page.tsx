@@ -95,9 +95,9 @@ export default function SettingsPage() {
         autoCompleteBookings: businessForm.autoCompleteBookings,
         currency: businessForm.currency,
       })
-      toast.success("Business settings saved!")
+      toast.success(t("dashboard.businessSaved", "Business settings saved!"))
     } catch {
-      toast.error("Failed to save business settings")
+      toast.error(t("dashboard.businessSaveFailed", "Failed to save business settings"))
     } finally {
       setSaving(false)
     }
@@ -116,9 +116,9 @@ export default function SettingsPage() {
           push: userForm.pushNotifications,
         }
       })
-      toast.success("User settings saved!")
+      toast.success(t("dashboard.userSaved", "User settings saved!"))
     } catch {
-      toast.error("Failed to save user settings")
+      toast.error(t("dashboard.userSaveFailed", "Failed to save user settings"))
     } finally {
       setSaving(false)
     }
@@ -126,11 +126,11 @@ export default function SettingsPage() {
 
   const handlePasswordSave = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("New passwords do not match")
+      toast.error(t("dashboard.passwordsNoMatch", "New passwords do not match"))
       return
     }
     if (passwordForm.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters")
+      toast.error(t("dashboard.passwordMinLength", "Password must be at least 6 characters"))
       return
     }
 
@@ -140,10 +140,10 @@ export default function SettingsPage() {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       })
-      toast.success("Password changed successfully!")
+      toast.success(t("dashboard.passwordChanged", "Password changed successfully!"))
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to change password")
+      toast.error(err.response?.data?.message || t("dashboard.passwordChangeFailed", "Failed to change password"))
     } finally {
       setSavingPassword(false)
     }
@@ -227,8 +227,8 @@ export default function SettingsPage() {
                     </label>
                   </div>
                   <div className="flex-1 space-y-1">
-                    <h3 className="font-semibold text-foreground">Business Photo</h3>
-                    <p className="text-sm text-muted-foreground">This image will be shown to clients on your public booking page.</p>
+                    <h3 className="font-semibold text-foreground">{t("dashboard.businessPhoto", "Business Photo")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.businessPhotoDesc", "This image will be shown to clients on your public booking page.")}</p>
                   </div>
                 </div>
 
@@ -240,19 +240,19 @@ export default function SettingsPage() {
                     value={businessForm.businessName}
                     onChange={e => setBusinessForm(prev => ({ ...prev, businessName: e.target.value }))}
                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                    placeholder="Your Business Name"
+                    placeholder={t("dashboard.businessName", "Your Business Name")}
                   />
                 </div>
 
                 {/* Business Type */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Business Type</label>
+                  <label className="text-sm font-medium text-foreground">{t("dashboard.businessType", "Business Type")}</label>
                   <select
                     value={businessForm.businessType}
                     onChange={e => setBusinessForm(prev => ({ ...prev, businessType: e.target.value }))}
                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                   >
-                    <option value="">Select type</option>
+                    <option value="">{t("dashboard.selectType", "Select type")}</option>
                     <option value="salon">Salon & Spa</option>
                     <option value="medical">Medical Practice</option>
                     <option value="fitness">Fitness Studio</option>
@@ -266,7 +266,7 @@ export default function SettingsPage() {
 
                 {/* Currency */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Currency</label>
+                  <label className="text-sm font-medium text-foreground">{t("dashboard.currency", "Currency")}</label>
                   <select
                     value={businessForm.currency}
                     onChange={e => setBusinessForm(prev => ({ ...prev, currency: e.target.value }))}
@@ -282,27 +282,27 @@ export default function SettingsPage() {
 
                 {/* Public Description */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Public Description</label>
+                  <label className="text-sm font-medium text-foreground">{t("dashboard.publicDescription", "Public Description")}</label>
                   <textarea
                     value={businessForm.publicDescription}
                     onChange={e => setBusinessForm(prev => ({ ...prev, publicDescription: e.target.value }))}
                     rows={4}
                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none"
-                    placeholder="Describe your business to attract clients..."
+                    placeholder={t("dashboard.publicDescPlaceholder", "Describe your business to attract clients...")}
                   />
                 </div>
 
                 {/* Business URL */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Business URL</label>
+                  <label className="text-sm font-medium text-foreground">{t("dashboard.businessUrl", "Business URL")}</label>
                   <div 
                     onClick={async () => {
                       const url = `https://haybooking.com/b/${businessForm.slug}`;
                       try {
                         await navigator.clipboard.writeText(url);
-                        toast.success("URL copied to clipboard!");
+                        toast.success(t("dashboard.urlCopied", "URL copied to clipboard!"));
                       } catch (err) {
-                        toast.error("Failed to copy URL");
+                        toast.error(t("dashboard.urlCopyFailed", "Failed to copy URL"));
                       }
                     }}
                     className="flex items-center justify-between gap-3 p-3.5 rounded-lg border border-border/60 bg-[#FAFAFA] hover:bg-[#FDF6F6] hover:border-[#E5555E]/30 cursor-pointer transition-all group shadow-sm"
@@ -317,19 +317,19 @@ export default function SettingsPage() {
                     </div>
                     <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white border border-border/50 text-xs font-semibold text-muted-foreground group-hover:text-[#E5555E] group-hover:border-[#E5555E]/30 transition-all shadow-sm">
                       <Copy className="h-3.5 w-3.5" />
-                      Copy
+                      {t("dashboard.copy", "Copy")}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">This is your public booking page. Share this link directly with your clients.</p>
+                  <p className="text-xs text-muted-foreground mt-2">{t("dashboard.businessUrlDesc", "This is your public booking page. Share this link directly with your clients.")}</p>
                 </div>
 
                 <div className="pt-4 border-t border-border/40 space-y-5">
-                  <h3 className="font-semibold text-foreground">Automation Settings</h3>
+                  <h3 className="font-semibold text-foreground">{t("dashboard.automationSettings", "Automation Settings")}</h3>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-medium text-foreground">Auto-Accept Bookings</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Automatically confirm incoming booking requests.</p>
+                      <h4 className="text-sm font-medium text-foreground">{t("dashboard.autoAcceptBookings", "Auto-Accept Bookings")}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.autoAcceptDesc", "Automatically confirm incoming booking requests.")}</p>
                     </div>
                     <button
                       type="button"
@@ -346,8 +346,8 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-medium text-foreground">Auto-Complete Bookings</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Automatically mark confirmed bookings as completed when their time is over.</p>
+                      <h4 className="text-sm font-medium text-foreground">{t("dashboard.autoCompleteBookings", "Auto-Complete Bookings")}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.autoCompleteDesc", "Automatically mark confirmed bookings as completed when their time is over.")}</p>
                     </div>
                     <button
                       type="button"
@@ -383,13 +383,13 @@ export default function SettingsPage() {
                 
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                   <User className="h-5 w-5 text-[#C69C9B]" />
-                  Personal Information
+                  {t("dashboard.personalInfo", "Personal Information")}
                 </h3>
 
                 {/* Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">First Name</label>
+                    <label className="text-sm font-medium text-foreground">{t("common.firstName", "First Name")}</label>
                     <input
                       type="text"
                       value={userForm.name}
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Last Name</label>
+                    <label className="text-sm font-medium text-foreground">{t("common.lastName", "Last Name")}</label>
                     <input
                       type="text"
                       value={userForm.surname}
@@ -412,7 +412,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    Phone Number
+                    {t("common.phone", "Phone Number")}
                   </label>
                   <input
                     type="tel"
@@ -420,14 +420,14 @@ export default function SettingsPage() {
                     readOnly
                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-gray-50 text-sm text-muted-foreground cursor-not-allowed"
                   />
-                  <p className="text-xs text-muted-foreground">Phone number cannot be changed after registration.</p>
+                  <p className="text-xs text-muted-foreground">{t("dashboard.phoneCannotChange", "Phone number cannot be changed after registration.")}</p>
                 </div>
 
                 {/* Email */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    Email Address
+                    {t("common.email", "Email Address")}
                   </label>
                   <input
                     type="email"
@@ -442,13 +442,13 @@ export default function SettingsPage() {
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
                     <Bell className="h-5 w-5 text-[#C69C9B]" />
-                    Notification Preferences
+                    {t("dashboard.notifications", "Notification Preferences")}
                   </h3>
 
                   {[
-                    { key: "emailNotifications" as const, label: "Email Notifications", desc: "Receive booking confirmations and updates via email" },
-                    { key: "smsNotifications" as const, label: "SMS Notifications", desc: "Get text messages for booking reminders" },
-                    { key: "pushNotifications" as const, label: "Push Notifications", desc: "Browser push notifications for real-time alerts" },
+                    { key: "emailNotifications" as const, label: t("dashboard.emailNotifications", "Email Notifications"), desc: t("dashboard.emailNotifDesc", "Receive booking confirmations and updates via email") },
+                    { key: "smsNotifications" as const, label: t("dashboard.smsNotifications", "SMS Notifications"), desc: t("dashboard.smsNotifDesc", "Get text messages for booking reminders") },
+                    { key: "pushNotifications" as const, label: t("dashboard.pushNotifications", "Push Notifications"), desc: t("dashboard.pushNotifDesc", "Browser push notifications for real-time alerts") },
                   ].map(pref => (
                     <label key={pref.key} className="flex items-center justify-between py-3 cursor-pointer">
                       <div>
@@ -488,12 +488,12 @@ export default function SettingsPage() {
               <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-6 mt-6">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                   <Key className="h-5 w-5 text-[#C69C9B]" />
-                  Change Password
+                  {t("dashboard.changePassword", "Change Password")}
                 </h3>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Current Password</label>
+                    <label className="text-sm font-medium text-foreground">{t("dashboard.currentPassword", "Current Password")}</label>
                     <input
                       type="password"
                       value={passwordForm.currentPassword}
@@ -504,7 +504,7 @@ export default function SettingsPage() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">New Password</label>
+                      <label className="text-sm font-medium text-foreground">{t("dashboard.newPassword", "New Password")}</label>
                       <input
                         type="password"
                         value={passwordForm.newPassword}
@@ -513,7 +513,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Confirm New Password</label>
+                      <label className="text-sm font-medium text-foreground">{t("dashboard.confirmNewPassword", "Confirm New Password")}</label>
                       <input
                         type="password"
                         value={passwordForm.confirmPassword}
@@ -531,7 +531,7 @@ export default function SettingsPage() {
                     className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     {savingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
-                    Update Password
+                    {t("dashboard.updatePassword", "Update Password")}
                   </button>
                 </div>
               </div>

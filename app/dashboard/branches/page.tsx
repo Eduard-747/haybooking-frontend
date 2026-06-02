@@ -9,6 +9,7 @@ import { usePartner } from "@/hooks/usePartner"
 import { TimePicker } from "@/components/ui/time-picker"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
+import { useTranslation } from "react-i18next"
 
 // Dynamically import map components to avoid SSR issues
 const BranchMapOverview = dynamic(() => import("@/components/maps/branch-map-overview"), { ssr: false })
@@ -54,6 +55,7 @@ const emptyForm = {
 }
 
 export default function BranchesPage() {
+  const { t } = useTranslation()
   const { partnerId, loading: partnerLoading } = usePartner()
   const [branches, setBranches] = useState<Branch[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -117,7 +119,7 @@ export default function BranchesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this branch?")) return
+    if (!confirm(t("branchesPage.deleteConfirm", "Delete this branch?"))) return
     try {
       await api.delete(`/branches/${id}`)
       toast.success("Branch deleted")
@@ -282,11 +284,11 @@ export default function BranchesPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Branches</h1>
-                <p className="text-sm text-muted-foreground mt-1">{branches.length} locations</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("branchesPage.branches", "Branches")}</h1>
+                <p className="text-sm text-muted-foreground mt-1">{branches.length} {t("branchesPage.locations", "locations")}</p>
               </div>
               <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors">
-                <Plus className="h-4 w-4" /> Add Branch
+                <Plus className="h-4 w-4" /> {t("branchesPage.addBranch", "Add Branch")}
               </button>
             </div>
 
@@ -295,7 +297,7 @@ export default function BranchesPage() {
               <div className="bg-white rounded-2xl border border-border/60 shadow-sm overflow-hidden mb-6">
                 <div className="px-6 py-4 border-b border-border/40">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[#C69C9B]" /> All Locations
+                    <MapPin className="h-4 w-4 text-[#C69C9B]" /> {t("branchesPage.allLocations", "All Locations")}
                   </h3>
                 </div>
                 <div className="h-[300px] relative z-0">
@@ -311,10 +313,10 @@ export default function BranchesPage() {
             ) : branches.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-border/40 text-center">
                 <MapPin className="h-12 w-12 text-[#C69C9B]/40 mb-3" />
-                <h2 className="font-bold text-foreground mb-1">No branches yet</h2>
-                <p className="text-sm text-muted-foreground mb-6">Add your first branch to start accepting bookings.</p>
+                <h2 className="font-bold text-foreground mb-1">{t("branchesPage.noBranchesYet", "No branches yet")}</h2>
+                <p className="text-sm text-muted-foreground mb-6">{t("branchesPage.addFirstBranchDesc", "Add your first branch to start accepting bookings.")}</p>
                 <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] text-white text-sm font-bold rounded-xl">
-                  <Plus className="h-4 w-4" /> Add First Branch
+                  <Plus className="h-4 w-4" /> {t("branchesPage.addFirstBranch", "Add First Branch")}
                 </button>
               </div>
             ) : (
@@ -354,7 +356,7 @@ export default function BranchesPage() {
                       {b.workingHours.length > 0 && (
                         <div className="flex items-center gap-2">
                           <Clock className="h-3.5 w-3.5" />
-                          {WEEKDAYS[b.workingHours[0].weekday]} – {WEEKDAYS[b.workingHours[b.workingHours.length - 1].weekday]} · {b.workingHours[0].openTime} – {b.workingHours[0].closeTime}
+                          {t(`calendar.${WEEKDAYS[b.workingHours[0].weekday].toLowerCase()}`, WEEKDAYS[b.workingHours[0].weekday])} – {t(`calendar.${WEEKDAYS[b.workingHours[b.workingHours.length - 1].weekday].toLowerCase()}`, WEEKDAYS[b.workingHours[b.workingHours.length - 1].weekday])} · {b.workingHours[0].openTime} – {b.workingHours[0].closeTime}
                         </div>
                       )}
                     </div>
@@ -371,7 +373,7 @@ export default function BranchesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-5 border-b border-border/40">
-              <h2 className="text-lg font-bold">{editId ? "Edit Branch" : "Add Branch"}</h2>
+              <h2 className="text-lg font-bold">{editId ? t("branchesPage.editBranch", "Edit Branch") : t("branchesPage.addBranch", "Add Branch")}</h2>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
@@ -379,12 +381,12 @@ export default function BranchesPage() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative" ref={countryRef}>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Country</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.country", "Country")}</label>
                   <input
                     value={countrySearch}
                     onChange={e => { setCountrySearch(e.target.value); setShowCountryDropdown(true); setForm(p => ({...p, country: e.target.value})) }}
                     onFocus={() => setShowCountryDropdown(true)}
-                    placeholder="Select country..."
+                    placeholder={t("branchesPage.selectCountry", "Select country...")}
                     className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
                   />
                   {showCountryDropdown && filteredCountries.length > 0 && (
@@ -403,30 +405,30 @@ export default function BranchesPage() {
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">City</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.city", "City")}</label>
                   <input required value={form.city} onChange={e => setForm(p => ({...p, city: e.target.value}))}
                     placeholder="Yerevan" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Street Address</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.streetAddress", "Street Address")}</label>
                 <input required value={form.line1} onChange={e => setForm(p => ({...p, line1: e.target.value}))}
                   disabled={!form.country || !form.city}
                   title={(!form.country || !form.city) ? "Please select Country and City first" : ""}
                   placeholder="123 Main Street" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
               <div className="w-1/2 pr-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Zip Code</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.zipCode", "Zip Code")}</label>
                 <input value={form.zipCode} onChange={e => setForm(p => ({...p, zipCode: e.target.value}))}
                   placeholder="0001" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
               </div>
               
               <div>
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center justify-between">
-                  Phone Numbers (Max 4)
+                  {t("branchesPage.phone", "Phone Numbers")}
                   {form.phoneNumbers.length < 4 && (
                     <button type="button" onClick={() => setForm(p => ({...p, phoneNumbers: [...p.phoneNumbers, ""]}))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline normal-case">
-                      <Plus className="h-3 w-3" /> Add Phone
+                      <Plus className="h-3 w-3" /> {t("common.add", "Add")}
                     </button>
                   )}
                 </label>
@@ -453,11 +455,11 @@ export default function BranchesPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
-                    📍 Pin Location on Map
+                    {t("branchesPage.pinLocation", "📍 Pin Location on Map")}
                     {isGeocoding && <span className="ml-2 text-xs text-[#E5555E] font-medium normal-case inline-flex items-center"><Loader2 className="h-3 w-3 animate-spin mr-1"/> Locating...</span>}
                   </label>
                   <button type="button" onClick={handleForwardGeocode} disabled={isGeocoding} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline disabled:opacity-50">
-                    <Search className="h-3 w-3" /> Find on Map
+                    <Search className="h-3 w-3" /> {t("branchesPage.findOnMap", "Find on Map")}
                   </button>
                 </div>
                 {mapError && (
@@ -478,18 +480,18 @@ export default function BranchesPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Working Days</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("branchesPage.workingDays", "Working Days")}</label>
                 <div className="flex gap-2 flex-wrap">
                   {WEEKDAYS.map((d, i) => (
                     <button type="button" key={i} onClick={() => toggleWorkday(i)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${form.workdays.includes(i) ? "bg-[#C69C9B] text-white border-[#C69C9B]" : "bg-[#FAFAFA] text-muted-foreground border-border/60"}`}>
-                      {d}
+                      {t(`calendar.${d.toLowerCase()}`, d)}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Operating Hours</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.operatingHours", "Operating Hours")}</label>
                 <div className="flex gap-2">
                   <TimePicker value={form.openTime} onChange={(val) => setForm(p => ({...p, openTime: val}))} />
                   <span className="text-muted-foreground self-center">-</span>
@@ -500,9 +502,9 @@ export default function BranchesPage() {
               {/* Break Periods */}
               <div className="pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Break Periods</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">{t("branchesPage.breakPeriods", "Break Periods")}</label>
                   <button type="button" onClick={() => setForm(p => ({ ...p, breaks: [...p.breaks, { weekday: -1, startTime: "13:00", endTime: "14:00" }] }))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline">
-                    <Plus className="h-3 w-3" /> Add Break
+                    <Plus className="h-3 w-3" /> {t("branchesPage.addBreak", "Add Break")}
                   </button>
                 </div>
                 {form.breaks.map((b, idx) => (
@@ -512,8 +514,8 @@ export default function BranchesPage() {
                       newBreaks[idx].weekday = parseInt(e.target.value);
                       setForm(p => ({ ...p, breaks: newBreaks }));
                     }} className="flex-1 px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#C69C9B]">
-                      <option value="-1">All Working Days</option>
-                      {WEEKDAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                      <option value="-1">{t("branchesPage.allWorkingDays", "All Working Days")}</option>
+                      {WEEKDAYS.map((d, i) => <option key={i} value={i}>{t(`calendar.${d.toLowerCase()}`, d)}</option>)}
                     </select>
                     <TimePicker 
                       value={b.startTime} 
@@ -539,14 +541,14 @@ export default function BranchesPage() {
                   </div>
                 ))}
                 {form.breaks.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">No break periods defined.</p>
+                  <p className="text-xs text-muted-foreground italic">{t("branchesPage.noBreaksDefined", "No break periods defined.")}</p>
                 )}
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">Cancel</button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">{t("common.cancel", "Cancel")}</button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors">
-                  {saving ? "Saving..." : editId ? "Update" : "Create"}
+                  {saving ? t("common.saving", "Saving...") : editId ? t("common.update", "Update") : t("common.create", "Create")}
                 </button>
               </div>
             </form>

@@ -9,6 +9,7 @@ import { MapPin, Clock, ChevronRight, ChevronLeft, CheckCircle, User } from "luc
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
 
 interface BranchData {
   _id: string
@@ -36,6 +37,7 @@ const HOURS = Array.from({ length: 13 }, (_, i) => `${(i + 8).toString().padStar
 export default function DashboardBookPage() {
   const { partnerId, partner } = usePartner()
   const { user } = useAuth()
+  const { t, i18n } = useTranslation()
 
   const [branches, setBranches] = useState<BranchData[]>([])
   const [services, setServices] = useState<ServiceData[]>([])
@@ -128,12 +130,12 @@ export default function DashboardBookPage() {
 
   const handleSubmit = async () => {
     if (!selectedTime || selectedServices.length === 0 || !selectedBranch) {
-      toast.error("Please select a branch, at least one service, and a time")
+      toast.error(t("bookDashboard.selectBranchServiceTime", "Please select a branch, at least one service, and a time"))
       return
     }
     
     if (!clientName.trim() || !clientPhone.trim()) {
-      toast.error("Please provide client name and phone number")
+      toast.error(t("bookDashboard.provideClientInfo", "Please provide client name and phone number"))
       return
     }
 
@@ -182,21 +184,21 @@ export default function DashboardBookPage() {
         <main className="flex-1 p-6 lg:p-8">
           <div className="max-w-3xl mx-auto space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Create Booking</h1>
-              <p className="text-muted-foreground mt-1">Create a walk-in or phone booking for a client.</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("bookDashboard.createBooking")}</h1>
+              <p className="text-muted-foreground mt-1">{t("bookDashboard.createBookingDesc")}</p>
             </div>
 
             {/* Client Info */}
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">Client Information</h3>
+              <h3 className="font-semibold text-foreground">{t("bookDashboard.clientInfo")}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <input
-                  type="text" placeholder="Client Name" value={clientName}
+                  type="text" placeholder={t("bookDashboard.clientName")} value={clientName}
                   onChange={e => setClientName(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                 />
                 <input
-                  type="tel" placeholder="Phone Number" value={clientPhone}
+                  type="tel" placeholder={t("bookDashboard.phoneNumber")} value={clientPhone}
                   onChange={e => setClientPhone(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                 />
@@ -206,7 +208,7 @@ export default function DashboardBookPage() {
             {/* Branch Selection */}
             {branches.length > 0 && (
               <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-3">
-                <h3 className="font-semibold text-foreground">Branch</h3>
+                <h3 className="font-semibold text-foreground">{t("bookDashboard.branch")}</h3>
                 <div className="flex flex-wrap gap-2">
                   {branches.map(b => (
                     <button
@@ -228,7 +230,7 @@ export default function DashboardBookPage() {
 
             {/* Service Selection */}
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-3">
-              <h3 className="font-semibold text-foreground">Services</h3>
+              <h3 className="font-semibold text-foreground">{t("bookDashboard.services")}</h3>
               <div className="space-y-2">
                 {branchServices.map(s => (
                   <label
@@ -250,7 +252,7 @@ export default function DashboardBookPage() {
                       {selectedServices.includes(s._id) && <CheckCircle className="h-3 w-3 text-white" />}
                     </div>
                     <span className="flex-1 text-sm font-medium">{s.name}</span>
-                    <span className="text-sm text-muted-foreground">{s.duration}min</span>
+                    <span className="text-sm text-muted-foreground">{s.duration}{t("common.min")}</span>
                     <span className="text-sm font-bold">{formatPrice(s.price, partner?.currency)}</span>
                   </label>
                 ))}
@@ -260,7 +262,7 @@ export default function DashboardBookPage() {
             {/* Specialist */}
             {availableSpecialists.length > 0 && selectedBranch && selectedServices.length > 0 && (
               <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-3">
-                <h3 className="font-semibold text-foreground">Specialist</h3>
+                <h3 className="font-semibold text-foreground">{t("bookDashboard.specialist")}</h3>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setSelectedSpecialist(null)}
@@ -269,7 +271,7 @@ export default function DashboardBookPage() {
                         ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' : 'border-border/60 hover:border-[#C69C9B]'
                     }`}
                   >
-                    Any Available
+                    {t("bookDashboard.anyAvailable")}
                   </button>
                   {availableSpecialists.map(sp => (
                     <button
@@ -290,10 +292,10 @@ export default function DashboardBookPage() {
             {/* Date & Time */}
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="font-semibold text-foreground">Date & Time</h3>
+                <h3 className="font-semibold text-foreground">{t("bookDashboard.dateAndTime")}</h3>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold text-muted-foreground bg-[#FAFAFA] px-3 py-1.5 rounded-lg border border-border/40">
-                    {dates[0].toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    {dates[0].toLocaleDateString(i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })}
                   </span>
                   
                   {/* Jump to Date Picker */}
@@ -342,13 +344,14 @@ export default function DashboardBookPage() {
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {dates.map((d, i) => {
                   const isSelected = selectedDate.toDateString() === d.toDateString()
+                  const localeStr = i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
                   return (
                     <button key={i} onClick={() => setSelectedDate(d)}
                       className={`flex flex-col items-center px-3 py-2 rounded-lg border shrink-0 text-xs transition-all ${
                         isSelected ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' : 'border-border/60 hover:border-[#C69C9B]'
                       }`}
                     >
-                      <span className="font-medium">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                      <span className="font-medium capitalize">{d.toLocaleDateString(localeStr, { weekday: 'short' })}</span>
                       <span className="text-lg font-bold">{d.getDate()}</span>
                     </button>
                   )
@@ -377,9 +380,9 @@ export default function DashboardBookPage() {
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <span className="text-sm text-muted-foreground">{selectedServices.length} {selectedServices.length === 1 ? 'service' : 'services'}</span>
+                  <span className="text-sm text-muted-foreground">{selectedServices.length} {selectedServices.length === 1 ? t("common.service") : t("common.services")}</span>
                   <span className="mx-2 text-muted-foreground">·</span>
-                  <span className="text-sm text-muted-foreground">{totalDuration} min</span>
+                  <span className="text-sm text-muted-foreground">{totalDuration} {t("common.min")}</span>
                 </div>
                 <span className="text-xl font-bold text-[#E5555E]">{formatPrice(totalPrice, partner?.currency)}</span>
               </div>
@@ -388,7 +391,7 @@ export default function DashboardBookPage() {
                 disabled={isSubmitting || selectedServices.length === 0 || !selectedTime || !selectedBranch || !clientName.trim() || !clientPhone.trim()}
                 className="w-full py-3 bg-[#E5555E] text-white rounded-lg text-sm font-semibold hover:bg-[#d44850] transition-colors disabled:opacity-50"
               >
-                {isSubmitting ? "Creating..." : "Create Booking"}
+                {isSubmitting ? t("common.creating") : t("bookDashboard.createBookingBtn")}
               </button>
             </div>
 

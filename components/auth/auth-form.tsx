@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { SmsVerification } from "./sms-verification"
+import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
 interface AuthFormProps {
@@ -38,14 +39,14 @@ interface AuthFormProps {
 }
 
 const businessTypes = [
-  { value: "salon", label: "Salon & Spa" },
-  { value: "medical", label: "Medical Practice" },
-  { value: "fitness", label: "Fitness Studio" },
-  { value: "consulting", label: "Consulting Services" },
-  { value: "restaurant", label: "Restaurant & Dining" },
-  { value: "auto", label: "Auto Service" },
-  { value: "pet", label: "Pet Grooming" },
-  { value: "other", label: "Other" },
+  { value: "salon", labelKey: "landing.salonSpa" },
+  { value: "medical", labelKey: "landing.medicalPractice" },
+  { value: "fitness", labelKey: "landing.fitnessStudio" },
+  { value: "consulting", labelKey: "landing.consultingServices" },
+  { value: "restaurant", labelKey: "landing.restaurantDining" },
+  { value: "auto", labelKey: "landing.autoService" },
+  { value: "pet", labelKey: "landing.petGrooming" },
+  { value: "other", labelKey: "landing.other" },
 ]
 
 const countryCodes = [
@@ -72,6 +73,7 @@ const countryCodes = [
 ]
 
 export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFormProps) {
+  const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
   const [formData, setFormData] = useState({
@@ -200,16 +202,16 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
       {/* Header */}
       <div>
         <h2 className="text-2xl font-semibold text-foreground">
-          {activeTab === "signup" ? "Create an account" : activeTab === "forgot" ? "Reset your password" : activeTab === "reset-verify" ? "Set New Password" : "Welcome back"}
+          {activeTab === "signup" ? t("auth.createAccount") : activeTab === "forgot" ? t("auth.forgotPassword") : activeTab === "reset-verify" ? t("auth.verifyPhoneNumber") : t("auth.welcome")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {activeTab === "signup"
-            ? "Start your journey with us today"
+            ? t("auth.createAccountDesc")
             : activeTab === "forgot"
-              ? "Enter your phone number to receive a reset code"
+              ? t("auth.verifyDesc")
               : activeTab === "reset-verify"
-                ? "Enter the 6-digit code sent to your phone"
-                : "Sign in to continue to your account"}
+                ? t("auth.weSentCode")
+                : t("auth.welcomeDesc")}
         </p>
       </div>
 
@@ -219,12 +221,13 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           <button
             type="button"
             onClick={() => onTabChange("signin")}
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${activeTab === "signin"
+            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
+              activeTab === "signin"
                 ? "text-[#E5555E]"
                 : "text-muted-foreground hover:text-foreground"
-              }`}
+            }`}
           >
-            Sign In
+            {t("auth.signIn")}
             {activeTab === "signin" && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
             )}
@@ -232,12 +235,13 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           <button
             type="button"
             onClick={() => onTabChange("signup")}
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${activeTab === "signup"
+            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
+              activeTab === "signup"
                 ? "text-[#E5555E]"
                 : "text-muted-foreground hover:text-foreground"
-              }`}
+            }`}
           >
-            Sign Up
+            {t("auth.signUp")}
             {activeTab === "signup" && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
             )}
@@ -268,7 +272,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           size="lg"
           disabled={loading}
         >
-          {loading ? "Processing..." : (activeTab === "signup" ? "Create Account" : activeTab === "forgot" ? "Send Reset Code" : activeTab === "reset-verify" ? "Verify & Save" : "Sign In")}
+          {loading ? t("auth.processing") : (activeTab === "signup" ? t("auth.createAccount") : activeTab === "forgot" ? t("auth.sendCode") : activeTab === "reset-verify" ? t("common.confirm") : t("auth.signIn"))}
           {!loading && <ChevronRight className="ml-1 h-4 w-4" />}
         </Button>
 
@@ -286,56 +290,43 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
         {(activeTab !== "forgot" && activeTab !== "reset-verify") && (
           <>
-            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-3 text-muted-foreground">
-                  Or continue with
+                  {t("auth.orContinueWith")}
                 </span>
               </div>
             </div>
 
             {/* Google Button */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
               size="lg"
               onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/google`}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M5.26620003,9.76452941 C6.19878754,6.93863203 8.85444915,4.90909091 12,4.90909091 C13.6909091,4.90909091 15.2181818,5.50909091 16.4181818,6.49090909 L19.9090909,3 C17.7818182,1.14545455 15.0545455,0 12,0 C7.27006974,0 3.1977497,2.69829785 1.23999023,6.65002441 L5.26620003,9.76452941 Z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M16.0407269,18.0125889 C14.9509167,18.7163016 13.5660892,19.0909091 12,19.0909091 C8.86648613,19.0909091 6.21911939,17.076871 5.27698177,14.2678769 L1.23746264,17.3349879 C3.19279051,21.2936293 7.26500293,24 12,24 C14.9328362,24 17.7353462,22.9573905 19.834192,20.9995801 L16.0407269,18.0125889 Z"
-                />
-                <path
-                  fill="#4A90E2"
-                  d="M19.834192,20.9995801 C22.0291676,18.9520994 23.4545455,15.903663 23.4545455,12 C23.4545455,11.2909091 23.3454545,10.5272727 23.1818182,9.81818182 L12,9.81818182 L12,14.4545455 L18.4363636,14.4545455 C18.1187732,16.013626 17.2662994,17.2212117 16.0407269,18.0125889 L19.834192,20.9995801 Z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7 1.23746264,17.3349879 L5.27698177,14.2678769 Z"
-                />
+                <path fill="#EA4335" d="M5.26620003,9.76452941 C6.19878754,6.93863203 8.85444915,4.90909091 12,4.90909091 C13.6909091,4.90909091 15.2181818,5.50909091 16.4181818,6.49090909 L19.9090909,3 C17.7818182,1.14545455 15.0545455,0 12,0 C7.27006974,0 3.1977497,2.69829785 1.23999023,6.65002441 L5.26620003,9.76452941 Z" />
+                <path fill="#34A853" d="M16.0407269,18.0125889 C14.9509167,18.7163016 13.5660892,19.0909091 12,19.0909091 C8.86648613,19.0909091 6.21911939,17.076871 5.27698177,14.2678769 L1.23746264,17.3349879 C3.19279051,21.2936293 7.26500293,24 12,24 C14.9328362,24 17.7353462,22.9573905 19.834192,20.9995801 L16.0407269,18.0125889 Z" />
+                <path fill="#4A90E2" d="M19.834192,20.9995801 C22.0291676,18.9520994 23.4545455,15.903663 23.4545455,12 C23.4545455,11.2909091 23.3454545,10.5272727 23.1818182,9.81818182 L12,9.81818182 L12,14.4545455 L18.4363636,14.4545455 C18.1187732,16.013626 17.2662994,17.2212117 16.0407269,18.0125889 L19.834192,20.9995801 Z" />
+                <path fill="#FBBC05" d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7 1.23746264,17.3349879 L5.27698177,14.2678769 Z" />
               </svg>
-              Continue with Google
+              {t("auth.continueGoogle")}
             </Button>
 
             {/* Terms */}
             <p className="text-center text-xs text-muted-foreground">
-              By continuing, you agree to HayBooking&apos;s{" "}
+              {t("auth.termsAgree")}{" "}
               <Link href="#" className="underline hover:text-foreground">
-                Terms of Service
+                {t("auth.terms")}
               </Link>{" "}
-              and{" "}
+              {t("auth.and")}{" "}
               <Link href="#" className="underline hover:text-foreground">
-                Privacy Policy
+                {t("auth.privacy")}
               </Link>
               .
             </p>
@@ -345,9 +336,9 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-muted">
                 <User className="h-4 w-4" />
               </div>
-              <span>Need help?</span>
+              <span>{t("auth.needHelp")}</span>
               <Link href="#" className="text-foreground underline hover:text-primary">
-                Contact our concierge
+                {t("auth.contactConcierge")}
               </Link>
             </div>
           </>
@@ -380,6 +371,7 @@ function SignUpForm({
   isBusinessPartner,
   setIsBusinessPartner,
 }: SignUpFormProps) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -388,7 +380,7 @@ function SignUpForm({
       {/* Name Fields */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Name</Label>
+          <Label htmlFor="firstName">{t("auth.name")}</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -401,7 +393,7 @@ function SignUpForm({
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Surname</Label>
+          <Label htmlFor="lastName">{t("auth.surname")}</Label>
           <Input
             id="lastName"
             placeholder="Doe"
@@ -413,7 +405,7 @@ function SignUpForm({
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email">{t("common.email")}</Label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -429,7 +421,7 @@ function SignUpForm({
 
       {/* Phone with Country Code */}
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone">{t("common.phone")}</Label>
         <div className="flex gap-2">
           <Select
             value={formData.countryCode}
@@ -462,7 +454,7 @@ function SignUpForm({
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("common.password")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -485,7 +477,7 @@ function SignUpForm({
 
       {/* Confirm Password */}
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword">{t("auth.confirmPass")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -505,7 +497,7 @@ function SignUpForm({
           </button>
         </div>
         {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-          <p className="text-xs text-red-500">Passwords do not match</p>
+          <p className="text-xs text-red-500">{t("auth.passwordsNoMatch")}</p>
         )}
       </div>
 
@@ -518,7 +510,7 @@ function SignUpForm({
           className="data-[state=checked]:bg-[#E5555E] data-[state=checked]:border-[#E5555E] data-[state=checked]:text-white"
         />
         <Label htmlFor="business" className="cursor-pointer text-sm font-normal">
-          Register as a Business Partner
+          {t("auth.registerBusiness")}
         </Label>
       </div>
 
@@ -527,11 +519,11 @@ function SignUpForm({
         <div className="rounded-lg border border-dashed border-[#E5555E]/30 bg-[#E5555E]/5 p-4 space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[#E5555E] tracking-wider uppercase">
             <Building2 className="h-4 w-4" />
-            BUSINESS DETAILS
+            {t("auth.businessDetails")}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="businessName">Business Name</Label>
+            <Label htmlFor="businessName">{t("dashboard.businessName")}</Label>
             <Input
               id="businessName"
               placeholder="HayBooking Solutions Ltd."
@@ -541,18 +533,18 @@ function SignUpForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="businessType">Business Type</Label>
+            <Label htmlFor="businessType">{t("dashboard.businessType")}</Label>
             <Select
               value={formData.businessType}
               onValueChange={(value) => onInputChange("businessType", value)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select business type" />
+                <SelectValue placeholder={t("dashboard.selectType")} />
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                    {t(type.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -576,13 +568,14 @@ interface SignInFormProps {
 }
 
 function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <>
       {/* Phone Number with Country Code */}
       <div className="space-y-2">
-        <Label htmlFor="signin-phone">Phone Number</Label>
+        <Label htmlFor="signin-phone">{t("common.phone")}</Label>
         <div className="flex gap-2">
           <Select
             value={formData.countryCode}
@@ -615,7 +608,7 @@ function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
 
       {/* Password with eye toggle */}
       <div className="space-y-2">
-        <Label htmlFor="signin-password">Password</Label>
+        <Label htmlFor="signin-password">{t("common.password")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input

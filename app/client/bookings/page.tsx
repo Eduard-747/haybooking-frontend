@@ -7,6 +7,7 @@ import api from "@/lib/api"
 import { useAuth } from "@/components/auth/auth-provider"
 import { toast } from "sonner"
 import { RoleGuard } from "@/components/auth/role-guard"
+import { useTranslation } from "react-i18next"
 
 interface BookingFromApi {
   _id: string
@@ -20,8 +21,9 @@ interface BookingFromApi {
   branchId?: { _id: string; address: { line1: string; city: string; country: string } } | string | null
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+function formatDate(iso: string, language: string = 'en') {
+  const localeStr = language === 'am' ? 'hy-AM' : language === 'ru' ? 'ru-RU' : 'en-US'
+  return new Date(iso).toLocaleDateString(localeStr, { month: "short", day: "numeric", year: "numeric" })
 }
 
 function formatTime(iso: string) {
@@ -36,6 +38,7 @@ const statusColors: Record<string, string> = {
 }
 
 export default function MyBookingsPage() {
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [bookings, setBookings] = useState<BookingFromApi[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -169,7 +172,7 @@ export default function MyBookingsPage() {
                       <h3 className="text-base font-bold text-foreground truncate">{serviceName}</h3>
                     )}
                     <span className={`shrink-0 px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${statusColors[statusKey] || "bg-[#FAFAFA] border-border/50 text-muted-foreground"}`}>
-                      {booking.status}
+                      {t(`common.${statusKey}` as any, booking.status)}
                     </span>
                   </div>
                   
@@ -178,7 +181,7 @@ export default function MyBookingsPage() {
                     {specialistName && (
                       <>
                         <span className="hidden sm:inline text-border">•</span>
-                        <p className="text-sm font-medium text-[#C69C9B] truncate">with {specialistName}</p>
+                        <p className="text-sm font-medium text-[#C69C9B] truncate">{t("common.with")} {specialistName}</p>
                       </>
                     )}
                   </div>
@@ -186,7 +189,7 @@ export default function MyBookingsPage() {
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground mt-3 pt-3 border-t border-border/40">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="h-3.5 w-3.5 text-[#C69C9B]" />
-                      {formatDate(booking.startTime)}
+                      {formatDate(booking.startTime, i18n.language)}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-[#C69C9B]" />

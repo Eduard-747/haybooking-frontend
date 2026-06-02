@@ -69,6 +69,25 @@ export function NotificationsPopover() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
+  const getTranslatedTitle = (title: string) => {
+    switch (title) {
+      case "New Booking Received": return t("dashboard.newBookingReceived", "New Booking Received");
+      case "Booking Cancelled": return t("dashboard.bookingCancelled", "Booking Cancelled");
+      default: return t(title, title);
+    }
+  }
+
+  const getTranslatedMessage = (msg: string) => {
+    if (msg === "A client has requested a new appointment.") {
+      return t("dashboard.clientRequestedNew", "A client has requested a new appointment.");
+    }
+    if (msg.includes("has cancelled their appointment.")) {
+      const name = msg.split(" ")[0];
+      return t("dashboard.userCancelledAppointment", "{{name}} has cancelled their appointment.", { name });
+    }
+    return t(msg, msg);
+  }
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -119,10 +138,10 @@ export function NotificationsPopover() {
                     </div>
                     <div className="flex-1 space-y-1">
                       <p className={`text-sm ${!n.read ? 'font-semibold text-foreground' : 'font-medium text-foreground/80'}`}>
-                        {n.title}
+                        {getTranslatedTitle(n.title)}
                       </p>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        {n.message}
+                        {getTranslatedMessage(n.message)}
                       </p>
                       <div className="flex items-center gap-1 pt-1">
                         <Clock className="w-3 h-3 text-muted-foreground/60" />

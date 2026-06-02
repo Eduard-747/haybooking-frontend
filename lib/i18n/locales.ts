@@ -285,7 +285,11 @@ export const resources = {
         urlCopied: "URL copied to clipboard!",
         urlCopyFailed: "Failed to copy URL",
         bookingStatusUpdated: "Booking",
-        bookingStatusFailed: "Failed to update booking status"
+        bookingStatusFailed: "Failed to update booking status",
+        newBookingReceived: "New Booking Received",
+        bookingCancelled: "Booking Cancelled",
+        clientRequestedNew: "A client has requested a new appointment.",
+        userCancelledAppointment: "{{name}} has cancelled their appointment."
       },
       calendar: {
         week: "Week",

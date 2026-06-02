@@ -8,6 +8,7 @@ import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface Specialist {
   _id: string
@@ -21,6 +22,7 @@ interface Branch { _id: string; address: { city: string; line1?: string } }
 interface Service { _id: string; name: string }
 
 export default function SpecialistsPage() {
+  const { t } = useTranslation()
   const { partnerId, loading: partnerLoading } = usePartner()
   const { selectedBranchId } = useBranchContext()
   const [specialists, setSpecialists] = useState<Specialist[]>([])
@@ -70,10 +72,10 @@ export default function SpecialistsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this specialist?")) return
+    if (!confirm(t("specialistsPage.deleteConfirm", "Delete this specialist?"))) return
     try {
       await api.delete(`/specialists/${id}`)
-      toast.success("Specialist deleted")
+      toast.success(t("common.deleted", "Deleted"))
       fetchAll()
     } catch { toast.error("Failed to delete") }
   }
@@ -95,10 +97,10 @@ export default function SpecialistsPage() {
       }
       if (editId) {
         await api.put(`/specialists/${editId}`, payload)
-        toast.success("Specialist updated")
+        toast.success(t("common.updated", "Updated"))
       } else {
         await api.post('/specialists', payload)
-        toast.success("Specialist added")
+        toast.success(t("common.created", "Created"))
       }
       setShowModal(false)
       fetchAll()
@@ -131,17 +133,17 @@ export default function SpecialistsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Specialists</h1>
-                <p className="text-sm text-muted-foreground mt-1">{specialists.length} team members</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("specialistsPage.specialists", "Specialists")}</h1>
+                <p className="text-sm text-muted-foreground mt-1">{specialists.length} {t("specialistsPage.teamMembers", "team members")}</p>
               </div>
               <div className="flex items-center gap-3">
                 <input
                   value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Search specialists..."
+                  placeholder={t("specialistsPage.searchSpecialists", "Search specialists...")}
                   className="px-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#C69C9B]"
                 />
                 <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
-                  <Plus className="h-4 w-4" /> Add Specialist
+                  <Plus className="h-4 w-4" /> {t("specialistsPage.addSpecialist", "Add Specialist")}
                 </button>
               </div>
             </div>
@@ -149,9 +151,9 @@ export default function SpecialistsPage() {
             {/* Stats Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
               {[
-                { label: "Total Specialists", value: specialists.length },
-                { label: "Total Branches", value: branches.length },
-                { label: "Total Services", value: services.length },
+                { label: t("specialistsPage.totalSpecialists", "Total Specialists"), value: specialists.length },
+                { label: t("specialistsPage.totalBranches", "Total Branches"), value: branches.length },
+                { label: t("specialistsPage.totalServices", "Total Services"), value: services.length },
               ].map(s => (
                 <div key={s.label} className="bg-white rounded-xl border border-border/60 shadow-sm p-5 text-center">
                   <p className="text-2xl font-bold text-foreground">{s.value}</p>
@@ -167,10 +169,10 @@ export default function SpecialistsPage() {
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-border/40 text-center">
                 <User className="h-12 w-12 text-[#C69C9B]/40 mb-3" />
-                <h2 className="font-bold text-foreground mb-1">No specialists yet</h2>
-                <p className="text-sm text-muted-foreground mb-6">Add your first team member to assign them to services.</p>
+                <h2 className="font-bold text-foreground mb-1">{t("specialistsPage.noSpecialistsYet", "No specialists yet")}</h2>
+                <p className="text-sm text-muted-foreground mb-6">{t("specialistsPage.addFirstTeamMember", "Add your first team member to assign them to services.")}</p>
                 <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] text-white text-sm font-bold rounded-xl">
-                  <Plus className="h-4 w-4" /> Add Specialist
+                  <Plus className="h-4 w-4" /> {t("specialistsPage.addSpecialist", "Add Specialist")}
                 </button>
               </div>
             ) : (
@@ -188,7 +190,7 @@ export default function SpecialistsPage() {
                         )}
                         <div>
                           <h3 className="font-bold text-foreground">{s.name}</h3>
-                          <p className="text-xs text-muted-foreground">Specialist</p>
+                          <p className="text-xs text-muted-foreground">{t("specialistsPage.specialist", "Specialist")}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -203,7 +205,7 @@ export default function SpecialistsPage() {
 
                     {s.assignedServices.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Services</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("dashboard.services", "Services")}</p>
                         <div className="flex flex-wrap gap-1.5">
                           {s.assignedServices.map(sv => (
                             <span key={sv._id} className="px-2 py-0.5 bg-[#FAFAFA] border border-border/50 rounded text-xs text-muted-foreground">{sv.name}</span>
@@ -214,10 +216,10 @@ export default function SpecialistsPage() {
 
                     {s.assignedBranches.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Branches</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("branchesPage.branches", "Branches")}</p>
                         <div className="flex flex-wrap gap-1.5">
                           {s.assignedBranches.map(b => (
-                            <span key={b._id} className="px-2 py-0.5 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded text-xs text-[#C69C9B] font-medium">{b.address?.line1 ? `${b.address.line1}, ${b.address.city}` : b.address?.city || "Branch"}</span>
+                            <span key={b._id} className="px-2 py-0.5 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded text-xs text-[#C69C9B] font-medium">{b.address?.line1 ? `${b.address.line1}, ${b.address.city}` : b.address?.city || t("branchesPage.branches", "Branch")}</span>
                           ))}
                         </div>
                       </div>
@@ -235,20 +237,20 @@ export default function SpecialistsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-5 border-b border-border/40">
-              <h2 className="text-lg font-bold">{editId ? "Edit Specialist" : "Add Specialist"}</h2>
+              <h2 className="text-lg font-bold">{editId ? t("specialistsPage.editSpecialist", "Edit Specialist") : t("specialistsPage.addSpecialist", "Add Specialist")}</h2>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-5">
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Full Name</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("specialistsPage.fullName", "Full Name")}</label>
                 <input required value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))}
                   placeholder="Jane Smith" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Specialist Photo</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("specialistsPage.specialistPhoto", "Specialist Photo")}</label>
                 <div className="flex items-center gap-4">
                   <div className="relative group">
                     <div className="h-16 w-16 rounded-full bg-[#F5EAEA] border border-border/60 flex items-center justify-center overflow-hidden shrink-0">
@@ -264,14 +266,14 @@ export default function SpecialistsPage() {
                     </label>
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">Upload a profile picture for this specialist. Recommended size: 256x256px.</p>
+                    <p className="text-xs text-muted-foreground">{t("specialistsPage.specialistPhotoDesc", "Upload a profile picture for this specialist. Recommended size: 256x256px.")}</p>
                   </div>
                 </div>
               </div>
 
               {services.length > 0 && (
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Assigned Services</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("specialistsPage.assignedServices", "Assigned Services")}</label>
                   <div className="flex flex-wrap gap-2">
                     {services.map(sv => (
                       <button type="button" key={sv._id}
@@ -286,7 +288,7 @@ export default function SpecialistsPage() {
 
               {branches.length > 0 && (
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Assigned Branches</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("specialistsPage.assignedBranches", "Assigned Branches")}</label>
                   <div className="flex flex-wrap gap-2">
                     {branches.map(b => (
                       <button type="button" key={b._id}
@@ -300,9 +302,9 @@ export default function SpecialistsPage() {
               )}
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">Cancel</button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">{t("common.cancel", "Cancel")}</button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors">
-                  {saving ? "Saving..." : editId ? "Update" : "Add"}
+                  {saving ? t("common.saving", "Saving...") : editId ? t("common.update", "Update") : t("common.add", "Add")}
                 </button>
               </div>
             </form>

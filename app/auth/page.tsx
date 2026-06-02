@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui/logo"
 function AuthPageContent() {
   const searchParams = useSearchParams()
   const tab = searchParams.get("tab")
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">(
+  const [activeTab, setActiveTab] = useState<"signin" | "signup" | "forgot" | "reset-verify">(
     tab === "signup" ? "signup" : "signin"
   )
 

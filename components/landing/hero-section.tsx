@@ -28,7 +28,7 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
     }
   }
   return (
-    <section className="w-full flex flex-col items-center justify-center py-20 px-4 text-center">
+    <section className="w-full flex flex-col items-center justify-center pt-20 pb-4 px-4 text-center">
       <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[#1C1F26] mb-4" dangerouslySetInnerHTML={{ __html: t("landing.heroTitle", "Book Your Next <span class=\"bg-clip-text text-transparent bg-gradient-to-r from-[#b3888b] to-[#d6b4b6]\">Service</span><br/>Instantly") }} />
       <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-10">
         {t("landing.heroDesc", "Discover and book appointments with top-rated local professionals. From your morning coffee to your next hair appointment, we've got you covered.")}

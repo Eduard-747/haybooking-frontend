@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import Link from "next/link"
 import { Calendar } from "@/components/ui/calendar"
-import { Clock, User, Phone, Mail, Loader2, CheckCircle, XCircle, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { Clock, User, Phone, Mail, Loader2, CheckCircle, XCircle, CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
@@ -50,7 +51,7 @@ export default function BusinessDashboardPage() {
   const { t } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(undefined)
   const [stats, setStats] = useState({ total: 0, confirmed: 0, cancelled: 0, declined: 0 })
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -79,6 +80,10 @@ export default function BusinessDashboardPage() {
     else if (!partnerLoading && !branchesLoading) setIsLoading(false)
   }, [partnerId, partnerLoading, branchesLoading, fetchBookings])
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [date])
+
   const updateStatus = async (id: string, status: string) => {
     try {
       await api.patch(`/bookings/${id}/status`, { status })
@@ -95,28 +100,41 @@ export default function BusinessDashboardPage() {
     return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
   })
 
+  // Filter by selected date
+  const filteredBookings = date
+    ? bookings.filter(b => {
+        const d = new Date(b.startTime)
+        return d.getDate() === date.getDate() && 
+               d.getMonth() === date.getMonth() && 
+               d.getFullYear() === date.getFullYear()
+      })
+    : bookings;
+
   // Sort by createdAt desc
-  const sortedBookings = [...bookings].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedBookings = [...filteredBookings].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Paginate
   const totalPages = Math.ceil(sortedBookings.length / ITEMS_PER_PAGE);
   const paginatedBookings = sortedBookings.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex font-sans">
+    <div className="h-screen bg-[#FAFAFA] flex font-sans overflow-hidden">
       <DashboardSidebar activePath="/dashboard" />
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+      <div className="flex-1 flex flex-col h-screen min-w-0">
         <DashboardHeader />
-        <main className="flex-1 p-6 lg:p-8">
-          <div className="flex flex-col xl:flex-row gap-8">
+        <main className="flex-1 p-6 lg:p-8 overflow-hidden flex flex-col">
+          <div className="flex flex-col xl:flex-row gap-8 flex-1 overflow-hidden">
 
             {/* Left Column: Bookings */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")}</h1>
-                  <p className="text-sm text-muted-foreground mt-0.5">{bookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
+                  <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")} {date ? `- ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}</h1>
+                  <p className="text-sm text-muted-foreground mt-0.5">{filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
                 </div>
+                <Link href="/dashboard/book" className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start md:self-auto">
+                  <Plus className="h-4 w-4" /> {t("dashboard.createBooking", "Create Booking")}
+                </Link>
               </div>
 
               {(isLoading || partnerLoading) ? (
@@ -127,8 +145,12 @@ export default function BusinessDashboardPage() {
                 <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
                   <p className="text-muted-foreground text-sm">{t("dashboard.noBookings", "No bookings yet. Share your booking link to get started.")}</p>
                 </div>
+              ) : filteredBookings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
+                  <p className="text-muted-foreground text-sm">No bookings scheduled for {date?.toLocaleDateString("en-US", { month: "short", day: "numeric" })}.</p>
+                </div>
               ) : (
-                <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">
                   {paginatedBookings.map((booking) => {
                     const userName = booking.userId 
                       ? `${booking.userId.name || ""} ${booking.userId.surname || ""}`.trim() || "Guest" 
@@ -146,6 +168,9 @@ export default function BusinessDashboardPage() {
                       ? booking.serviceIds.reduce((sum, s) => sum + (s.price || 0), 0)
                       : booking.serviceId?.price || 0
                     const price = totalPrice ? formatPrice(totalPrice, partner?.currency) : "—"
+
+                    const isEnded = new Date(booking.endTime).getTime() < new Date().getTime();
+                    const canAccept = booking.status !== "confirmed" && booking.status !== "completed" && !isEnded;
 
                     return (
                       <div key={booking._id} className="bg-white rounded-xl border border-[#C69C9B]/30 shadow-sm p-5 hover:shadow-md transition-shadow">
@@ -169,7 +194,7 @@ export default function BusinessDashboardPage() {
                                 </button>
                               </>
                             )}
-                            {booking.status !== "confirmed" && booking.status !== "cancelled" && (
+                            {canAccept && (
                               <button onClick={() => updateStatus(booking._id, "confirmed")} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 border border-emerald-100 rounded-lg transition-colors">
                                 <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
                               </button>
@@ -253,9 +278,17 @@ export default function BusinessDashboardPage() {
             </div>
 
             {/* Right Column: Widgets */}
-            <div className="w-full xl:w-80 shrink-0 space-y-6">
+            <div className="w-full xl:w-80 shrink-0 space-y-6 overflow-y-auto pr-2 pb-4">
               <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-4 shadow-inner">
-                <h2 className="text-xl font-bold text-foreground mb-4 px-2">{t("nav.calendar", "Calendar")}</h2>
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <h2 className="text-xl font-bold text-foreground">{t("nav.calendar", "Calendar")}</h2>
+                  <button
+                    onClick={() => setDate(undefined)}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${!date ? "bg-[#C69C9B] text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"}`}
+                  >
+                    {t("dashboard.allDays", "All Days")}
+                  </button>
+                </div>
                 <div className="bg-white rounded-xl shadow-sm border border-border/40 p-2 flex justify-center">
                   <Calendar
                     mode="single"

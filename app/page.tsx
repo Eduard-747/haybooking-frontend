@@ -196,7 +196,7 @@ export default function HomePage() {
         />
 
         {/* Featured Businesses Section */}
-        <section id="results-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <section id="results-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="inline-block px-3 py-1 bg-muted rounded-full text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-4">

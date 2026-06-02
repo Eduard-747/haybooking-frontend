@@ -23,18 +23,7 @@ export function SpecialistSelection({
 }: SpecialistSelectionProps) {
   return (
     <section>
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FDEAEA] text-[#E5555E] text-sm font-bold">
-          2
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">Select Specialist</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Our certified professionals are here to provide the best wellness experience.
-          </p>
-        </div>
-      </div>
+
 
       {/* Avatars */}
       <div className="flex items-start gap-8 overflow-x-auto pb-4 pt-2 px-2 scrollbar-hide">

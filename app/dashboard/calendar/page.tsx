@@ -9,6 +9,7 @@ import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
+import { BookingModal } from "@/components/dashboard/booking-modal"
 
 interface Booking {
   _id: string
@@ -41,9 +42,10 @@ export default function CalendarPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<"Week" | "Day">("Week")
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const { t } = useTranslation()
 
-  const isBreakSlot = (day: Date, hourString: string) => {
+  const isBreakSlot = (day: Date, hour: number) => {
     if (!selectedBranchId) return false;
     const branch = branches.find(b => b._id === selectedBranchId);
     if (!branch || !branch.breaks || branch.breaks.length === 0) return false;
@@ -51,7 +53,6 @@ export default function CalendarPage() {
     const dayOfWeek = day.getDay();
     const breaks = branch.breaks.filter(b => b.weekday === dayOfWeek);
     
-    const hour = parseInt(hourString.split(':')[0], 10);
     const slotStartMins = hour * 60;
     const slotEndMins = hour * 60 + 60;
 
@@ -90,6 +91,9 @@ export default function CalendarPage() {
     try {
       await api.patch(`/bookings/${id}/status`, { status })
       toast.success(`Booking ${status}`)
+      if (selectedBooking && selectedBooking._id === id) {
+        setSelectedBooking(prev => prev ? { ...prev, status } : null)
+      }
       fetchBookings()
     } catch {
       toast.error("Failed to update status")
@@ -208,12 +212,12 @@ export default function CalendarPage() {
                           <div key={`${di}-${hour}`} onClick={() => { setCurrentDate(day); setViewMode("Day"); }} className={`border-t border-l border-border/20 min-h-[52px] p-1 relative cursor-pointer transition-colors ${isBreak ? 'bg-slate-100/60 hover:bg-slate-200/50' : 'hover:bg-gray-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">Break</span>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">{t("calendar.break", "Break")}</span>
                                </div>
                             )}
                             <div className="relative z-10">
                               {slotBookings.map(b => (
-                                <div key={b._id} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
+                                <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate cursor-pointer transition-transform hover:scale-[1.02] ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
                                   {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}
                                   {b.serviceIds && b.serviceIds.length > 0 
                                     ? ` · ${b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} +${b.serviceIds.length - 1}`}`
@@ -261,12 +265,12 @@ export default function CalendarPage() {
                           <div className={`flex-1 min-h-[400px] p-2 flex flex-col gap-2 relative transition-colors group ${isBreak ? 'bg-slate-50/80 hover:bg-slate-100/50' : 'hover:bg-slate-50/50'}`}>
                             {isBreak && slotBookings.length === 0 && (
                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">Break</span>
+                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">{t("calendar.break", "Break")}</span>
                                </div>
                             )}
                             <div className="relative z-10 flex flex-col gap-2">
                               {slotBookings.map(b => (
-                                <div key={b._id} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-sm transition-transform hover:scale-[1.02] cursor-pointer`}>
+                                <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-sm transition-transform hover:scale-[1.02] cursor-pointer`}>
                                   <div className="truncate font-bold mb-0.5">{b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}</div>
                                   <div className="truncate text-[10px] opacity-90">
                                     {b.serviceIds && b.serviceIds.length > 0 
@@ -316,8 +320,10 @@ export default function CalendarPage() {
                   {pendingBookings.map(b => {
                     const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")
                     const time = new Date(b.startTime).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                    const isEnded = new Date(b.endTime).getTime() < new Date().getTime();
+
                     return (
-                      <div key={b._id} className="p-4 bg-[#FAFAFA] rounded-xl border border-border/50">
+                      <div key={b._id} onClick={() => setSelectedBooking(b)} className="p-4 bg-[#FAFAFA] rounded-xl border border-border/50 cursor-pointer transition-transform hover:scale-[1.02] hover:bg-white shadow-sm">
                         <p className="font-bold text-sm text-foreground">{name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {b.serviceIds && b.serviceIds.length > 0 
@@ -329,20 +335,22 @@ export default function CalendarPage() {
                           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">With {b.specialistId.name}</p>
                         )}
                         <p className="text-xs text-[#C69C9B] font-medium mt-1">{time}</p>
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => updateStatus(b._id, "confirmed")}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
-                          </button>
-                          <button
-                            onClick={() => updateStatus(b._id, "declined")}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors"
-                          >
-                            <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
-                          </button>
-                        </div>
+                        {!isEnded && (
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); updateStatus(b._id, "confirmed"); }}
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); updateStatus(b._id, "declined"); }}
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -354,6 +362,13 @@ export default function CalendarPage() {
         </main>
 
       </div>
+      {selectedBooking && (
+        <BookingModal
+          booking={selectedBooking as any}
+          onClose={() => setSelectedBooking(null)}
+          onUpdateStatus={updateStatus}
+        />
+      )}
     </div>
   )
 }

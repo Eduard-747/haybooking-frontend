@@ -124,7 +124,8 @@ export const resources = {
       },
       calendar: {
         week: "Week",
-        day: "Day"
+        day: "Day",
+        break: "Break"
       }
     }
   },
@@ -253,7 +254,8 @@ export const resources = {
       },
       calendar: {
         week: "Շաբաթ",
-        day: "Օր"
+        day: "Օր",
+        break: "Ընդմիջում"
       }
     }
   },
@@ -382,7 +384,8 @@ export const resources = {
       },
       calendar: {
         week: "Неделя",
-        day: "День"
+        day: "День",
+        break: "Перерыв"
       }
     }
   }

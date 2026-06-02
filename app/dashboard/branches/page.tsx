@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Plus, Pencil, Trash2, MapPin, Phone, Clock, X, Loader2, Search } from "lucide-react"
@@ -17,7 +17,8 @@ const LocationPicker = dynamic(() => import("@/components/maps/location-picker")
 interface Branch {
   _id: string
   address: { line1: string; city: string; country: string; zipCode: string }
-  phoneNumber: string
+  phoneNumbers?: string[]
+  phoneNumber?: string
   workingHours: { weekday: number; openTime: string; closeTime: string }[]
   breaks?: { weekday: number; startTime: string; endTime: string }[]
   location?: { latitude: number; longitude: number }
@@ -45,7 +46,7 @@ const COUNTRIES = [
 ]
 
 const emptyForm = {
-  line1: "", city: "", country: "", zipCode: "", phoneNumber: "",
+  line1: "", city: "", country: "", zipCode: "", phoneNumbers: [""],
   openTime: "09:00", closeTime: "18:00",
   workdays: [1, 2, 3, 4, 5],
   latitude: 0, longitude: 0,
@@ -62,6 +63,19 @@ export default function BranchesPage() {
   const [saving, setSaving] = useState(false)
   const [countrySearch, setCountrySearch] = useState("")
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
+  const [isGeocoding, setIsGeocoding] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
+  const countryRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (countryRef.current && !countryRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const filteredCountries = useMemo(() => {
     if (!countrySearch) return COUNTRIES
@@ -89,7 +103,7 @@ export default function BranchesPage() {
     const wh = b.workingHours[0] || {}
     setForm({
       line1: b.address.line1, city: b.address.city, country: b.address.country, zipCode: b.address.zipCode,
-      phoneNumber: b.phoneNumber,
+      phoneNumbers: b.phoneNumbers && b.phoneNumbers.length > 0 ? b.phoneNumbers : (b.phoneNumber ? [b.phoneNumber] : [""]),
       openTime: (wh as any).openTime || "09:00",
       closeTime: (wh as any).closeTime || "18:00",
       workdays: b.workingHours.map(h => h.weekday),
@@ -140,11 +154,49 @@ export default function BranchesPage() {
     }
   }, [])
 
+  // Auto-geocode effect
+  useEffect(() => {
+    if (!showModal) return;
+    // Require at least line1 and city to be 3+ characters before auto-geocoding
+    if (!form.line1 || form.line1.length < 3 || !form.city || form.city.length < 3) {
+      setMapError(null);
+      return;
+    }
+    
+    const timer = setTimeout(async () => {
+      setIsGeocoding(true);
+      setMapError(null);
+      try {
+        const query = `${form.line1}, ${form.city}, ${form.country}`;
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+          setForm(prev => ({
+            ...prev,
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon)
+          }));
+        } else {
+          setMapError("Address could not be located on the map. Please refine it.");
+        }
+      } catch (e) {
+        setMapError("Map search failed. Please check your connection.");
+      } finally {
+        setIsGeocoding(false);
+      }
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timer);
+  }, [form.line1, form.city, form.country, showModal]);
+
   const handleForwardGeocode = async () => {
     if (!form.line1 && !form.city) {
       toast.error("Please enter an address first");
       return;
     }
+    setIsGeocoding(true);
+    setMapError(null);
     try {
       toast.loading("Searching location...");
       const query = `${form.line1}, ${form.city}, ${form.country}`;
@@ -159,11 +211,15 @@ export default function BranchesPage() {
         }));
         toast.success("Location updated on map");
       } else {
-        toast.error("Could not find exact location on map. Try adjusting the address.");
+        toast.error("Could not find exact location on map.");
+        setMapError("Address could not be located on the map. Please refine it.");
       }
     } catch (e) {
       toast.dismiss();
       toast.error("Map search failed");
+      setMapError("Map search failed. Please check your connection.");
+    } finally {
+      setIsGeocoding(false);
     }
   }
 
@@ -186,7 +242,7 @@ export default function BranchesPage() {
       const payload: any = {
         partnerId,
         address: { line1: form.line1, city: form.city, country: form.country, zipCode: form.zipCode },
-        phoneNumber: form.phoneNumber,
+        phoneNumbers: form.phoneNumbers.filter(p => p.trim() !== ""),
         workingHours: form.workdays.map(wd => ({ weekday: wd, openTime: form.openTime, closeTime: form.closeTime })),
         breaks: finalBreaks,
       }
@@ -289,10 +345,12 @@ export default function BranchesPage() {
                         <MapPin className="h-3.5 w-3.5" />
                         {b.address.line1}, {b.address.zipCode}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3.5 w-3.5" />
-                        {b.phoneNumber}
-                      </div>
+                      {(b.phoneNumbers || (b.phoneNumber ? [b.phoneNumber] : [])).map((phone, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <Phone className="h-3.5 w-3.5" />
+                          <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
+                        </div>
+                      ))}
                       {b.workingHours.length > 0 && (
                         <div className="flex items-center gap-2">
                           <Clock className="h-3.5 w-3.5" />
@@ -319,18 +377,8 @@ export default function BranchesPage() {
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Street Address</label>
-                <input required value={form.line1} onChange={e => setForm(p => ({...p, line1: e.target.value}))}
-                  placeholder="123 Main Street" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
-              </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">City</label>
-                  <input required value={form.city} onChange={e => setForm(p => ({...p, city: e.target.value}))}
-                    placeholder="Yerevan" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
-                </div>
-                <div className="relative">
+                <div className="relative" ref={countryRef}>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Country</label>
                   <input
                     value={countrySearch}
@@ -354,17 +402,50 @@ export default function BranchesPage() {
                     </div>
                   )}
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Zip Code</label>
-                  <input value={form.zipCode} onChange={e => setForm(p => ({...p, zipCode: e.target.value}))}
-                    placeholder="0001" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">City</label>
+                  <input required value={form.city} onChange={e => setForm(p => ({...p, city: e.target.value}))}
+                    placeholder="Yerevan" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Phone</label>
-                  <input required value={form.phoneNumber} onChange={e => setForm(p => ({...p, phoneNumber: e.target.value}))}
-                    placeholder="+374 11 000000" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Street Address</label>
+                <input required value={form.line1} onChange={e => setForm(p => ({...p, line1: e.target.value}))}
+                  disabled={!form.country || !form.city}
+                  title={(!form.country || !form.city) ? "Please select Country and City first" : ""}
+                  placeholder="123 Main Street" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] disabled:opacity-50 disabled:cursor-not-allowed" />
+              </div>
+              <div className="w-1/2 pr-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Zip Code</label>
+                <input value={form.zipCode} onChange={e => setForm(p => ({...p, zipCode: e.target.value}))}
+                  placeholder="0001" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center justify-between">
+                  Phone Numbers (Max 4)
+                  {form.phoneNumbers.length < 4 && (
+                    <button type="button" onClick={() => setForm(p => ({...p, phoneNumbers: [...p.phoneNumbers, ""]}))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline normal-case">
+                      <Plus className="h-3 w-3" /> Add Phone
+                    </button>
+                  )}
+                </label>
+                <div className="space-y-2">
+                  {form.phoneNumbers.map((phone, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <input required value={phone} onChange={e => {
+                        const newPhones = [...form.phoneNumbers];
+                        newPhones[idx] = e.target.value;
+                        setForm(p => ({...p, phoneNumbers: newPhones}));
+                      }} placeholder="+374 11 000000" className="flex-1 px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                      {form.phoneNumbers.length > 1 && (
+                        <button type="button" onClick={() => {
+                          const newPhones = form.phoneNumbers.filter((_, i) => i !== idx);
+                          setForm(p => ({...p, phoneNumbers: newPhones}));
+                        }} className="p-2 text-muted-foreground hover:text-red-500 rounded-lg bg-[#FAFAFA] border border-border/60 transition-colors"><X className="h-4 w-4" /></button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -373,11 +454,15 @@ export default function BranchesPage() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                     📍 Pin Location on Map
+                    {isGeocoding && <span className="ml-2 text-xs text-[#E5555E] font-medium normal-case inline-flex items-center"><Loader2 className="h-3 w-3 animate-spin mr-1"/> Locating...</span>}
                   </label>
-                  <button type="button" onClick={handleForwardGeocode} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline">
+                  <button type="button" onClick={handleForwardGeocode} disabled={isGeocoding} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline disabled:opacity-50">
                     <Search className="h-3 w-3" /> Find on Map
                   </button>
                 </div>
+                {mapError && (
+                  <p className="text-xs text-red-500 mb-2 font-medium bg-red-50 p-2 rounded-lg border border-red-100">{mapError}</p>
+                )}
                 <div className="h-[200px] rounded-xl overflow-hidden border border-border/60 relative z-0">
                   <LocationPicker
                     initialLat={form.latitude || 40.1872}

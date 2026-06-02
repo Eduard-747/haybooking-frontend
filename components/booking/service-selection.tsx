@@ -30,18 +30,7 @@ export function ServiceSelection({
   const { t } = useTranslation()
   return (
     <section>
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FDEAEA] text-[#E5555E] text-sm font-bold">
-          1
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">{t("book.step2", "Branch & Service")}</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Choose your preferred branch location and the services you'd like to book.
-          </p>
-        </div>
-      </div>
+
 
       {/* Services List */}
       <div className="space-y-4">

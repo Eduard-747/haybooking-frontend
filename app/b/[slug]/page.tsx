@@ -37,7 +37,8 @@ interface PartnerData {
 interface BranchData {
   _id: string
   address: { line1: string; city: string; country: string }
-  phoneNumber: string
+  phoneNumbers?: string[]
+  phoneNumber?: string
   location?: { latitude: number; longitude: number }
   workingHours: { weekday: number; openTime: string; closeTime: string }[]
   breaks?: { weekday: number; startTime: string; endTime: string }[]
@@ -486,7 +487,13 @@ export default function PublicBookingPage() {
                           {b.address.line1}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">{b.address.city}, {b.address.country}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{b.phoneNumber}</p>
+                        {b.phoneNumbers && b.phoneNumbers.length > 0 ? (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {b.phoneNumbers[0]} {b.phoneNumbers.length > 1 && `(+${b.phoneNumbers.length - 1})`}
+                          </p>
+                        ) : (b.phoneNumber && (
+                          <p className="text-xs text-muted-foreground mt-1">{b.phoneNumber}</p>
+                        ))}
                       </div>
                     </button>
                   ))}
@@ -578,10 +585,12 @@ export default function PublicBookingPage() {
                       </div>
                     </div>
                     <div className="mt-2 space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4 shrink-0" />
-                        <span>{b.phoneNumber}</span>
-                      </div>
+                      {(b.phoneNumbers || (b.phoneNumber ? [b.phoneNumber] : [])).map((phone, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="h-4 w-4 shrink-0" />
+                          <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
+                        </div>
+                      ))}
                       {b.workingHours && b.workingHours.length > 0 && (
                         <div className="flex items-start gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4 shrink-0 mt-0.5" />
@@ -602,6 +611,29 @@ export default function PublicBookingPage() {
                           </div>
                         </div>
                       )}
+                      
+                      <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
+                        {(() => {
+                          const branchServices = allServices.filter(s => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
+                          const branchSpecialists = allSpecialists.filter(sp => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
+                          return (
+                            <>
+                              {branchServices.length > 0 && (
+                                <div>
+                                  <span className="text-xs font-bold text-foreground block mb-1">Available Services:</span>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{branchServices.map(s => s.name).join(', ')}</p>
+                                </div>
+                              )}
+                              {branchSpecialists.length > 0 && (
+                                <div>
+                                  <span className="text-xs font-bold text-foreground block mb-1">Specialists:</span>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{branchSpecialists.map(sp => sp.name).join(', ')}</p>
+                                </div>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
 
                       {b.location?.latitude && b.location?.longitude && (
                         <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/40">
@@ -650,6 +682,30 @@ export default function PublicBookingPage() {
                         {s.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{s.description}</p>}
                       </div>
                     </div>
+                    
+                    <div className="mt-4 space-y-2 flex-1">
+                      {(() => {
+                        const serviceBranches = branches.filter(b => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
+                        const serviceSpecialists = allSpecialists.filter(sp => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
+                        return (
+                          <>
+                            {serviceBranches.length > 0 && (
+                              <div>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">Available at:</span>
+                                <p className="text-xs text-muted-foreground line-clamp-1">{serviceBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
+                              </div>
+                            )}
+                            {serviceSpecialists.length > 0 && (
+                              <div>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">Performed by:</span>
+                                <p className="text-xs text-muted-foreground line-clamp-2">{serviceSpecialists.map(sp => sp.name).join(', ')}</p>
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
+
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
                       <span className="text-sm font-medium text-foreground">{formatPrice(s.price, partner?.currency)}</span>
                       <span className="text-sm text-muted-foreground">{s.duration} min</span>
@@ -664,11 +720,36 @@ export default function PublicBookingPage() {
               <h2 className="text-xl font-bold text-foreground">Our Specialists</h2>
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {allSpecialists.map(sp => (
-                  <div key={sp._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex items-center gap-4">
-                    <img src={sp.image} alt={sp.name} className="h-12 w-12 rounded-full object-cover border border-border" />
-                    <div>
-                      <h3 className="font-semibold text-foreground">{sp.name}</h3>
-                      <p className="text-xs text-muted-foreground">{sp.role}</p>
+                  <div key={sp._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <img src={sp.image} alt={sp.name} className="h-12 w-12 rounded-full object-cover border border-border" />
+                      <div>
+                        <h3 className="font-semibold text-foreground">{sp.name}</h3>
+                        <p className="text-xs text-muted-foreground">{sp.role}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 pt-3 border-t border-border/40">
+                      {(() => {
+                        const spBranches = branches.filter(b => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
+                        const spServices = allServices.filter(s => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
+                        return (
+                          <>
+                            {spBranches.length > 0 && (
+                              <div>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">Works at:</span>
+                                <p className="text-xs text-muted-foreground line-clamp-1">{spBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
+                              </div>
+                            )}
+                            {spServices.length > 0 && (
+                              <div>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">Services:</span>
+                                <p className="text-xs text-muted-foreground line-clamp-2">{spServices.map(s => s.name).join(', ')}</p>
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
                 ))}

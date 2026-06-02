@@ -6,6 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { usePartner } from "@/hooks/usePartner"
 import api from "@/lib/api"
 import { formatDistanceToNow } from "date-fns"
+import { hy, ru, enUS } from "date-fns/locale"
+import { useTranslation } from "react-i18next"
 
 interface Notification {
   _id: string
@@ -17,9 +19,12 @@ interface Notification {
 }
 
 export function NotificationsPopover() {
+  const { t, i18n } = useTranslation()
   const { partnerId } = usePartner()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
+
+  const dateLocale = i18n.language === 'am' ? hy : i18n.language === 'ru' ? ru : enUS
 
   const fetchNotifications = async () => {
     if (!partnerId) return
@@ -78,13 +83,13 @@ export function NotificationsPopover() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0 mr-4 mt-2 border-border/40 shadow-xl rounded-xl overflow-hidden" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-[#FAFAFA]">
-          <h4 className="font-semibold text-sm text-foreground">Notifications</h4>
+          <h4 className="font-semibold text-sm text-foreground">{t("dashboard.notifications", "Notifications")}</h4>
           {unreadCount > 0 && (
             <button 
               onClick={markAllAsRead}
               className="text-xs text-[#C69C9B] hover:text-foreground font-medium transition-colors"
             >
-              Mark all read
+              {t("dashboard.markAllRead", "Mark all read")}
             </button>
           )}
         </div>
@@ -93,8 +98,8 @@ export function NotificationsPopover() {
           {notifications.length === 0 ? (
             <div className="py-8 text-center px-4">
               <Bell className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">No notifications yet</p>
-              <p className="text-xs text-muted-foreground mt-1">You're all caught up!</p>
+              <p className="text-sm font-medium text-foreground">{t("dashboard.noNotifications", "No notifications yet")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("dashboard.allCaughtUp", "You're all caught up!")}</p>
             </div>
           ) : (
             <div className="flex flex-col">
@@ -122,7 +127,7 @@ export function NotificationsPopover() {
                       <div className="flex items-center gap-1 pt-1">
                         <Clock className="w-3 h-3 text-muted-foreground/60" />
                         <span className="text-[10px] text-muted-foreground/80">
-                          {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: dateLocale })}
                         </span>
                       </div>
                     </div>

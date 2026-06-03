@@ -7,7 +7,7 @@ export function CalendarFooter() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Copyright */}
           <p className="text-sm text-muted-foreground">
-            &copy; 2024 HayBooking Partner Portal. All rights reserved.
+            &copy; 2026 Haybooking Inc. All rights reserved.
           </p>
 
           {/* Links */}

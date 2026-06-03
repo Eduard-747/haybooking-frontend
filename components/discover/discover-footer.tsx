@@ -88,7 +88,7 @@ export function DiscoverFooter() {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            © 2024 HayBooking. All rights reserved.
+            © 2026 Haybooking Inc. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             {socialLinks.map((social) => (

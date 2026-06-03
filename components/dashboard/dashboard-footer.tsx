@@ -25,7 +25,7 @@ export function DashboardFooter() {
           {/* Copyright and Links */}
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <p className="text-sm text-muted-foreground">
-              &copy; 2024 HayBooking Partner Portal.
+              &copy; 2026 Haybooking Inc.
             </p>
 
           {/* Links */}

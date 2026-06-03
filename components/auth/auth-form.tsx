@@ -194,10 +194,6 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
   return (
     <div className="space-y-6">
-      {/* Mobile Logo */}
-      <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
-        <Logo />
-      </div>
 
       {/* Header */}
       <div>

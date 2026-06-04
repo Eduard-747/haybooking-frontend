@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 interface Specialist {
   id: string
@@ -21,6 +22,7 @@ export function SpecialistSelection({
   selectedSpecialist,
   onSelect,
 }: SpecialistSelectionProps) {
+  const { t } = useTranslation()
   return (
     <section>
 
@@ -61,7 +63,7 @@ export function SpecialistSelection({
                   {specialist.name}
                 </p>
                 <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mt-0.5">
-                  {specialist.role}
+                  {specialist.role === "Specialist" ? t("common.specialist", "Specialist") : specialist.role}
                 </p>
               </div>
             </div>

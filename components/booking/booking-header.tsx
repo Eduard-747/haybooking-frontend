@@ -8,9 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 
 import { Logo } from "@/components/ui/logo"
+import { useTranslation } from "react-i18next"
 export function BookingHeader() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <header className="w-full bg-white border-b border-border/40 sticky top-0 z-50">
@@ -50,7 +52,7 @@ export function BookingHeader() {
               </Avatar>
             ) : (
               <Link href="/auth" className="text-sm font-semibold text-foreground hover:text-[#E5555E]">
-                Log In
+                {t("auth.signIn", "Sign In")}
               </Link>
             )}
           </div>

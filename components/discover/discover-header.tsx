@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 
 import { Logo } from "@/components/ui/logo"
+import { useTranslation } from "react-i18next"
 interface DiscoverHeaderProps {
   searchQuery: string
   onSearchChange: (value: string) => void
@@ -14,6 +15,7 @@ interface DiscoverHeaderProps {
 
 export function DiscoverHeader({ searchQuery, onSearchChange }: DiscoverHeaderProps) {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
@@ -63,7 +65,7 @@ export function DiscoverHeader({ searchQuery, onSearchChange }: DiscoverHeaderPr
                   title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  {t("auth.signOut", "Sign Out")}
                 </button>
               </div>
             </>
@@ -74,13 +76,13 @@ export function DiscoverHeader({ searchQuery, onSearchChange }: DiscoverHeaderPr
                 href="/auth" 
                 className="hidden sm:flex text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
-                Sign In
+                {t("auth.signIn", "Sign In")}
               </Link>
               <Link 
-                href="/auth" 
+                href="/auth?tab=signup" 
                 className="hidden sm:flex px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
               >
-                Sign Up
+                {t("auth.signUp", "Sign Up")}
               </Link>
             </>
           )}

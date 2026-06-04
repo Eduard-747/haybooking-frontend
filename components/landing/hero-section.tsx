@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Utensils, Scissors, Stethoscope, Car, Activity } from "lucide-react"
+import { Search, Utensils, Scissors, Stethoscope, Car, Activity, Briefcase, BookOpen, Home, PawPrint, Camera, Laptop, Building, MoreHorizontal } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -55,7 +55,9 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
       </form>
 
       {/* Category Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-col items-center justify-center gap-3">
+        {/* Row 1: 7 categories */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
         <button 
           onClick={() => handleCategoryClick("All")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
@@ -64,63 +66,129 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
               : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
-          All
+          {t("landing.allCategory")}
         </button>
         <button 
-          onClick={() => handleCategoryClick("salon")} 
+          onClick={() => handleCategoryClick("health")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
-            activeCategory === "salon" 
-              ? "bg-[#C69C9B] border-[#C69C9B] text-white" 
-              : "border-border/60 bg-white text-foreground hover:bg-muted"
+            activeCategory === "health" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <Stethoscope className="h-4 w-4" />
+          {t("landing.catHealthMedical")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("beauty")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "beauty" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
           <Scissors className="h-4 w-4" />
-          Salon & Spa
+          {t("landing.catBeautyWellness")}
         </button>
         <button 
           onClick={() => handleCategoryClick("fitness")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
-            activeCategory === "fitness" 
-              ? "bg-[#C69C9B] border-[#C69C9B] text-white" 
-              : "border-border/60 bg-white text-foreground hover:bg-muted"
+            activeCategory === "fitness" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
           <Activity className="h-4 w-4" />
-          Fitness Studio
+          {t("landing.catFitnessSports")}
         </button>
         <button 
-          onClick={() => handleCategoryClick("medical")} 
+          onClick={() => handleCategoryClick("professional")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
-            activeCategory === "medical"
-              ? "bg-[#C69C9B] border-[#C69C9B] text-white" 
-              : "border-border/60 bg-white text-foreground hover:bg-muted"
+            activeCategory === "professional" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
-          <Stethoscope className="h-4 w-4" />
-          Medical Practice
+          <Briefcase className="h-4 w-4" />
+          {t("landing.catProfessionalServices")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("education")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "education" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <BookOpen className="h-4 w-4" />
+          {t("landing.catEducationTraining")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("automotive")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "automotive" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <Car className="h-4 w-4" />
+          {t("landing.catAutomotive")}
+        </button>
+        </div>
+        {/* Row 2: 7 categories */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+        <button 
+          onClick={() => handleCategoryClick("home")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "home" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <Home className="h-4 w-4" />
+          {t("landing.catHomeServices")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("pet")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "pet" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <PawPrint className="h-4 w-4" />
+          {t("landing.catPetServices")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("events")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "events" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <Camera className="h-4 w-4" />
+          {t("landing.catEventsPhotography")}
         </button>
         <button 
           onClick={() => handleCategoryClick("restaurant")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
-            activeCategory === "restaurant" 
-              ? "bg-[#C69C9B] border-[#C69C9B] text-white" 
-              : "border-border/60 bg-white text-foreground hover:bg-muted"
+            activeCategory === "restaurant" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
           <Utensils className="h-4 w-4" />
-          Restaurant & Dining
+          {t("landing.catRestaurantHospitality")}
         </button>
         <button 
-          onClick={() => handleCategoryClick("auto")} 
+          onClick={() => handleCategoryClick("technology")} 
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
-            activeCategory === "auto"
-              ? "bg-[#C69C9B] border-[#C69C9B] text-white" 
-              : "border-border/60 bg-white text-foreground hover:bg-muted"
+            activeCategory === "technology" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
           }`}
         >
-          <Car className="h-4 w-4" />
-          Auto Service
+          <Laptop className="h-4 w-4" />
+          {t("landing.catTechnologyServices")}
         </button>
+        <button 
+          onClick={() => handleCategoryClick("government")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "government" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <Building className="h-4 w-4" />
+          {t("landing.catGovernmentServices")}
+        </button>
+        <button 
+          onClick={() => handleCategoryClick("other")} 
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm font-medium transition-colors shadow-sm ${
+            activeCategory === "other" ? "bg-[#C69C9B] border-[#C69C9B] text-white" : "border-border/60 bg-white text-foreground hover:bg-muted"
+          }`}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          {t("landing.catOther")}
+        </button>
+        </div>
       </div>
     </section>
   )

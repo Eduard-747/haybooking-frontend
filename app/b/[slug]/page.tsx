@@ -407,9 +407,9 @@ export default function PublicBookingPage() {
           image={partner.image}
           rating={4.9}
           reviewCount={124}
-          address={branches[0]?.address?.city || "Online Booking"}
-          status="Open Now"
-          estimatedWait="5 - 10 Minutes"
+          address={branches[0]?.address?.city || t("book.onlineBooking", "Online Booking")}
+          status={t("book.openNow", "Open Now")}
+          estimatedWait={t("book.waitDesc", "5 - 10 Minutes")}
           viewMode={viewMode}
           onViewChange={setViewMode}
         />
@@ -436,7 +436,7 @@ export default function PublicBookingPage() {
             }`}
           >
             <Info className="h-4 w-4" />
-            {t("book.yourInfo", "About Us")} {/* Approximate, needs a new key if not perfect */}
+            {t("book.businessInfo", "Business Information")}
           </button>
         </div>
 
@@ -539,11 +539,16 @@ export default function PublicBookingPage() {
             {/* Date & Time Section */}
             {selectedSpecialist && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold shrink-0 mt-0.5">
                     {branches.length > 0 ? "4" : "3"}
                   </div>
-                  <h2 className="text-lg font-bold text-foreground">Date & Time</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">{t("book.dateAndTime", "Date & Time")}</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {t("book.slotsRealtime", "Available slots are updated in real-time based on your specialist choice.")}
+                    </p>
+                  </div>
                 </div>
                 <DateTimePicker
                   selectedDate={selectedDate}
@@ -564,7 +569,7 @@ export default function PublicBookingPage() {
         {activeTab === "about" && viewMode === "list" && (
           <div className="mt-8 space-y-10 animate-in fade-in duration-500">
             <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-foreground mb-4">{t("book.yourInfo", "About Us")}</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">{t("book.businessInfo", "Business Information")}</h2>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {partner.publicDescription || "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible."}
               </p>

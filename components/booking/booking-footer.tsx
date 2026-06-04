@@ -3,6 +3,9 @@
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { formatPrice } from "@/lib/currency"
+import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import { hy, ru, enUS } from "date-fns/locale"
 
 interface BookingFooterProps {
   totalPrice: number
@@ -21,6 +24,9 @@ export function BookingFooter({
   isSubmitting = false,
   currency
 }: BookingFooterProps) {
+  const { t, i18n } = useTranslation()
+  const localeMap = { en: enUS, ru: ru, am: hy }
+  const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || enUS
   const isReady = selectedDate && selectedTime && totalPrice > 0
 
   return (
@@ -29,17 +35,17 @@ export function BookingFooter({
         
         {/* Left: Total Price */}
         <div className="hidden sm:block">
-          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Total Price</p>
+          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.totalPrice", "Total Price")}</p>
           <p className="text-xl font-bold text-foreground">{formatPrice(totalPrice, currency)}</p>
         </div>
 
         {/* Middle: Selected Slot */}
         <div className="text-center hidden md:block">
-          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Selected Slot</p>
+          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.selectedSlot", "Selected Slot")}</p>
           <p className="text-sm font-semibold text-foreground">
             {selectedDate 
-              ? `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${selectedTime || '--:--'}`
-              : "No slot selected"}
+              ? `${format(selectedDate, "MMM d", { locale: currentLocale })}, ${selectedTime || '--:--'}`
+              : t("book.noSlotSelected", "No slot selected")}
           </p>
         </div>
 
@@ -47,7 +53,7 @@ export function BookingFooter({
         <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
           {/* Mobile Price Display */}
           <div className="sm:hidden">
-            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Total</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.total", "Total")}</p>
             <p className="text-lg font-bold text-foreground">{formatPrice(totalPrice, currency)}</p>
           </div>
 
@@ -60,10 +66,10 @@ export function BookingFooter({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                {t("book.processing", "Processing...")}
               </>
             ) : (
-              "Confirm Booking"
+              t("book.confirmBooking", "Confirm Booking")
             )}
           </Button>
         </div>

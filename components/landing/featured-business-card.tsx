@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { BadgeCheck, Info } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface FeaturedBusinessCardProps {
   business: {
@@ -15,7 +16,9 @@ interface FeaturedBusinessCardProps {
 }
 
 export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
-  const category = business.services?.[0] || "BUSINESS"
+  const { t } = useTranslation();
+  const rawCategory = business.services?.[0] || "landing.catOther";
+  const category = rawCategory.startsWith("landing.") ? t(rawCategory) : rawCategory;
 
   return (
     <div className="group bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
@@ -31,7 +34,7 @@ export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
         {/* Verified Badge – top left */}
         <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-bold text-[#E5555E] flex items-center gap-1 shadow-sm">
           <BadgeCheck className="h-3.5 w-3.5 fill-[#E5555E] text-white" />
-          Verified
+          {t("common.verified", "Verified")}
         </div>
       </div>
 
@@ -53,7 +56,7 @@ export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
             className="flex items-center text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors py-1.5 px-3 rounded-md shadow-sm"
           >
             <Info className="h-3.5 w-3.5 mr-1.5" />
-            About Us
+            {t("book.aboutUs")}
           </Link>
         </div>
 
@@ -61,7 +64,7 @@ export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
           href={`/booking/${business.id}`}
           className="w-full text-center py-2.5 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
         >
-          Check Availability
+          {t("common.checkAvailability", "Check Availability")}
         </Link>
       </div>
     </div>

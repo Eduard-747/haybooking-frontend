@@ -4,6 +4,8 @@ import { useMemo } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Clock, CheckCircle2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import { hy, ru, enUS } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 
 interface DateTimePickerProps {
@@ -27,7 +29,9 @@ export function DateTimePicker({
   breaks = [],
   totalDuration = 30,
 }: DateTimePickerProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const localeMap = { en: enUS, ru: ru, am: hy }
+  const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || enUS
 
   const disabledDays = (date: Date) => {
     const today = new Date();
@@ -83,18 +87,7 @@ export function DateTimePicker({
 
   return (
     <section>
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FDEAEA] text-[#E5555E] text-sm font-bold">
-          3
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">{t("book.step3", "Date & Time")}</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Available slots are updated in real-time based on your specialist choice.
-          </p>
-        </div>
-      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start mt-8">
         
@@ -121,7 +114,7 @@ export function DateTimePicker({
             <h3 className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.availableSlots", "Available Slots")}</h3>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-md">
               <Clock className="h-3.5 w-3.5" />
-              <span>Times are in CEST</span>
+              <span>{t("book.timesInCEST", "Times are in CEST")}</span>
             </div>
           </div>
 
@@ -154,11 +147,11 @@ export function DateTimePicker({
             <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-[#FDEAEA] border border-[#E5555E]/20">
               <CheckCircle2 className="h-5 w-5 text-[#E5555E] shrink-0 mt-0.5" />
               <p className="text-sm text-[#3D2B2B]">
-                Your selected appointment is set for{" "}
+                {t("book.appointmentSet", "Your selected appointment is set for")}{" "}
                 <span className="font-bold">
-                  {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                  {format(selectedDate, "EEEE, MMM d", { locale: currentLocale })}
                 </span>
-                {" "}at <span className="font-bold">{selectedTime}</span>.
+                {" "}{t("book.at", "at")} <span className="font-bold">{selectedTime}</span>.
               </p>
             </div>
           )}

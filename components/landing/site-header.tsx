@@ -29,18 +29,7 @@ export function SiteHeader() {
           <Logo />
         </Link>
 
-        {/* Middle: Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="#services" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            {t("landing.findServices", "Find Services")}
-          </Link>
-          <Link href="#list-business" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            {t("landing.listBusiness", "List Your Business")}
-          </Link>
-          <Link href="#pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            {t("landing.pricing", "Pricing")}
-          </Link>
-        </nav>
+
 
         {/* Right: Auth */}
         <div className="flex items-center gap-4">
@@ -73,11 +62,11 @@ export function SiteHeader() {
             </div>
           ) : (
             <>
-              <Link href="/auth" className="text-sm font-semibold text-foreground hover:text-rose-500 transition-colors">
-                {t("auth.hasAccount", "Sign In")}
+              <Link href="/auth" className="px-5 py-2.5 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
+                {t("auth.signIn", "Sign In")}
               </Link>
               <Link href="/auth?tab=signup" className="px-5 py-2.5 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
-                {t("auth.noAccount", "Sign Up").split("? ")[1] || "Sign Up"}
+                {t("auth.signUp", "Sign Up")}
               </Link>
             </>
           )}

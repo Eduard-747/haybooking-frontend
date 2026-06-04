@@ -21,7 +21,7 @@ const fallbackBusinesses = [
     rating: 4.9,
     reviews: 174,
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop",
-    services: ["CAFÉ"],
+    services: ["landing.catOther"],
   },
   {
     id: "2",
@@ -30,7 +30,7 @@ const fallbackBusinesses = [
     rating: 4.8,
     reviews: 89,
     image: "https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=600&h=400&fit=crop",
-    services: ["HAIR SALON"],
+    services: ["landing.catBeautyWellness"],
   },
   {
     id: "3",
@@ -39,7 +39,7 @@ const fallbackBusinesses = [
     rating: 4.7,
     reviews: 715,
     image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600&h=400&fit=crop",
-    services: ["RESTAURANT"],
+    services: ["landing.catRestaurantHospitality"],
   },
   {
     id: "4",
@@ -48,7 +48,7 @@ const fallbackBusinesses = [
     rating: 5.0,
     reviews: 56,
     image: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600&h=400&fit=crop",
-    services: ["DENTAL CLINIC"],
+    services: ["landing.catHealthMedical"],
   },
   {
     id: "5",
@@ -57,7 +57,7 @@ const fallbackBusinesses = [
     rating: 4.6,
     reviews: 142,
     image: "https://images.unsplash.com/photo-1632823465306-cdbb2b47bbf1?w=600&h=400&fit=crop",
-    services: ["CAR SERVICE"],
+    services: ["landing.catAutomotive"],
   },
   {
     id: "6",
@@ -66,7 +66,7 @@ const fallbackBusinesses = [
     rating: 4.8,
     reviews: 178,
     image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
-    services: ["RESTAURANT"],
+    services: ["landing.catRestaurantHospitality"],
   }
 ];
 
@@ -78,6 +78,22 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("All")
   const [currentPage, setCurrentPage] = useState(1)
   const [pastBookedIds, setPastBookedIds] = useState<Set<string>>(new Set())
+
+  const categoryKeys: Record<string, string> = {
+    health: "catHealthMedical",
+    beauty: "catBeautyWellness",
+    fitness: "catFitnessSports",
+    professional: "catProfessionalServices",
+    education: "catEducationTraining",
+    automotive: "catAutomotive",
+    home: "catHomeServices",
+    pet: "catPetServices",
+    events: "catEventsPhotography",
+    restaurant: "catRestaurantHospitality",
+    technology: "catTechnologyServices",
+    government: "catGovernmentServices",
+    other: "catOther"
+  };
 
   // Reset page when filters change
   useEffect(() => {
@@ -99,14 +115,23 @@ export default function HomePage() {
           const addresses = partnerBranches.map((b: any) => [b.address?.line1, b.address?.city, b.address?.country, b.address?.zipCode].filter(Boolean).join(" "));
 
           const typeLabels: Record<string, string> = {
-            salon: "Salon & Spa",
-            medical: "Medical Practice",
-            fitness: "Fitness Studio",
-            consulting: "Consulting Services",
-            restaurant: "Restaurant & Dining",
-            auto: "Auto Service",
-            pet: "Pet Grooming",
-            other: "Other"
+            health: "landing.catHealthMedical",
+            medical: "landing.catHealthMedical",
+            beauty: "landing.catBeautyWellness",
+            salon: "landing.catBeautyWellness",
+            fitness: "landing.catFitnessSports",
+            professional: "landing.catProfessionalServices",
+            consulting: "landing.catProfessionalServices",
+            education: "landing.catEducationTraining",
+            automotive: "landing.catAutomotive",
+            auto: "landing.catAutomotive",
+            home: "landing.catHomeServices",
+            pet: "landing.catPetServices",
+            events: "landing.catEventsPhotography",
+            restaurant: "landing.catRestaurantHospitality",
+            technology: "landing.catTechnologyServices",
+            government: "landing.catGovernmentServices",
+            other: "landing.catOther"
           };
           
           return {
@@ -116,7 +141,7 @@ export default function HomePage() {
             rating: 5.0, // Give them a perfect 5.0 base rating
             reviews: p.bookingCount || 0, // Map bookingCount to reviews metric for sorting
             image: p.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
-            services: [typeLabels[p.businessType] || p.businessType || "Service"],
+            services: [typeLabels[p.businessType] || p.businessType || "landing.other"],
             addresses: addresses.join(" | ")
           };
         });
@@ -207,17 +232,17 @@ export default function HomePage() {
               </h2>
               {searchQuery && (
                 <p className="text-foreground font-medium mb-3">
-                  Showing results for "{searchQuery}"
+                  {t("common.showingResultsFor")} "{searchQuery}"
                 </p>
               )}
               {activeCategory !== "All" && !searchQuery && (
                 <p className="text-foreground font-medium mb-3">
-                  Showing results for {activeCategory}
+                  {t("common.showingResultsFor")} {t(`landing.${categoryKeys[activeCategory] || 'catOther'}`)}
                 </p>
               )}
               {(!searchQuery && activeCategory === "All") && (
                 <p className="text-muted-foreground text-sm max-w-lg leading-relaxed">
-                  Our top recommendations for this month, selected based on outstanding customer ratings and professional excellence.
+                  {t("landing.topRecommendations")}
                 </p>
               )}
             </div>
@@ -236,15 +261,15 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">No businesses found</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">{t("landing.noBusinessesFound")}</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Try adjusting your search or category filters to find what you&apos;re looking for.
+                {t("landing.tryAdjusting")}
               </p>
               <button 
                 onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
                 className="mt-6 px-6 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-semibold rounded-xl transition-colors"
               >
-                Clear Filters
+                {t("common.clearFilters")}
               </button>
             </div>
           )}

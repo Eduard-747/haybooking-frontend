@@ -1,9 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Twitter, Instagram, Facebook } from "lucide-react"
 
 import { Logo } from "@/components/ui/logo"
 import { useTranslation } from "react-i18next"
 import { ProductLinks } from "./product-links"
+import { SupportLinks } from "./support-links"
+import { LegalLinks } from "./legal-links"
+import { CompanyLinks } from "./company-links"
 
 export function SiteFooter() {
   const { t } = useTranslation();
@@ -31,27 +36,19 @@ export function SiteFooter() {
           {/* Support */}
           <div>
             <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.support")}</h4>
-            <ul className="space-y-3">
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">{t("landing.helpCenter")}</Link></li>
-            </ul>
+            <SupportLinks />
           </div>
 
           {/* Legal */}
           <div>
             <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.legal", "Legal")}</h4>
-            <ul className="space-y-3">
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">{t("landing.privacyPolicy")}</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">{t("landing.termsOfService")}</Link></li>
-            </ul>
+            <LegalLinks />
           </div>
 
           {/* Company */}
           <div>
             <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.company")}</h4>
-            <ul className="space-y-3">
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">{t("landing.aboutUs")}</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">{t("landing.contact")}</Link></li>
-            </ul>
+            <CompanyLinks />
           </div>
         </div>
 

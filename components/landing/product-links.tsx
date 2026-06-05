@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 export function ProductLinks() {
   const { t } = useTranslation()
@@ -71,9 +72,9 @@ export function ProductLinks() {
                     <FeatureItem title={t("landing.pricingMod.feat6Title")} desc={t("landing.pricingMod.feat6Desc1")} color="text-[#52C47A]" />
                   </ul>
                   
-                  <button className="w-full py-3 bg-[#52C47A] text-white rounded-lg font-bold shadow-sm hover:bg-[#45a868] transition-colors">
+                  <Link href="/auth?tab=signup" className="w-full py-3 bg-[#52C47A] text-white rounded-lg font-bold shadow-sm hover:bg-[#45a868] transition-colors text-center block">
                     {t("landing.pricingMod.currentPlan")}
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Monthly Plan */}
@@ -94,9 +95,9 @@ export function ProductLinks() {
                     <FeatureItem title={t("landing.pricingMod.feat6Title")} desc={t("landing.pricingMod.feat6Desc2")} color="text-[#E1C27A]" />
                   </ul>
                   
-                  <button className="w-full py-3 bg-white text-[#E1C27A] border border-[#E1C27A] rounded-lg font-bold shadow-sm hover:bg-[#FDF9ED] transition-colors">
+                  <Link href="/auth?tab=signup" className="w-full py-3 bg-white text-[#E1C27A] border border-[#E1C27A] rounded-lg font-bold shadow-sm hover:bg-[#FDF9ED] transition-colors text-center block">
                     {t("landing.pricingMod.selectPlan")}
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Half-Year Plan */}
@@ -120,9 +121,9 @@ export function ProductLinks() {
                     <FeatureItem title={t("landing.pricingMod.feat6Title")} desc={t("landing.pricingMod.feat6Desc3")} color="text-[#8165B0]" />
                   </ul>
                   
-                  <button className="w-full py-3 bg-[#8165B0] text-white rounded-lg font-bold shadow-sm hover:bg-[#6f5596] transition-colors">
+                  <Link href="/auth?tab=signup" className="w-full py-3 bg-[#8165B0] text-white rounded-lg font-bold shadow-sm hover:bg-[#6f5596] transition-colors text-center block">
                     {t("landing.pricingMod.selectPlan")}
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Yearly Plan */}
@@ -146,9 +147,9 @@ export function ProductLinks() {
                     <FeatureItem title={t("landing.pricingMod.feat6Title")} desc={t("landing.pricingMod.feat6Desc4")} color="text-[#EA6B4E]" />
                   </ul>
                   
-                  <button className="w-full py-3 bg-white text-[#EA6B4E] border border-[#EA6B4E] rounded-lg font-bold shadow-sm hover:bg-[#FDF4F2] transition-colors">
+                  <Link href="/auth?tab=signup" className="w-full py-3 bg-white text-[#EA6B4E] border border-[#EA6B4E] rounded-lg font-bold shadow-sm hover:bg-[#FDF4F2] transition-colors text-center block">
                     {t("landing.pricingMod.selectPlan")}
-                  </button>
+                  </Link>
                 </div>
 
               </div>
@@ -182,6 +183,12 @@ export function ProductLinks() {
                   icon="🗓️"
                 />
               </div>
+
+              <div className="mt-12 text-center">
+                <Link href="/auth?tab=signup" className="inline-block px-8 py-3 bg-[#8165B0] hover:bg-[#6f5596] text-white rounded-xl font-bold transition-colors">
+                  {t("landing.getStartedNow", "Get Started Now")}
+                </Link>
+              </div>
             </div>
           )}
 
@@ -211,6 +218,12 @@ export function ProductLinks() {
                   desc={t("landing.businessesMod.card4Desc")} 
                   icon="📈"
                 />
+              </div>
+
+              <div className="mt-12 text-center">
+                <Link href="/auth?tab=signup" className="inline-block px-8 py-3 bg-[#8165B0] hover:bg-[#6f5596] text-white rounded-xl font-bold transition-colors">
+                  {t("landing.getStartedNow", "Get Started Now")}
+                </Link>
               </div>
             </div>
           )}

@@ -571,7 +571,7 @@ export default function PublicBookingPage() {
             <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-foreground mb-4">{t("book.businessInfo", "Business Information")}</h2>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {partner.publicDescription || "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible."}
+                {partner.publicDescription || t("book.aboutUsDefault", "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible.")}
               </p>
             </div>
 
@@ -609,7 +609,7 @@ export default function PublicBookingPage() {
                         <div className="flex items-start gap-2 text-sm text-muted-foreground">
                           <Coffee className="h-4 w-4 shrink-0 mt-0.5" />
                           <div className="flex flex-col">
-                            <span className="font-semibold text-xs">Break Times:</span>
+                            <span className="font-semibold text-xs">{t("book.breakTimes", "Break Times")}:</span>
                             {Array.from(new Set(b.breaks.map((br: any) => `${br.startTime} - ${br.endTime}`))).map((timeStr: any, i: number) => (
                               <span key={i} className="text-xs">{timeStr}</span>
                             ))}
@@ -625,13 +625,13 @@ export default function PublicBookingPage() {
                             <>
                               {branchServices.length > 0 && (
                                 <div>
-                                  <span className="text-xs font-bold text-foreground block mb-1">Available Services:</span>
+                                  <span className="text-xs font-bold text-foreground block mb-1">{t("book.availableServices", "Available Services:")}</span>
                                   <p className="text-xs text-muted-foreground leading-relaxed">{branchServices.map(s => s.name).join(', ')}</p>
                                 </div>
                               )}
                               {branchSpecialists.length > 0 && (
                                 <div>
-                                  <span className="text-xs font-bold text-foreground block mb-1">Specialists:</span>
+                                  <span className="text-xs font-bold text-foreground block mb-1">{t("specialistsPage.specialists", "Specialists")}:</span>
                                   <p className="text-xs text-muted-foreground leading-relaxed">{branchSpecialists.map(sp => sp.name).join(', ')}</p>
                                 </div>
                               )}
@@ -649,7 +649,7 @@ export default function PublicBookingPage() {
                             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
                           >
                             <Map className="h-3.5 w-3.5" />
-                            Google Maps
+                            {t("book.googleMaps", "Google Maps")}
                           </a>
                           <a 
                             href={`https://yandex.com/maps/?rtext=~${b.location.latitude},${b.location.longitude}`}
@@ -658,19 +658,19 @@ export default function PublicBookingPage() {
                             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
                           >
                             <Map className="h-3.5 w-3.5" />
-                            Yandex Maps
+                            {t("book.yandexMaps", "Yandex Maps")}
                           </a>
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
-                {branches.length === 0 && <p className="text-muted-foreground">No locations available.</p>}
+                {branches.length === 0 && <p className="text-muted-foreground">{t("book.noLocations", "No locations available.")}</p>}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">Our Services</h2>
+              <h2 className="text-xl font-bold text-foreground">{t("book.ourServices", "Our Services")}</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {allServices.map(s => (
                   <div key={s._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col justify-between">
@@ -696,13 +696,13 @@ export default function PublicBookingPage() {
                           <>
                             {serviceBranches.length > 0 && (
                               <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">Available at:</span>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.availableAt", "Available at:")}</span>
                                 <p className="text-xs text-muted-foreground line-clamp-1">{serviceBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
                               </div>
                             )}
                             {serviceSpecialists.length > 0 && (
                               <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">Performed by:</span>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.performedBy", "Performed by:")}</span>
                                 <p className="text-xs text-muted-foreground line-clamp-2">{serviceSpecialists.map(sp => sp.name).join(', ')}</p>
                               </div>
                             )}
@@ -717,12 +717,12 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
                 ))}
-                {allServices.length === 0 && <p className="text-muted-foreground">No services listed.</p>}
+                {allServices.length === 0 && <p className="text-muted-foreground">{t("book.noServices", "No services listed.")}</p>}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">Our Specialists</h2>
+              <h2 className="text-xl font-bold text-foreground">{t("book.ourSpecialists", "Our Specialists")}</h2>
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {allSpecialists.map(sp => (
                   <div key={sp._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-4">
@@ -742,13 +742,13 @@ export default function PublicBookingPage() {
                           <>
                             {spBranches.length > 0 && (
                               <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">Works at:</span>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.worksAt", "Works at:")}</span>
                                 <p className="text-xs text-muted-foreground line-clamp-1">{spBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
                               </div>
                             )}
                             {spServices.length > 0 && (
                               <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">Services:</span>
+                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("common.services", "Services:")}</span>
                                 <p className="text-xs text-muted-foreground line-clamp-2">{spServices.map(s => s.name).join(', ')}</p>
                               </div>
                             )}
@@ -758,7 +758,7 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
                 ))}
-                {allSpecialists.length === 0 && <p className="text-muted-foreground">No specialists listed.</p>}
+                {allSpecialists.length === 0 && <p className="text-muted-foreground">{t("book.noSpecialists", "No specialists listed.")}</p>}
               </div>
             </div>
           </div>
@@ -780,7 +780,7 @@ export default function PublicBookingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-border/60 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">Guest Checkout</h2>
+              <h2 className="text-lg font-bold text-foreground">{t("book.guestCheckout", "Guest Checkout")}</h2>
               <button 
                 onClick={() => setShowGuestModal(false)}
                 className="text-muted-foreground hover:text-foreground p-1"
@@ -794,7 +794,7 @@ export default function PublicBookingPage() {
                 <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-foreground">First Name</label>
+                      <label className="text-sm font-semibold text-foreground">{t("common.firstName", "First Name")}</label>
                       <input 
                         type="text" 
                         required
@@ -804,7 +804,7 @@ export default function PublicBookingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-foreground">Last Name</label>
+                      <label className="text-sm font-semibold text-foreground">{t("common.lastName", "Last Name")}</label>
                       <input 
                         type="text" 
                         required
@@ -816,7 +816,7 @@ export default function PublicBookingPage() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-foreground">Email</label>
+                    <label className="text-sm font-semibold text-foreground">{t("common.email", "Email Address")}</label>
                     <input 
                       type="email" 
                       required
@@ -827,7 +827,7 @@ export default function PublicBookingPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-foreground">Phone Number</label>
+                    <label className="text-sm font-semibold text-foreground">{t("common.phone", "Phone Number")}</label>
                     <div className="flex gap-2">
                       <select 
                         className="w-24 px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm font-medium"
@@ -861,7 +861,7 @@ export default function PublicBookingPage() {
               ) : (
                 <form onSubmit={handleGuestVerifySubmit} className="space-y-4 text-center">
                   <p className="text-sm text-muted-foreground mb-6">
-                    Enter the verification code sent to <br />
+                    {t("book.enterVerificationCode", "Enter the verification code sent to")} <br />
                     <span className="font-bold text-foreground">{guestDetails.countryCode} {guestDetails.phone}</span>
                   </p>
                   

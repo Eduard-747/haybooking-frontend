@@ -62,9 +62,18 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
         <div className="flex items-center justify-between p-5 border-b border-border/40 bg-[#FAFAFA]">
           <div>
             <h2 className="text-lg font-bold text-foreground">{t("dashboard.bookingDetails", "Booking Details")}</h2>
-            <div className={`mt-1.5 inline-flex text-[10px] font-bold px-2 py-0.5 rounded border tracking-wider uppercase ${statusColors[booking.status] || "bg-gray-100 text-gray-500"}`}>
-              {t(`common.${booking.status}` as any, booking.status)}
-            </div>
+            <select
+              value={booking.status}
+              onChange={(e) => onUpdateStatus(booking._id, e.target.value)}
+              className={`mt-1.5 text-[10px] font-bold px-2 py-1 rounded border tracking-wider uppercase cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 ${statusColors[booking.status] || "bg-gray-100 text-gray-500"}`}
+            >
+              <option value="pending">{t("common.pending", "Pending")}</option>
+              <option value="confirmed">{t("common.confirmed", "Confirmed")}</option>
+              <option value="completed">{t("common.completed", "Completed")}</option>
+              <option value="no-show">{t("common.no-show", "No-Show")}</option>
+              <option value="declined">{t("common.declined", "Declined")}</option>
+              <option value="cancelled">{t("common.cancelled", "Cancelled")}</option>
+            </select>
           </div>
           <button onClick={onClose} className="p-2 text-muted-foreground hover:bg-gray-200 rounded-full transition-colors">
             <X className="h-5 w-5" />
@@ -153,32 +162,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
             </a>
           )}
           
-          {["pending", "cancelled", "declined", "no-show"].includes(booking.status) && endDate.getTime() >= new Date().getTime() && (
-            <>
-              {booking.status !== "declined" && booking.status !== "cancelled" && (
-                <button onClick={() => onUpdateStatus(booking._id, "declined")} className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-semibold rounded-lg transition-colors">
-                  <XCircle className="h-4 w-4" /> {t("dashboard.reject", "Reject")}
-                </button>
-              )}
-              <button onClick={() => onUpdateStatus(booking._id, "confirmed")} className="flex items-center gap-1.5 px-4 py-2 bg-[#E5555E] text-white hover:bg-[#d64c54] text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                <CheckCircle className="h-4 w-4" /> {t("dashboard.accept", "Accept")}
-              </button>
-            </>
-          )}
-
-          {["pending", "cancelled", "declined", "no-show"].includes(booking.status) && endDate.getTime() < new Date().getTime() && (
-            <button onClick={() => onUpdateStatus(booking._id, "declined")} className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-semibold rounded-lg transition-colors">
-              <XCircle className="h-4 w-4" /> {t("dashboard.reject", "Reject")}
-            </button>
-          )}
-
-          {booking.status === "confirmed" && (
-            <>
-              <button onClick={() => onUpdateStatus(booking._id, "cancelled")} className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-semibold rounded-lg transition-colors">
-                <XCircle className="h-4 w-4" /> {t("common.cancel", "Cancel")}
-              </button>
-            </>
-          )}
+          {/* Status action buttons removed, handled by dropdown above */}
 
           <button onClick={onClose} className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white hover:bg-black text-sm font-semibold rounded-lg transition-colors shadow-sm ml-2">
             {t("common.close", "Close")}

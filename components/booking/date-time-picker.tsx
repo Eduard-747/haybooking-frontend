@@ -75,9 +75,17 @@ export function DateTimePicker({
       });
 
       if (!overlapsBreak) {
-        const h = Math.floor(currentMin / 60).toString().padStart(2, '0');
-        const m = (currentMin % 60).toString().padStart(2, '0');
-        slots.push(`${h}:${m}`);
+        const isToday = selectedDate.getDate() === new Date().getDate() &&
+                        selectedDate.getMonth() === new Date().getMonth() &&
+                        selectedDate.getFullYear() === new Date().getFullYear();
+        const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+
+        // If today, only show slots that are in the future
+        if (!isToday || currentMin > nowMin) {
+          const h = Math.floor(currentMin / 60).toString().padStart(2, '0');
+          const m = (currentMin % 60).toString().padStart(2, '0');
+          slots.push(`${h}:${m}`);
+        }
       }
       currentMin += step;
     }

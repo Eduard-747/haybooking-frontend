@@ -235,7 +235,7 @@ export default function SuperAdminDashboard() {
 
       {/* Message Modal */}
       <Dialog open={messageModalOpen} onOpenChange={setMessageModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Send Message to Partner</DialogTitle>
           </DialogHeader>

@@ -36,8 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const response = await api.get('/auth/profile');
           setUser(response.data);
-        } catch (error) {
-          console.error('Failed to fetch user profile', error);
+        } catch (error: any) {
+          if (error?.response?.status !== 401) {
+            console.error('Failed to fetch user profile', error);
+          }
           localStorage.removeItem('access_token');
         }
       }
@@ -64,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push(redirectTo);
     } else if (fullUser.role === 'partner') {
       router.push('/dashboard');
+    } else if (fullUser.role === 'super_admin') {
+      router.push('/admin/dashboard');
     } else {
       router.push('/client/discover');
     }

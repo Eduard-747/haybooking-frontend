@@ -88,12 +88,14 @@ export default function AnalyticsPage() {
       declined: filteredBookings.filter(b => b.status === "declined").length,
       cancelled: filteredBookings.filter(b => b.status === "cancelled").length,
       pending: filteredBookings.filter(b => b.status === "pending").length,
+      completed: filteredBookings.filter(b => b.status === "completed").length,
+      "no-show": filteredBookings.filter(b => b.status === "no-show").length,
     }
   }, [filteredBookings])
 
-  // Calculate revenue from confirmed bookings
+  // Calculate revenue from confirmed/completed bookings
   const revenue = filteredBookings
-    .filter(b => b.status === "confirmed")
+    .filter(b => ["confirmed", "completed"].includes(b.status))
     .reduce((sum, b) => {
       const bRev = b.serviceIds && b.serviceIds.length > 0 
         ? b.serviceIds.reduce((s, svc) => s + (svc.price || 0), 0) 
@@ -137,7 +139,7 @@ export default function AnalyticsPage() {
   // Recent bookings
   const recent = [...filteredBookings].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5)
 
-  const confirmRate = computedStats.total > 0 ? Math.round((computedStats.confirmed / computedStats.total) * 100) : 0
+  const confirmRate = computedStats.total > 0 ? Math.round(((computedStats.confirmed + computedStats.completed) / computedStats.total) * 100) : 0
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex font-sans">
@@ -226,8 +228,10 @@ export default function AnalyticsPage() {
                     <div className="flex-1 flex flex-col justify-center space-y-4">
                       {[
                         { label: t("analyticsPage.confirmed", "Confirmed"), value: computedStats.confirmed, color: "bg-emerald-400", pct: computedStats.total ? computedStats.confirmed / computedStats.total : 0 },
+                        { label: t("analyticsPage.completed", "Completed"), value: computedStats.completed, color: "bg-blue-400", pct: computedStats.total ? computedStats.completed / computedStats.total : 0 },
                         { label: t("analyticsPage.declined", "Declined"), value: computedStats.declined, color: "bg-red-400", pct: computedStats.total ? computedStats.declined / computedStats.total : 0 },
                         { label: t("analyticsPage.cancelled", "Cancelled"), value: computedStats.cancelled, color: "bg-gray-300", pct: computedStats.total ? computedStats.cancelled / computedStats.total : 0 },
+                        { label: t("analyticsPage.noShow", "No-Show"), value: computedStats["no-show"], color: "bg-purple-300", pct: computedStats.total ? computedStats["no-show"] / computedStats.total : 0 },
                       ].map(({ label, value, color, pct }) => (
                         <div key={label}>
                           <div className="flex items-center justify-between mb-1">
@@ -282,7 +286,7 @@ export default function AnalyticsPage() {
                       <div className="space-y-3">
                         {recent.map((b, i) => {
                           const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() : t("common.guest", "Guest")
-                          const statusColor = b.status === "confirmed" ? "text-emerald-600" : b.status === "declined" ? "text-red-500" : "text-gray-400"
+                          const statusColor = b.status === "confirmed" ? "text-emerald-600" : b.status === "completed" ? "text-blue-600" : b.status === "declined" ? "text-red-500" : b.status === "no-show" ? "text-purple-500" : "text-gray-400"
                           return (
                             <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
                               <div className="flex items-center gap-3">

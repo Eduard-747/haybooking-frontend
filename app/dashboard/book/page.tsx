@@ -359,6 +359,17 @@ export default function DashboardBookPage() {
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                 {HOURS.map(time => {
+                  const isToday = selectedDate.getDate() === new Date().getDate() &&
+                                  selectedDate.getMonth() === new Date().getMonth() &&
+                                  selectedDate.getFullYear() === new Date().getFullYear();
+                  
+                  const [hh, mm] = time.split(':').map(Number);
+                  const slotMin = hh * 60 + mm;
+                  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+                  
+                  // Filter out past slots if today
+                  if (isToday && slotMin < nowMin) return null;
+
                   const isBooked = bookedSlots.includes(time)
                   return (
                   <button key={time} onClick={() => setSelectedTime(time)}

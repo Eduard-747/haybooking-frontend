@@ -35,6 +35,8 @@ const statusColors: Record<string, string> = {
   confirmed: "bg-emerald-50 text-emerald-600 border border-emerald-100",
   declined: "bg-red-50 text-red-500 border border-red-100",
   cancelled: "bg-gray-50 text-gray-400 border border-gray-200",
+  completed: "bg-blue-50 text-blue-600 border border-blue-100",
+  "no-show": "bg-purple-50 text-purple-600 border border-purple-100",
 }
 
 function formatTime(iso: string) {
@@ -227,18 +229,18 @@ export default function BusinessDashboardPage() {
                           </div>
                           <div className="flex items-center gap-2 self-start sm:self-auto">
                             <span className="font-bold text-foreground mr-2">{price}</span>
-                            {booking.status === "confirmed" && (
-                              <>
-                                <button onClick={() => updateStatus(booking._id, "declined")} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 border border-red-100 rounded-lg transition-colors">
-                                  <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
-                                </button>
-                              </>
-                            )}
-                            {canAccept && (
-                              <button onClick={() => updateStatus(booking._id, "confirmed")} className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 border border-emerald-100 rounded-lg transition-colors">
-                                <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
-                              </button>
-                            )}
+                            <select
+                              value={booking.status}
+                              onChange={(e) => updateStatus(booking._id, e.target.value)}
+                              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 transition-colors cursor-pointer"
+                            >
+                              <option value="pending">{t("common.pending", "Pending")}</option>
+                              <option value="confirmed">{t("common.confirmed", "Confirmed")}</option>
+                              <option value="completed">{t("common.completed", "Completed")}</option>
+                              <option value="no-show">{t("common.no-show", "No-Show")}</option>
+                              <option value="declined">{t("common.declined", "Declined")}</option>
+                              <option value="cancelled">{t("common.cancelled", "Cancelled")}</option>
+                            </select>
                           </div>
                         </div>
 

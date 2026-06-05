@@ -170,7 +170,9 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Authentication failed');
-      console.error(err);
+      if (err?.response?.status !== 401) {
+        console.error(err);
+      }
     } finally {
       setLoading(false);
     }

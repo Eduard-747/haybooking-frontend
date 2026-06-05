@@ -33,6 +33,8 @@ const statusColors: Record<string, string> = {
   confirmed: "bg-emerald-100 border-emerald-300 text-emerald-700",
   declined: "bg-red-100 border-red-300 text-red-700",
   cancelled: "bg-gray-100 border-gray-300 text-gray-500",
+  completed: "bg-blue-100 border-blue-300 text-blue-700",
+  "no-show": "bg-slate-100 border-slate-300 text-slate-700",
 }
 
 export default function CalendarPage() {

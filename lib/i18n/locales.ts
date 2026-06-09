@@ -654,6 +654,24 @@ export const resources = {
         selectBranchServiceTime: "Please select a branch, at least one service, and a time",
         provideClientInfo: "Please provide client name and phone number"
       },
+      onboarding: {
+        welcome: "Welcome to Haybooking!",
+        subtitle: "You're just a few steps away from accepting online bookings. Complete this quick setup guide to get your business online.",
+        gettingStarted: "Getting Started Guide",
+        stepsCompleted: "steps completed",
+        progress: "Progress",
+        step: "Step",
+        branchTitle: "Add Your First Branch",
+        branchDesc: "Set up your business location, address, and working hours so customers know where and when to find you.",
+        addBranch: "Add Branch",
+        serviceTitle: "Create Services",
+        serviceDesc: "Define the services you offer, including duration and pricing, so customers can start booking.",
+        addService: "Add Service",
+        specialistTitle: "Add Specialists",
+        specialistDesc: "Add your team members and assign them to specific branches and services.",
+        addSpecialist: "Add Specialist",
+        tip: "💡 Tip: Start by adding your branch location. You won't be able to add services or specialists without a branch!"
+      },
       clientBookings: {
         myBookings: "My Bookings",
         manageAppointments: "Manage your appointments and view service history.",
@@ -1329,6 +1347,24 @@ export const resources = {
         selectBranchServiceTime: "Խնդրում ենք ընտրել մասնաճյուղ, ծառայություն և ժամ",
         provideClientInfo: "Խնդրում ենք լրացնել հաճախորդի տվյալները"
       },
+      onboarding: {
+        welcome: "Բարի գալուստ Haybooking!",
+        subtitle: "Դուք ընդամենը մի քանի քայլ հեռու եք առցանց ամրագրումներ ընդունելուց: Ավարտեք այս արագ կարգավորման ուղեցույցը՝ ձեր բիզնեսը առցանց դարձնելու համար:",
+        gettingStarted: "Սկսելու Ուղեցույց",
+        stepsCompleted: "քայլ ավարտված է",
+        progress: "Առաջընթաց",
+        step: "Քայլ",
+        branchTitle: "Ավելացրեք ձեր առաջին մասնաճյուղը",
+        branchDesc: "Սահմանեք ձեր բիզնեսի գտնվելու վայրը, հասցեն և աշխատանքային ժամերը, որպեսզի հաճախորդներն իմանան որտեղ և երբ գտնել ձեզ:",
+        addBranch: "Ավելացնել Մասնաճյուղ",
+        serviceTitle: "Ստեղծել Ծառայություններ",
+        serviceDesc: "Սահմանեք ձեր առաջարկած ծառայությունները՝ ներառյալ տևողությունը և գինը, որպեսզի հաճախորդները կարողանան սկսել ամրագրումներ անել:",
+        addService: "Ավելացնել Ծառայություն",
+        specialistTitle: "Ավելացնել Մասնագետներ",
+        specialistDesc: "Ավելացրեք ձեր թիմի անդամներին և նշանակեք նրանց որոշակի մասնաճյուղերում և ծառայություններում:",
+        addSpecialist: "Ավելացնել Մասնագետ",
+        tip: "💡 Խորհուրդ. Սկսեք՝ ավելացնելով ձեր մասնաճյուղի գտնվելու վայրը: Դուք չեք կարողանա ավելացնել ծառայություններ կամ մասնագետներ առանց մասնաճյուղի:"
+      },
       clientBookings: {
         myBookings: "Իմ Ամրագրումները",
         manageAppointments: "Կառավարեք ձեր ամրագրումները:",
@@ -2003,6 +2039,24 @@ export const resources = {
         createBookingBtn: "Создать бронь",
         selectBranchServiceTime: "Выберите филиал, услугу и время",
         provideClientInfo: "Пожалуйста, укажите имя и телефон клиента"
+      },
+      onboarding: {
+        welcome: "Добро пожаловать в Haybooking!",
+        subtitle: "Вы всего в нескольких шагах от приема онлайн-бронирований. Завершите это краткое руководство, чтобы перевести ваш бизнес в онлайн.",
+        gettingStarted: "Руководство для начинающих",
+        stepsCompleted: "шагов завершено",
+        progress: "Прогресс",
+        step: "Шаг",
+        branchTitle: "Добавьте свой первый филиал",
+        branchDesc: "Укажите местоположение вашего бизнеса, адрес и часы работы, чтобы клиенты знали, где и когда вас найти.",
+        addBranch: "Добавить Филиал",
+        serviceTitle: "Создать Услуги",
+        serviceDesc: "Определите услуги, которые вы предлагаете, включая продолжительность и цены, чтобы клиенты могли начать бронировать.",
+        addService: "Добавить Услугу",
+        specialistTitle: "Добавить Специалистов",
+        specialistDesc: "Добавьте членов вашей команды и назначьте их в определенные филиалы и услуги.",
+        addSpecialist: "Добавить Специалиста",
+        tip: "💡 Совет: Начните с добавления филиала. Вы не сможете добавлять услуги или специалистов без филиала!"
       },
       clientBookings: {
         myBookings: "Мои бронирования",

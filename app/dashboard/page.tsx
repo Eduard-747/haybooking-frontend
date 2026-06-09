@@ -9,6 +9,7 @@ import { Clock, User, Phone, Mail, Loader2, CheckCircle, XCircle, CalendarIcon, 
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
+import { OnboardingGuide } from "@/components/dashboard/onboarding-guide"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
@@ -52,8 +53,9 @@ const MONTH_NAMES = ["january", "february", "march", "april", "may", "june", "ju
 
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
-  const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
+  const { selectedBranchId, branches, isLoading: branchesLoading } = useBranchContext()
   const { t, i18n } = useTranslation()
+  const [setupStatus, setSetupStatus] = useState({ services: 0, specialists: 0, isLoaded: false })
   
   const getLocalizedDate = (d: Date | undefined) => {
     if (!d) return "";
@@ -91,6 +93,23 @@ export default function BusinessDashboardPage() {
     if (partnerId && !branchesLoading) fetchBookings()
     else if (!partnerLoading && !branchesLoading) setIsLoading(false)
   }, [partnerId, partnerLoading, branchesLoading, fetchBookings])
+
+  useEffect(() => {
+    if (partnerId) {
+      Promise.all([
+        api.get(`/services?partnerId=${partnerId}`),
+        api.get(`/specialists?partnerId=${partnerId}`)
+      ]).then(([servRes, specRes]) => {
+        setSetupStatus({
+          services: servRes.data?.length || 0,
+          specialists: specRes.data?.length || 0,
+          isLoaded: true
+        })
+      }).catch(() => {
+        setSetupStatus(prev => ({ ...prev, isLoaded: true }))
+      })
+    }
+  }, [partnerId])
 
   useEffect(() => {
     setCurrentPage(1)
@@ -174,6 +193,15 @@ export default function BusinessDashboardPage() {
       <div className="flex-1 flex flex-col h-screen min-w-0">
         <DashboardHeader />
         <main className="flex-1 p-6 lg:p-8 overflow-hidden flex flex-col">
+          {setupStatus.isLoaded && !branchesLoading && (branches.length === 0 || setupStatus.services === 0 || setupStatus.specialists === 0) ? (
+            <div className="flex-1 overflow-y-auto pb-8">
+              <OnboardingGuide 
+                hasBranch={branches.length > 0} 
+                hasService={setupStatus.services > 0} 
+                hasSpecialist={setupStatus.specialists > 0} 
+              />
+            </div>
+          ) : (
           <div className="flex flex-col xl:flex-row gap-8 flex-1 overflow-hidden">
 
             {/* Left Column: Bookings */}
@@ -390,6 +418,7 @@ export default function BusinessDashboardPage() {
             </div>
 
           </div>
+          )}
         </main>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Plus, Pencil, Trash2, MapPin, Phone, Clock, X, Loader2, Search } from "lucide-react"
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
+import { useBranchContext } from "@/components/dashboard/branch-context"
 import { TimePicker } from "@/components/ui/time-picker"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
@@ -59,6 +60,7 @@ const emptyForm = {
 export default function BranchesPage() {
   const { t } = useTranslation()
   const { partnerId, loading: partnerLoading } = usePartner()
+  const { refreshBranches } = useBranchContext()
   const [branches, setBranches] = useState<Branch[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -127,6 +129,7 @@ export default function BranchesPage() {
       await api.delete(`/branches/${id}`)
       toast.success("Branch deleted")
       fetchBranches()
+      refreshBranches()
     } catch { toast.error("Failed to delete branch") }
   }
 
@@ -263,6 +266,7 @@ export default function BranchesPage() {
       }
       setShowModal(false)
       fetchBranches()
+      refreshBranches()
     } catch { toast.error("Failed to save branch") }
     finally { setSaving(false) }
   }

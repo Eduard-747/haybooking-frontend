@@ -23,6 +23,7 @@ interface BranchContextType {
   selectedBranchId: string | null
   setSelectedBranchId: (id: string | null) => void
   isLoading: boolean
+  refreshBranches: () => Promise<void>
 }
 
 const BranchContext = createContext<BranchContextType | undefined>(undefined)
@@ -33,15 +34,22 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const refreshBranches = async () => {
+    if (!partnerId) return
+    setIsLoading(true)
+    try {
+      const res = await api.get(`/branches?partnerId=${partnerId}`)
+      setBranches(res.data || [])
+    } catch (err) {
+      console.error("Failed to fetch branches", err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (partnerId) {
-      setIsLoading(true)
-      api.get(`/branches?partnerId=${partnerId}`)
-        .then(res => {
-          setBranches(res.data || [])
-        })
-        .catch(err => console.error("Failed to fetch branches", err))
-        .finally(() => setIsLoading(false))
+      refreshBranches()
     } else {
       setBranches([])
       setSelectedBranchId(null)
@@ -50,7 +58,7 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
   }, [partnerId])
 
   return (
-    <BranchContext.Provider value={{ branches, selectedBranchId, setSelectedBranchId, isLoading }}>
+    <BranchContext.Provider value={{ branches, selectedBranchId, setSelectedBranchId, isLoading, refreshBranches }}>
       {children}
     </BranchContext.Provider>
   )

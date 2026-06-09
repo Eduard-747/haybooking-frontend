@@ -23,9 +23,9 @@ function AuthPageContent() {
   }, [tab])
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50/30">
+    <div className="flex h-screen w-full bg-slate-50/30 overflow-hidden">
       {/* Left side - Header, Tagline & Form */}
-      <main className="flex w-full lg:w-[45%] flex-col px-6 py-10 lg:px-12 relative bg-white z-10 shadow-2xl min-h-screen">
+      <main className="flex w-full lg:w-[45%] flex-col px-6 py-4 lg:py-8 lg:px-12 relative bg-white z-10 shadow-2xl h-full overflow-hidden">
         {/* Logo - aligned to the very left padding edge of the screen */}
         <div className="w-full flex items-center justify-start mb-10">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">

@@ -35,7 +35,7 @@ export function SupportLinks() {
           {activeModal === "help" && (
             <div className="w-full">
               <div className="bg-rose-50/50 rounded-3xl p-8 md:p-12 mb-12 text-center max-w-3xl mx-auto border border-rose-100">
-                <h2 className="text-4xl md:text-5xl font-serif text-[#A68F81] mb-6">{t("landing.supportMod.title", "How can we help?")}</h2>
+                <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-6">{t("landing.supportMod.title", "How can we help?")}</h2>
                 <div className="relative max-w-xl mx-auto">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-muted-foreground" />

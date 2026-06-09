@@ -6,6 +6,9 @@ import { User, Bell, Shield, LogOut, Save, Camera, X } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { RoleGuard } from "@/components/auth/role-guard"
+import { useCountryCode } from "@/lib/hooks/use-country-code"
+import { getPhonePlaceholder } from "@/lib/countries"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SettingsPage() {
   const { user, logout, updateToken } = useAuth()
@@ -31,6 +34,13 @@ export default function SettingsPage() {
   const [showSmsModal, setShowSmsModal] = useState(false)
   const [otpCode, setOtpCode] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
+  const [countryCode, setCountryCode] = useState("+1")
+
+  useEffect(() => {
+    setCountryCode(detectedCountryCode)
+  }, [detectedCountryCode])
 
   // Load user profile from API to populate name, surname, email
   useEffect(() => {
@@ -109,9 +119,14 @@ export default function SettingsPage() {
     
     setIsSaving(true)
     
-    if (form.phone !== originalPhone) {
+    let phoneToSave = form.phone;
+    if (!phoneToSave.startsWith('+')) {
+      phoneToSave = `${countryCode}${phoneToSave.replace(/\D/g, '')}`;
+    }
+
+    if (phoneToSave !== originalPhone) {
       try {
-        await api.post('/auth/send-sms', { phoneNumber: form.phone });
+        await api.post('/auth/send-sms', { phoneNumber: phoneToSave });
         setShowSmsModal(true);
         setIsSaving(false);
         return; // wait for modal
@@ -133,8 +148,13 @@ export default function SettingsPage() {
     }
     setIsVerifying(true);
     try {
+      let phoneToSave = form.phone;
+      if (!phoneToSave.startsWith('+')) {
+        phoneToSave = `${countryCode}${phoneToSave.replace(/\D/g, '')}`;
+      }
+
       const res = await api.put('/users/me/phone', {
-        phoneNumber: form.phone,
+        phoneNumber: phoneToSave,
         code: otpCode,
       });
       // Context uses updateToken implicitly via login logic? Wait, AuthProvider has updateToken.
@@ -142,7 +162,7 @@ export default function SettingsPage() {
       const { user: updatedUser, access_token } = res.data;
       updateToken(access_token, updatedUser);
       
-      setOriginalPhone(form.phone);
+      setOriginalPhone(phoneToSave);
       
       // Save the rest of the profile
       const success = await saveProfileData(false);
@@ -214,13 +234,27 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phone Number</label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={e => setForm({...form, phone: e.target.value})}
-                placeholder="+1 (555) 000-0000"
-                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
-              />
+              <div className="flex gap-2">
+                <Select value={countryCode} onValueChange={setCountryCode}>
+                  <SelectTrigger className="w-[110px] shrink-0 h-10 border-border/60 bg-[#FAFAFA] focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {countryCodesList.map((cc) => (
+                      <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                        {cc.flag} {cc.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={e => setForm({...form, phone: e.target.value})}
+                  placeholder={getPhonePlaceholder(countryCode, countryCodesList)}
+                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                />
+              </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Email Address</label>

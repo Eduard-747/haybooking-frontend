@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "react-i18next"
 
 const BranchMapOverview = dynamic(
   () => import("@/components/maps/branch-map-overview"),
@@ -15,15 +16,15 @@ const BranchMapOverview = dynamic(
 )
 
 const categories = [
-  { value: "All", label: "All" },
-  { value: "salon", label: "Salon & Spa" },
-  { value: "fitness", label: "Fitness Studio" },
-  { value: "medical", label: "Medical Practice" },
-  { value: "restaurant", label: "Restaurant & Dining" },
-  { value: "auto", label: "Auto Service" },
-  { value: "pet", label: "Pet Grooming" },
-  { value: "consulting", label: "Consulting" },
-  { value: "other", label: "Other" }
+  { value: "All", label: "common.all", fallback: "All" },
+  { value: "salon", label: "landing.catBeautyWellness", fallback: "Salon & Spa" },
+  { value: "fitness", label: "landing.catFitnessSports", fallback: "Fitness Studio" },
+  { value: "medical", label: "landing.catHealthMedical", fallback: "Medical Practice" },
+  { value: "restaurant", label: "landing.catRestaurantHospitality", fallback: "Restaurant & Dining" },
+  { value: "auto", label: "landing.catAutomotive", fallback: "Auto Service" },
+  { value: "pet", label: "landing.catPetServices", fallback: "Pet Grooming" },
+  { value: "consulting", label: "landing.catProfessionalServices", fallback: "Consulting" },
+  { value: "other", label: "landing.catOther", fallback: "Other" }
 ]
 
 // Fallback businesses shown if DB returns nothing
@@ -35,7 +36,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 124,
     image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=400&fit=crop",
     distance: "0.8 miles away",
-    tags: ["salon", "Men's Haircut"],
+    tags: ["landing.catBeautyWellness"],
   },
   {
     id: "2",
@@ -44,7 +45,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 89,
     image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=600&h=400&fit=crop",
     distance: "1.2 miles away",
-    tags: ["medical", "Teeth Whitening"],
+    tags: ["landing.catHealthMedical"],
   },
   {
     id: "3",
@@ -53,7 +54,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 210,
     image: "https://images.unsplash.com/photo-1632823465306-cdbb2b47bbf1?w=600&h=400&fit=crop",
     distance: "2.5 miles away",
-    tags: ["auto", "Oil Change"],
+    tags: ["landing.catAutomotive"],
   },
   {
     id: "4",
@@ -62,7 +63,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 56,
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=400&fit=crop",
     distance: "1.5 miles away",
-    tags: ["salon", "Swedish Massage"],
+    tags: ["landing.catBeautyWellness"],
   },
   {
     id: "5",
@@ -71,7 +72,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 342,
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop",
     distance: "3.1 miles away",
-    tags: ["fitness", "Personal Training"],
+    tags: ["landing.catFitnessSports"],
   },
   {
     id: "6",
@@ -80,13 +81,14 @@ const fallbackBusinesses: BusinessCardData[] = [
     reviews: 78,
     image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=600&h=400&fit=crop",
     distance: "1.1 miles away",
-    tags: ["pet", "Dog Wash"],
+    tags: ["landing.catPetServices"],
   },
 ]
 
 const ITEMS_PER_PAGE = 9;
 
 function DiscoverContent() {
+  const { t } = useTranslation()
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get("category") || "All"
   const urlQuery = searchParams.get("q") || ""
@@ -140,14 +142,14 @@ function DiscoverContent() {
             const addresses = partnerBranches.map((b: any) => [b.address?.line1, b.address?.city, b.address?.country, b.address?.zipCode].filter(Boolean).join(" "));
 
             const typeLabels: Record<string, string> = {
-              salon: "Salon & Spa",
-              medical: "Medical Practice",
-              fitness: "Fitness Studio",
-              consulting: "Consulting Services",
-              restaurant: "Restaurant & Dining",
-              auto: "Auto Service",
-              pet: "Pet Grooming",
-              other: "Other"
+              salon: "landing.catBeautyWellness",
+              medical: "landing.catHealthMedical",
+              fitness: "landing.catFitnessSports",
+              consulting: "landing.catProfessionalServices",
+              restaurant: "landing.catRestaurantHospitality",
+              auto: "landing.catAutomotive",
+              pet: "landing.catPetServices",
+              other: "landing.catOther"
             };
             
             return {
@@ -156,8 +158,8 @@ function DiscoverContent() {
               rating: 5.0,
               reviews: p.bookingCount || 0,
               image: p.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
-              distance: "Nearby",
-              tags: [typeLabels[p.businessType] || p.businessType || "Service"].filter(Boolean),
+              distance: t("common.nearby", "Nearby"),
+              tags: [typeLabels[p.businessType] || "landing.catOther"],
               addresses: addresses.join(" | ")
             }
           })
@@ -233,19 +235,19 @@ function DiscoverContent() {
       <div className="mb-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Discover Services</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t("landing.discoverServices", "Discover Services")}</h1>
             {searchQuery ? (
               <p className="text-muted-foreground mt-1 flex items-center gap-2">
                 <SearchIcon className="h-4 w-4" />
-                Results for "<span className="font-semibold text-foreground">{searchQuery}</span>"
+                {t("common.showingResultsFor", "Results for")} "<span className="font-semibold text-foreground">{searchQuery}</span>"
               </p>
             ) : (
-              <p className="text-muted-foreground mt-1">Browse the top-rated professionals in your area</p>
+              <p className="text-muted-foreground mt-1">{t("landing.browseTopRated", "Browse the top-rated professionals in your area")}</p>
             )}
           </div>
           <Button variant="outline" className="shrink-0 bg-white shadow-sm border-border">
             <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-            All Filters
+            {t("common.allFilters", "All Filters")}
           </Button>
         </div>
 
@@ -261,7 +263,7 @@ function DiscoverContent() {
                   : "bg-white border-border/60 text-muted-foreground hover:border-[#C69C9B] hover:text-[#C69C9B]"
               }`}
             >
-              {category.label}
+              {t(category.label, category.fallback)}
             </button>
           ))}
         </div>

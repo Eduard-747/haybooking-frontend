@@ -58,7 +58,7 @@ export function ProductLinks() {
                   </div>
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-serif text-[#3D2B2B] mb-1">{t("landing.pricingMod.free")}</h3>
-                    <div className="text-4xl md:text-5xl font-light text-[#52C47A] mb-1">$0</div>
+                    <div className="text-3xl md:text-4xl font-light text-[#52C47A] mb-1">$0</div>
                     <p className="text-[10px] md:text-xs text-[#8D8D8D]">{t("landing.pricingMod.freeDesc")}</p>
                   </div>
                   
@@ -81,7 +81,7 @@ export function ProductLinks() {
                 <div className="relative bg-white rounded-2xl p-6 border border-[#EAEAEA] shadow-sm flex flex-col pt-8">
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-serif text-[#3D2B2B] mb-1">{t("landing.pricingMod.monthly")}</h3>
-                    <div className="text-4xl md:text-5xl font-light text-[#E1C27A] mb-1">$20</div>
+                    <div className="text-3xl md:text-4xl font-light text-[#E1C27A] mb-1">$20</div>
                     <p className="text-[10px] md:text-xs text-[#8D8D8D]">{t("landing.pricingMod.monthlyDesc")}</p>
                   </div>
                   
@@ -107,7 +107,7 @@ export function ProductLinks() {
                   </div>
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-serif text-[#3D2B2B] mb-1">{t("landing.pricingMod.halfYear")}</h3>
-                    <div className="text-4xl md:text-5xl font-light text-[#8165B0] mb-1">$100</div>
+                    <div className="text-3xl md:text-4xl font-light text-[#8165B0] mb-1">$100</div>
                     <p className="text-[10px] md:text-xs text-[#8D8D8D]">{t("landing.pricingMod.every6Months")} <span className="text-[#8165B0] font-bold ml-1 bg-[#F5F2F9] px-1 py-0.5 rounded">{t("landing.pricingMod.save17")}</span></p>
                   </div>
                   
@@ -133,7 +133,7 @@ export function ProductLinks() {
                   </div>
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-serif text-[#3D2B2B] mb-1">{t("landing.pricingMod.yearly")}</h3>
-                    <div className="text-4xl md:text-5xl font-light text-[#EA6B4E] mb-1">$180</div>
+                    <div className="text-3xl md:text-4xl font-light text-[#EA6B4E] mb-1">$180</div>
                     <p className="text-[10px] md:text-xs text-[#8D8D8D]">{t("landing.pricingMod.billedAnnually")} <span className="text-[#EA6B4E] font-bold ml-1 bg-[#FDF4F2] px-1 py-0.5 rounded">{t("landing.pricingMod.save25")}</span></p>
                   </div>
                   
@@ -158,7 +158,7 @@ export function ProductLinks() {
 
           {activeModal === "customers" && (
              <div className="w-full p-8 md:p-12 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-serif text-[#A68F81] mb-6">{t("landing.customersMod.title")}</h2>
+              <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-6">{t("landing.customersMod.title")}</h2>
               <p className="text-lg text-[#8D8D8D] mb-12">{t("landing.customersMod.desc")}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
@@ -194,7 +194,7 @@ export function ProductLinks() {
 
           {activeModal === "businesses" && (
             <div className="w-full p-8 md:p-12 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-serif text-[#A68F81] mb-6">{t("landing.businessesMod.title")}</h2>
+              <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-6">{t("landing.businessesMod.title")}</h2>
               <p className="text-lg text-[#8D8D8D] mb-12">{t("landing.businessesMod.desc")}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">

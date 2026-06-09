@@ -10,6 +10,9 @@ import api from "@/lib/api"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useCountryCode } from "@/lib/hooks/use-country-code"
+import { getPhonePlaceholder } from "@/lib/countries"
 
 interface BranchData {
   _id: string
@@ -53,6 +56,12 @@ export default function DashboardBookPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [clientPhone, setClientPhone] = useState("")
   const [clientName, setClientName] = useState("")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
+  const [countryCode, setCountryCode] = useState("+1")
+
+  useEffect(() => {
+    setCountryCode(detectedCountryCode)
+  }, [detectedCountryCode])
 
   useEffect(() => {
     if (!partnerId) return
@@ -155,7 +164,7 @@ export default function DashboardBookPage() {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         guestName: clientName,
-        guestPhone: clientPhone,
+        guestPhone: `${countryCode}${clientPhone.replace(/\D/g, '')}`,
       }
       if (selectedSpecialist) payload.specialistId = selectedSpecialist
 
@@ -197,11 +206,25 @@ export default function DashboardBookPage() {
                   onChange={e => setClientName(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                 />
-                <input
-                  type="tel" placeholder={t("bookDashboard.phoneNumber")} value={clientPhone}
-                  onChange={e => setClientPhone(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                />
+                <div className="flex gap-2">
+                  <Select value={countryCode} onValueChange={setCountryCode}>
+                    <SelectTrigger className="w-[110px] shrink-0 h-[42px] border-border bg-white focus:ring-[#E5555E]/20 focus:border-[#E5555E]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {countryCodesList.map((cc) => (
+                        <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                          {cc.flag} {cc.code}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <input
+                    type="tel" placeholder={getPhonePlaceholder(countryCode, countryCodesList)} value={clientPhone}
+                    onChange={e => setClientPhone(e.target.value)}
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                  />
+                </div>
               </div>
             </div>
 

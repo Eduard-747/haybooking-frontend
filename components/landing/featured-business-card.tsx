@@ -25,10 +25,11 @@ export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
       
       {/* Image Section */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
-        <img
+        <Image
           src={business.image}
           alt={business.fullName}
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         
         {/* Verified Badge – top left */}
@@ -41,7 +42,7 @@ export function FeaturedBusinessCard({ business }: FeaturedBusinessCardProps) {
       {/* Content Section */}
       <div className="p-5 flex flex-col flex-1">
         <div className="mb-2">
-          <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+          <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase line-clamp-1" title={category}>
             {category}
           </span>
         </div>

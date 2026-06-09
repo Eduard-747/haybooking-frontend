@@ -11,7 +11,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 12;
 
 const fallbackBusinesses = [
   {
@@ -224,31 +224,31 @@ export default function HomePage() {
         <section id="results-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="inline-block px-3 py-1 bg-muted rounded-full text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-4">
+              <span className="inline-block px-3 py-1 bg-muted rounded-full text-[10px] sm:text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-3">
                 {searchQuery || activeCategory !== "All" ? t("landing.searchResults", "Search Results") : t("landing.handPicked", "Hand-Picked for You")}
               </span>
-              <h2 className="text-3xl font-bold text-foreground mb-3">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 {searchQuery || activeCategory !== "All" ? t("landing.matching", "Matching Businesses") : t("landing.featured", "Featured Businesses")}
               </h2>
               {searchQuery && (
-                <p className="text-foreground font-medium mb-3">
+                <p className="text-foreground text-sm font-medium mb-3">
                   {t("common.showingResultsFor")} "{searchQuery}"
                 </p>
               )}
               {activeCategory !== "All" && !searchQuery && (
-                <p className="text-foreground font-medium mb-3">
+                <p className="text-foreground text-sm font-medium mb-3">
                   {t("common.showingResultsFor")} {t(`landing.${categoryKeys[activeCategory] || 'catOther'}`)}
                 </p>
               )}
               {(!searchQuery && activeCategory === "All") && (
-                <p className="text-muted-foreground text-sm max-w-lg leading-relaxed">
+                <p className="text-muted-foreground text-xs sm:text-sm max-w-lg leading-relaxed">
                   {t("landing.topRecommendations")}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedBusinesses.map(business => (
               <FeaturedBusinessCard key={business.id} business={business} />
             ))}

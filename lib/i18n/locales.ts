@@ -52,7 +52,11 @@ export const resources = {
         verifyPhoneNumber: "Verify Phone Number",
         resendCode: "Resend Code",
         resendIn: "Resend code in",
-        devModeHint: "Dev mode: any 6-digit code will be accepted"
+        devModeHint: "Dev mode: any 6-digit code will be accepted",
+        backToSignIn: "Back to sign in",
+        code: "6-Digit Code",
+        newPassword: "New Password",
+        confirmNewPassword: "Confirm New Password"
       },
       common: {
         phone: "Phone Number",
@@ -437,6 +441,7 @@ export const resources = {
       },
       dashboard: {
         totalBookings: "total bookings",
+        noBookingsForDate: "No bookings scheduled for {{date}}.",
         noBookings: "No bookings yet. Share your booking link to get started.",
         accept: "Accept",
         reject: "Reject",
@@ -722,7 +727,11 @@ export const resources = {
         verifyPhoneNumber: "Հաստատել հեռախոսահամարը",
         resendCode: "Կրկին ուղարկել կոդը",
         resendIn: "Կրկին ուղարկել",
-        devModeHint: "Dev ռեժիմ. ցանկացած 6-նիշ կոդ կընդունվի"
+        devModeHint: "Dev ռեժիմ. ցանկացած 6-նիշ կոդ կընդունվի",
+        backToSignIn: "Վերադառնալ մուտքի էջ",
+        code: "6-նիշ կոդ",
+        newPassword: "Նոր գաղտնաբառ",
+        confirmNewPassword: "Հաստատեք նոր գաղտնաբառը"
       },
       common: {
         phone: "Հեռախոսահամար",
@@ -1107,6 +1116,7 @@ export const resources = {
       },
       dashboard: {
         totalBookings: "ընդհանուր ամրագրում",
+        noBookingsForDate: "Ամրագրումներ չկան {{date}}-ի համար:",
         noBookings: "Դեռ ամրագրումներ չկան:",
         accept: "Ընդունել",
         reject: "Մերժել",
@@ -1392,7 +1402,11 @@ export const resources = {
         verifyPhoneNumber: "Подтвердить номер телефона",
         resendCode: "Отправить код еще раз",
         resendIn: "Повторить через",
-        devModeHint: "Режим Dev: любой 6-значный код будет принят"
+        devModeHint: "Режим Dev: любой 6-значный код будет принят",
+        backToSignIn: "Вернуться ко входу",
+        code: "6-значный код",
+        newPassword: "Новый пароль",
+        confirmNewPassword: "Подтвердите новый пароль"
       },
       common: {
         phone: "Номер телефона",
@@ -1777,6 +1791,7 @@ export const resources = {
       },
       dashboard: {
         totalBookings: "всего бронирований",
+        noBookingsForDate: "На {{date}} нет запланированных бронирований.",
         noBookings: "Пока нет бронирований.",
         accept: "Принять",
         reject: "Отклонить",

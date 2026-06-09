@@ -48,10 +48,19 @@ function formatDate(iso: string, language: string = 'en') {
   return new Date(iso).toLocaleDateString(localeStr, { month: "short", day: "numeric", year: "numeric" })
 }
 
+const MONTH_NAMES = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
   const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
   const { t, i18n } = useTranslation()
+  
+  const getLocalizedDate = (d: Date | undefined) => {
+    if (!d) return "";
+    const monthKey = MONTH_NAMES[d.getMonth()];
+    const monthName = t(`calendar.${monthKey}`);
+    return `${monthName} ${d.getDate()}`;
+  }
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [date, setDate] = useState<Date | undefined>(undefined)
@@ -171,7 +180,7 @@ export default function BusinessDashboardPage() {
             <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")} {date ? `- ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")} {date ? `- ${getLocalizedDate(date)}` : ""}</h1>
                   <p className="text-sm text-muted-foreground mt-0.5">{filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
                 </div>
                 <Link href="/dashboard/book" className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start md:self-auto">
@@ -189,7 +198,7 @@ export default function BusinessDashboardPage() {
                 </div>
               ) : filteredBookings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
-                  <p className="text-muted-foreground text-sm">No bookings scheduled for {date?.toLocaleDateString("en-US", { month: "short", day: "numeric" })}.</p>
+                  <p className="text-muted-foreground text-sm">{t("dashboard.noBookingsForDate", "No bookings scheduled for {{date}}.", { date: getLocalizedDate(date) })}</p>
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">

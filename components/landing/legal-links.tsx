@@ -34,7 +34,7 @@ export function LegalLinks() {
 
           {activeModal === "privacy" && (
             <div className="w-full prose prose-slate max-w-none">
-              <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-2">{t("landing.legalMod.privacyTitle", "Privacy Policy")}</h2>
+              <h2 className="text-2xl md:text-3xl font-serif text-[#A68F81] mb-2">{t("landing.legalMod.privacyTitle", "Privacy Policy")}</h2>
               <p className="text-sm text-[#8D8D8D] mb-8">{t("landing.legalMod.lastUpdated", "Last updated: June 5, 2026")}</p>
 
               <h3 className="text-xl font-bold text-[#3D2B2B] mt-6 mb-3">{t("landing.legalMod.privacySec1", "1. Introduction")}</h3>
@@ -89,7 +89,7 @@ export function LegalLinks() {
 
           {activeModal === "terms" && (
             <div className="w-full prose prose-slate max-w-none">
-              <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-2">{t("landing.legalMod.termsTitle", "Terms of Service")}</h2>
+              <h2 className="text-2xl md:text-3xl font-serif text-[#A68F81] mb-2">{t("landing.legalMod.termsTitle", "Terms of Service")}</h2>
               <p className="text-sm text-[#8D8D8D] mb-8">{t("landing.legalMod.lastUpdated", "Last updated: June 5, 2026")}</p>
 
               <h3 className="text-xl font-bold text-[#3D2B2B] mt-6 mb-3">{t("landing.legalMod.termsSec1", "1. Agreement to Terms")}</h3>

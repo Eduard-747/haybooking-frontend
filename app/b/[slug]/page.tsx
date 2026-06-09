@@ -12,9 +12,11 @@ import { BookingHeader } from "@/components/booking/booking-header"
 import { BookingFooter } from "@/components/booking/booking-footer"
 import { BusinessHero } from "@/components/booking/business-hero"
 import { ServiceSelection } from "@/components/booking/service-selection"
+import { getPhonePlaceholder } from "@/lib/countries"
 import { SpecialistSelection } from "@/components/booking/specialist-selection"
 import { DateTimePicker } from "@/components/booking/date-time-picker"
 import { formatPrice } from "@/lib/currency"
+import { useCountryCode } from "@/lib/hooks/use-country-code"
 
 // Dynamic import for map to avoid SSR
 import dynamic from "next/dynamic"
@@ -99,8 +101,13 @@ export default function PublicBookingPage() {
   // Guest Checkout State
   const [showGuestModal, setShowGuestModal] = useState(false)
   const [guestStep, setGuestStep] = useState<"details" | "verify">("details")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
   const [guestDetails, setGuestDetails] = useState({ firstName: "", lastName: "", email: "", phone: "", countryCode: "+1" })
   const [smsCode, setSmsCode] = useState("")
+
+  useEffect(() => {
+    setGuestDetails(prev => ({ ...prev, countryCode: detectedCountryCode }))
+  }, [detectedCountryCode])
 
   // Fetch business data
   useEffect(() => {
@@ -834,15 +841,17 @@ export default function PublicBookingPage() {
                         value={guestDetails.countryCode}
                         onChange={e => setGuestDetails(prev => ({ ...prev, countryCode: e.target.value }))}
                       >
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+374">🇦🇲 +374</option>
+                        {countryCodesList.map((cc) => (
+                          <option key={`${cc.code}-${cc.country}`} value={cc.code}>
+                            {cc.flag} {cc.code}
+                          </option>
+                        ))}
                       </select>
                       <input 
                         type="tel" 
                         required
                         className="flex-1 px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm"
-                        placeholder="555 123 4567"
+                        placeholder={getPhonePlaceholder(guestDetails.countryCode, countryCodesList)}
                         value={guestDetails.phone}
                         onChange={e => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
                       />

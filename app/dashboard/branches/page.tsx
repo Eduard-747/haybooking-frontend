@@ -10,6 +10,8 @@ import { TimePicker } from "@/components/ui/time-picker"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
 import { useTranslation } from "react-i18next"
+import { getPhonePrefixAndPlaceholderByName } from "@/lib/countries"
+import { useCountryCode } from "@/lib/hooks/use-country-code"
 
 // Dynamically import map components to avoid SSR issues
 const BranchMapOverview = dynamic(() => import("@/components/maps/branch-map-overview"), { ssr: false })
@@ -68,6 +70,7 @@ export default function BranchesPage() {
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
   const countryRef = useRef<HTMLDivElement>(null)
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -379,6 +382,18 @@ export default function BranchesPage() {
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
+              {(() => {
+                let phonePlaceholder = "";
+                if (form.country) {
+                  const phoneInfo = getPhonePrefixAndPlaceholderByName(form.country, countryCodesList);
+                  if (phoneInfo) phonePlaceholder = `${phoneInfo.code} ${phoneInfo.placeholder}`;
+                }
+                if (!phonePlaceholder) {
+                   const fallbackMatch = countryCodesList.find(c => c.code === detectedCountryCode);
+                   phonePlaceholder = fallbackMatch ? `${fallbackMatch.code} ${fallbackMatch.placeholder}` : "+1 555 000 0000";
+                }
+                return (
+                  <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative" ref={countryRef}>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.country", "Country")}</label>
@@ -407,7 +422,7 @@ export default function BranchesPage() {
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.city", "City")}</label>
                   <input required value={form.city} onChange={e => setForm(p => ({...p, city: e.target.value}))}
-                    placeholder="Yerevan" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                    placeholder={t("branchesPage.cityPlaceholder", "Yerevan")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                 </div>
               </div>
               <div>
@@ -415,12 +430,12 @@ export default function BranchesPage() {
                 <input required value={form.line1} onChange={e => setForm(p => ({...p, line1: e.target.value}))}
                   disabled={!form.country || !form.city}
                   title={(!form.country || !form.city) ? "Please select Country and City first" : ""}
-                  placeholder="123 Main Street" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] disabled:opacity-50 disabled:cursor-not-allowed" />
+                  placeholder={t("branchesPage.streetPlaceholder", "123 Main Street")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
               <div className="w-1/2 pr-1.5">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.zipCode", "Zip Code")}</label>
                 <input value={form.zipCode} onChange={e => setForm(p => ({...p, zipCode: e.target.value}))}
-                  placeholder="0001" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                  placeholder={t("branchesPage.zipPlaceholder", "0001")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
               </div>
               
               <div>
@@ -439,7 +454,7 @@ export default function BranchesPage() {
                         const newPhones = [...form.phoneNumbers];
                         newPhones[idx] = e.target.value;
                         setForm(p => ({...p, phoneNumbers: newPhones}));
-                      }} placeholder="+374 11 000000" className="flex-1 px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                      }} placeholder={phonePlaceholder} className="flex-1 px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
                       {form.phoneNumbers.length > 1 && (
                         <button type="button" onClick={() => {
                           const newPhones = form.phoneNumbers.filter((_, i) => i !== idx);
@@ -551,6 +566,9 @@ export default function BranchesPage() {
                   {saving ? t("common.saving", "Saving...") : editId ? t("common.update", "Update") : t("common.create", "Create")}
                 </button>
               </div>
+                  </>
+                );
+              })()}
             </form>
           </div>
         </div>

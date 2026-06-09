@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
@@ -32,6 +32,8 @@ import { SmsVerification } from "./sms-verification"
 import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
+import { useCountryCode } from "@/lib/hooks/use-country-code"
+import { getPhonePlaceholder } from "@/lib/countries"
 interface AuthFormProps {
   activeTab: "signin" | "signup" | "forgot" | "reset-verify"
   onTabChange: (tab: "signin" | "signup" | "forgot" | "reset-verify") => void
@@ -39,43 +41,22 @@ interface AuthFormProps {
 }
 
 const businessTypes = [
-  { value: "salon", labelKey: "landing.salonSpa" },
-  { value: "medical", labelKey: "landing.medicalPractice" },
-  { value: "fitness", labelKey: "landing.fitnessStudio" },
-  { value: "consulting", labelKey: "landing.consultingServices" },
-  { value: "restaurant", labelKey: "landing.restaurantDining" },
-  { value: "auto", labelKey: "landing.autoService" },
-  { value: "pet", labelKey: "landing.petGrooming" },
-  { value: "other", labelKey: "landing.other" },
+  { value: "salon", labelKey: "landing.catBeautyWellness" },
+  { value: "medical", labelKey: "landing.catHealthMedical" },
+  { value: "fitness", labelKey: "landing.catFitnessSports" },
+  { value: "consulting", labelKey: "landing.catProfessionalServices" },
+  { value: "restaurant", labelKey: "landing.catRestaurantHospitality" },
+  { value: "auto", labelKey: "landing.catAutomotive" },
+  { value: "pet", labelKey: "landing.catPetServices" },
+  { value: "other", labelKey: "landing.catOther" },
 ]
 
-const countryCodes = [
-  { code: "+1", country: "US", flag: "🇺🇸" },
-  { code: "+44", country: "UK", flag: "🇬🇧" },
-  { code: "+374", country: "AM", flag: "🇦🇲" },
-  { code: "+995", country: "GE", flag: "🇬🇪" },
-  { code: "+994", country: "AZ", flag: "🇦🇿" },
-  { code: "+7", country: "RU", flag: "🇷🇺" },
-  { code: "+49", country: "DE", flag: "🇩🇪" },
-  { code: "+33", country: "FR", flag: "🇫🇷" },
-  { code: "+39", country: "IT", flag: "🇮🇹" },
-  { code: "+34", country: "ES", flag: "🇪🇸" },
-  { code: "+90", country: "TR", flag: "🇹🇷" },
-  { code: "+971", country: "AE", flag: "🇦🇪" },
-  { code: "+86", country: "CN", flag: "🇨🇳" },
-  { code: "+81", country: "JP", flag: "🇯🇵" },
-  { code: "+82", country: "KR", flag: "🇰🇷" },
-  { code: "+91", country: "IN", flag: "🇮🇳" },
-  { code: "+55", country: "BR", flag: "🇧🇷" },
-  { code: "+61", country: "AU", flag: "🇦🇺" },
-  { code: "+52", country: "MX", flag: "🇲🇽" },
-  { code: "+48", country: "PL", flag: "🇵🇱" },
-]
 
 export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFormProps) {
   const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -92,6 +73,11 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
+
+  // Sync detected country code with formData when it's resolved from API
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, countryCode: detectedCountryCode }))
+  }, [detectedCountryCode])
 
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -254,13 +240,14 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
             onInputChange={handleInputChange}
             isBusinessPartner={isBusinessPartner}
             setIsBusinessPartner={setIsBusinessPartner}
+            countryCodesList={countryCodesList}
           />
         ) : activeTab === "forgot" ? (
-          <ForgotPasswordForm formData={formData} onInputChange={handleInputChange} />
+          <ForgotPasswordForm formData={formData} onInputChange={handleInputChange} countryCodesList={countryCodesList} />
         ) : activeTab === "reset-verify" ? (
           <ResetVerifyForm formData={formData} onInputChange={handleInputChange} />
         ) : (
-          <SignInForm formData={formData} onInputChange={handleInputChange} onForgot={() => onTabChange("forgot")} />
+          <SignInForm formData={formData} onInputChange={handleInputChange} onForgot={() => onTabChange("forgot")} countryCodesList={countryCodesList} />
         )}
 
         {/* Submit Button */}
@@ -281,7 +268,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               onClick={() => onTabChange("signin")}
               className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors"
             >
-              Back to sign in
+              {t("auth.backToSignIn", "Back to sign in")}
             </button>
           </div>
         )}
@@ -361,6 +348,7 @@ interface SignUpFormProps {
   onInputChange: (field: string, value: string) => void
   isBusinessPartner: boolean
   setIsBusinessPartner: (value: boolean) => void
+  countryCodesList: { code: string; country: string; flag: string }[]
 }
 
 function SignUpForm({
@@ -368,6 +356,7 @@ function SignUpForm({
   onInputChange,
   isBusinessPartner,
   setIsBusinessPartner,
+  countryCodesList,
 }: SignUpFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
@@ -429,8 +418,8 @@ function SignUpForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-60">
-              {countryCodes.map((cc) => (
-                <SelectItem key={cc.code} value={cc.code}>
+              {countryCodesList.map((cc) => (
+                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
                   {cc.flag} {cc.code}
                 </SelectItem>
               ))}
@@ -441,7 +430,7 @@ function SignUpForm({
             <Input
               id="phone"
               type="tel"
-              placeholder="555 000 0000"
+              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
               value={formData.phone}
               onChange={(e) => onInputChange("phone", e.target.value)}
               className="pl-10"
@@ -563,9 +552,10 @@ interface SignInFormProps {
   }
   onInputChange: (field: string, value: string) => void
   onForgot?: () => void
+  countryCodesList: { code: string; country: string; flag: string }[]
 }
 
-function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
+function SignInForm({ formData, onInputChange, onForgot, countryCodesList }: SignInFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
@@ -583,8 +573,8 @@ function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-60">
-              {countryCodes.map((cc) => (
-                <SelectItem key={cc.code} value={cc.code}>
+              {countryCodesList.map((cc) => (
+                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
                   {cc.flag} {cc.code}
                 </SelectItem>
               ))}
@@ -595,7 +585,7 @@ function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
             <Input
               id="signin-phone"
               type="tel"
-              placeholder="555 000 0000"
+              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
               value={formData.phone}
               onChange={(e) => onInputChange("phone", e.target.value)}
               className="pl-10"
@@ -631,7 +621,7 @@ function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
             onClick={onForgot}
             className="text-xs text-[#E5555E] font-medium hover:underline"
           >
-            Forgot password?
+            {t("auth.forgotPassword")}
           </button>
         </div>
       </div>
@@ -639,12 +629,13 @@ function SignInForm({ formData, onInputChange, onForgot }: SignInFormProps) {
   )
 }
 
-function ForgotPasswordForm({ formData, onInputChange }: { formData: any, onInputChange: any }) {
+function ForgotPasswordForm({ formData, onInputChange, countryCodesList }: { formData: any, onInputChange: any, countryCodesList: any[] }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4 pt-2">
       {/* Phone Number with Country Code */}
       <div className="space-y-2">
-        <Label htmlFor="forgot-phone">Phone Number</Label>
+        <Label htmlFor="forgot-phone">{t("common.phone", "Phone Number")}</Label>
         <div className="flex gap-2">
           <Select
             value={formData.countryCode}
@@ -654,8 +645,8 @@ function ForgotPasswordForm({ formData, onInputChange }: { formData: any, onInpu
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-60">
-              {countryCodes.map((cc) => (
-                <SelectItem key={cc.code} value={cc.code}>
+              {countryCodesList.map((cc) => (
+                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
                   {cc.flag} {cc.code}
                 </SelectItem>
               ))}
@@ -666,7 +657,7 @@ function ForgotPasswordForm({ formData, onInputChange }: { formData: any, onInpu
             <Input
               id="forgot-phone"
               type="tel"
-              placeholder="555 000 0000"
+              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
               value={formData.phone}
               onChange={(e) => onInputChange("phone", e.target.value)}
               className="pl-10"
@@ -680,6 +671,7 @@ function ForgotPasswordForm({ formData, onInputChange }: { formData: any, onInpu
 }
 
 function ResetVerifyForm({ formData, onInputChange }: { formData: any, onInputChange: any }) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -687,7 +679,7 @@ function ResetVerifyForm({ formData, onInputChange }: { formData: any, onInputCh
     <div className="space-y-4 pt-2">
       {/* Verification Code */}
       <div className="space-y-2">
-        <Label htmlFor="reset-code">6-Digit Code</Label>
+        <Label htmlFor="reset-code">{t("auth.code", "6-Digit Code")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -705,7 +697,7 @@ function ResetVerifyForm({ formData, onInputChange }: { formData: any, onInputCh
 
       {/* New Password */}
       <div className="space-y-2">
-        <Label htmlFor="new-password">New Password</Label>
+        <Label htmlFor="new-password">{t("auth.newPassword", "New Password")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -729,7 +721,7 @@ function ResetVerifyForm({ formData, onInputChange }: { formData: any, onInputCh
 
       {/* Confirm Password */}
       <div className="space-y-2">
-        <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+        <Label htmlFor="confirm-new-password">{t("auth.confirmNewPassword", "Confirm New Password")}</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input

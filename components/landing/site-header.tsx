@@ -23,7 +23,7 @@ export function SiteHeader() {
 
   return (
     <header className="w-full bg-background border-b border-border/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Logo />
@@ -62,10 +62,10 @@ export function SiteHeader() {
             </div>
           ) : (
             <>
-              <Link href="/auth" className="px-5 py-2.5 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
+              <Link href="/auth" className="px-4 py-2 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
                 {t("auth.signIn", "Sign In")}
               </Link>
-              <Link href="/auth?tab=signup" className="px-5 py-2.5 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
+              <Link href="/auth?tab=signup" className="px-4 py-2 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
                 {t("auth.signUp", "Sign Up")}
               </Link>
             </>

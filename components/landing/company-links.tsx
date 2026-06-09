@@ -43,7 +43,7 @@ export function CompanyLinks() {
           {activeModal === "about" && (
             <div className="w-full">
               <div className="text-center max-w-4xl mx-auto mb-16">
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#A68F81] mb-6">{t("landing.companyMod.aboutTitle", "Connecting You With")} <span className="text-[#8165B0]">{t("landing.companyMod.aboutHighlight", "Local Excellence")}</span></h2>
+                <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-6">{t("landing.companyMod.aboutTitle", "Connecting You With")} <span className="text-[#8165B0]">{t("landing.companyMod.aboutHighlight", "Local Excellence")}</span></h2>
                 <p className="text-lg md:text-xl text-[#8D8D8D] leading-relaxed">
                   {t("landing.companyMod.aboutDesc", "We're on a mission to make local services accessible, transparent, and easy to book for everyone.")}
                 </p>
@@ -96,7 +96,7 @@ export function CompanyLinks() {
           {activeModal === "contact" && (
             <div className="w-full">
               <div className="text-center max-w-3xl mx-auto mb-12">
-                <h2 className="text-4xl md:text-5xl font-serif text-[#A68F81] mb-6">{t("landing.companyMod.contactTitle", "Contact Us")}</h2>
+                <h2 className="text-3xl md:text-4xl font-serif text-[#A68F81] mb-6">{t("landing.companyMod.contactTitle", "Contact Us")}</h2>
                 <p className="text-lg text-[#8D8D8D]">
                   {t("landing.companyMod.contactDesc", "We're here to help and answer any question you might have. We look forward to hearing from you.")}
                 </p>

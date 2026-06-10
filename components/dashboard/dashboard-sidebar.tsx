@@ -11,9 +11,15 @@ import {
   BarChart3,
   Settings,
   PlusCircle,
+  Layers,
+  Grid,
+  List,
+  Utensils,
+  Image,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
+import { useRestaurant } from "@/hooks/useRestaurant"
 
 import { Logo } from "@/components/ui/logo"
 
@@ -26,7 +32,18 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
   const { t } = useTranslation()
   const currentPath = activePath || pathname
 
-  const navItems = [
+  const { isRestaurant } = useRestaurant()
+
+  const navItems = isRestaurant ? [
+    { label: t("nav.dashboard", "Home"), href: "/dashboard", icon: Home },
+    { label: t("nav.floorPlan", "Floor Plan"), href: "/dashboard/restaurant/floor-plan", icon: Layers },
+    { label: t("nav.tables", "Tables"), href: "/dashboard/restaurant/tables", icon: Grid },
+    { label: t("nav.reservations", "Reservations"), href: "/dashboard/restaurant/reservations", icon: List },
+    { label: t("nav.menu", "Menu"), href: "/dashboard/restaurant/menu", icon: Utensils },
+    { label: t("nav.gallery", "Gallery"), href: "/dashboard/restaurant/gallery", icon: Image },
+    { label: t("nav.branches", "Branches"), href: "/dashboard/branches", icon: MapPin },
+    { label: t("nav.analytics", "Analytics"), href: "/dashboard/analytics", icon: BarChart3 },
+  ] : [
     { label: t("nav.dashboard", "Home"), href: "/dashboard", icon: Home },
     { label: t("nav.calendar", "Calendar"), href: "/dashboard/calendar", icon: Calendar },
     { label: t("nav.createBooking", "Create Booking"), href: "/dashboard/book", icon: PlusCircle },
@@ -35,6 +52,8 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
     { label: t("nav.specialists", "Specialists"), href: "/dashboard/specialists", icon: Users },
     { label: t("nav.analytics", "Analytics"), href: "/dashboard/analytics", icon: BarChart3 },
   ]
+
+  const settingsHref = isRestaurant ? "/dashboard/restaurant/settings" : "/dashboard/settings"
 
   return (
     <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-background">
@@ -73,10 +92,10 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
       {/* Settings at bottom */}
       <div className="px-3 py-4 border-t border-border">
         <Link
-          href="/dashboard/settings"
+          href={settingsHref}
           className={cn(
             "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-            currentPath === "/dashboard/settings"
+            currentPath === settingsHref
               ? "bg-[#FDF6F6] text-[#E5555E]"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}

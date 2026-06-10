@@ -12,6 +12,8 @@ import { useBranchContext } from "@/components/dashboard/branch-context"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
+import { useRestaurant } from "@/hooks/useRestaurant"
+import { RestaurantDashboard } from "@/components/restaurant/restaurant-dashboard"
 
 interface Booking {
   _id: string
@@ -48,6 +50,7 @@ function formatDate(iso: string, language: string = 'en') {
 
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
+  const { isRestaurant } = useRestaurant()
   const { selectedBranchId, isLoading: branchesLoading } = useBranchContext()
   const { t, i18n } = useTranslation()
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -156,6 +159,10 @@ export default function BusinessDashboardPage() {
   const topServices = Object.values(serviceStats)
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+
+  if (isRestaurant) {
+    return <RestaurantDashboard />
+  }
 
   return (
     <div className="h-screen bg-[#FAFAFA] flex font-sans overflow-hidden">

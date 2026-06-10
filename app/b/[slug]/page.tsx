@@ -15,6 +15,7 @@ import { ServiceSelection } from "@/components/booking/service-selection"
 import { SpecialistSelection } from "@/components/booking/specialist-selection"
 import { DateTimePicker } from "@/components/booking/date-time-picker"
 import { formatPrice } from "@/lib/currency"
+import { RestaurantCustomerApp } from "@/components/restaurant/customer/restaurant-customer-app"
 
 // Dynamic import for map to avoid SSR
 import dynamic from "next/dynamic"
@@ -91,6 +92,9 @@ export default function PublicBookingPage() {
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [selectedSpecialist, setSelectedSpecialist] = useState<string | null>(null)
+
+  // Restaurant Menu
+  const [menuItems, setMenuItems] = useState<any[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
@@ -101,6 +105,15 @@ export default function PublicBookingPage() {
   const [guestStep, setGuestStep] = useState<"details" | "verify">("details")
   const [guestDetails, setGuestDetails] = useState({ firstName: "", lastName: "", email: "", phone: "", countryCode: "+1" })
   const [smsCode, setSmsCode] = useState("")
+
+  // Restaurant State
+  const [restaurantFloors, setRestaurantFloors] = useState<any[]>([])
+  const [restaurantTables, setRestaurantTables] = useState<any[]>([])
+  const [restaurantReservations, setRestaurantReservations] = useState<any[]>([])
+  const [partySize, setPartySize] = useState<number>(2)
+  const [activeFloorId, setActiveFloorId] = useState<string | null>(null)
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null)
+  const isRestaurant = partner?.businessType === "restaurant"
 
   // Fetch business data
   useEffect(() => {
@@ -125,10 +138,11 @@ export default function PublicBookingPage() {
         setPartner(partnerRes.data)
 
         const partnerId = partnerRes.data._id
-        const [bRes, sRes, spRes] = await Promise.all([
+        const [bRes, sRes, spRes, mRes] = await Promise.all([
           api.get(`/branches?partnerId=${partnerId}`),
           api.get(`/services?partnerId=${partnerId}`),
           api.get(`/specialists?partnerId=${partnerId}`),
+          partnerRes.data.category === "Restaurant" ? api.get(`/restaurant/menu?partnerId=${partnerId}`) : Promise.resolve({ data: [] })
         ])
         
         setBranches(bRes.data || [])
@@ -140,6 +154,7 @@ export default function PublicBookingPage() {
           role: "Specialist",
           image: s.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=C69C9B&color=fff&size=200`
         })))
+        setMenuItems(mRes.data || [])
         
         // Auto-select branch
         if (initialBranchId && bRes.data?.some((b: any) => b._id === initialBranchId)) {
@@ -184,6 +199,22 @@ export default function PublicBookingPage() {
       }
       try {
         const dateStr = selectedDate.toISOString()
+        
+        if (partner?.businessType === "restaurant") {
+          const [fRes, tRes, rRes] = await Promise.all([
+            api.get(`/restaurant/floors?branchId=${selectedBranch}`),
+            api.get(`/restaurant/tables?branchId=${selectedBranch}`),
+            api.get(`/restaurant/reservations?branchId=${selectedBranch}&date=${dateStr}`)
+          ])
+          setRestaurantFloors(fRes.data)
+          setRestaurantTables(tRes.data)
+          setRestaurantReservations(rRes.data)
+          if (fRes.data.length > 0 && !activeFloorId) {
+            setActiveFloorId(fRes.data[0]._id)
+          }
+          return
+        }
+
         const specialistQuery = selectedSpecialist ? `specialistId=${selectedSpecialist}&` : ''
         const res = await api.get(`/bookings/availability?${specialistQuery}branchId=${selectedBranch}&date=${dateStr}`)
         setBookedSlots(res.data.bookedSlots || [])
@@ -197,7 +228,7 @@ export default function PublicBookingPage() {
       }
     }
     fetchBookedSlots()
-  }, [selectedSpecialist, selectedDate, selectedBranch, selectedTime])
+  }, [selectedSpecialist, selectedDate, selectedBranch, selectedTime, partner])
 
   // Filters
   const branchServices = allServices.filter(s => {
@@ -248,6 +279,7 @@ export default function PublicBookingPage() {
     setSelectedServices([])
     setSelectedSpecialist(null)
     setSelectedTime(null)
+    setSelectedTableId(null)
   }
 
   const toggleService = (id: string) => {
@@ -256,17 +288,23 @@ export default function PublicBookingPage() {
     )
   }
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (tableId?: string) => {
+    const finalTableId = tableId || selectedTableId;
+    
     if (branches.length > 0 && !selectedBranch) {
       toast.error("Please select a branch location")
       return
     }
-    if (selectedServices.length === 0) {
+    if (!isRestaurant && selectedServices.length === 0) {
       toast.error("Please select at least one service")
       return
     }
     if (!selectedTime) {
       toast.error("Please select a time slot")
+      return
+    }
+    if (isRestaurant && !finalTableId) {
+      toast.error("Please select a table")
       return
     }
 
@@ -277,10 +315,10 @@ export default function PublicBookingPage() {
       return
     }
 
-    submitBooking()
+    submitBooking(undefined, finalTableId)
   }
 
-  const submitBooking = async (guestData?: { name: string; email: string; phone: string }) => {
+  const submitBooking = async (guestData?: { name: string; email: string; phone: string }, passedTableId?: string | null) => {
     setIsSubmitting(true)
     try {
       const [hh, mm] = selectedTime!.split(':')
@@ -292,7 +330,7 @@ export default function PublicBookingPage() {
         parseInt(mm, 10),
         0
       )
-      const endTime = new Date(startTime.getTime() + totalDuration * 60000)
+      const endTime = new Date(startTime.getTime() + (isRestaurant ? 120 : totalDuration) * 60000)
 
       let userId = "000000000000000000000000"
       try {
@@ -300,23 +338,43 @@ export default function PublicBookingPage() {
         userId = profileRes.data._id || profileRes.data.userId || userId
       } catch { /* fallback */ }
 
-      const payload: any = {
+      let payload: any = {
         userId,
         partnerId: partner?._id,
         branchId: selectedBranch || branches[0]?._id || partner?._id,
-        serviceId: selectedServices[0], // Primary service
-        serviceIds: selectedServices,   // All selected services
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
       }
-      if (selectedSpecialist) payload.specialistId = selectedSpecialist
+
+      if (isRestaurant) {
+        const finalTable = passedTableId || selectedTableId;
+        payload = {
+          ...payload,
+          startTime: `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`,
+          endTime: `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`,
+          tableId: finalTable,
+          floorId: restaurantTables.find(t => t._id === finalTable)?.floorId,
+          partySize,
+          date: startTime.toISOString(),
+          source: 'online'
+        }
+      } else {
+        payload = {
+          ...payload,
+          serviceId: selectedServices[0], // Primary service
+          serviceIds: selectedServices,   // All selected services
+        }
+        if (selectedSpecialist) payload.specialistId = selectedSpecialist
+      }
+      
       if (guestData) {
         payload.guestName = guestData.name
         payload.guestEmail = guestData.email
         payload.guestPhone = guestData.phone
       }
 
-      await api.post('/bookings', payload)
+      const endpoint = isRestaurant ? '/restaurant/reservations' : '/bookings'
+      await api.post(endpoint, payload)
       toast.success("Booking submitted! 🎉")
       setShowGuestModal(false)
       // If guest, show a generic success message or redirect to a guest success page
@@ -401,21 +459,44 @@ export default function PublicBookingPage() {
     <div className="min-h-screen bg-white flex flex-col relative">
       <BookingHeader />
       
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
-        <BusinessHero
-          name={partner.businessName}
-          image={partner.image}
-          rating={4.9}
-          reviewCount={124}
-          address={branches[0]?.address?.city || "Online Booking"}
-          status="Open Now"
-          estimatedWait="5 - 10 Minutes"
-          viewMode={viewMode}
-          onViewChange={setViewMode}
-        />
+      <main className="flex-1 w-full flex flex-col items-center">
+        {isRestaurant ? (
+          <RestaurantCustomerApp
+            partner={partner}
+            branches={branches}
+            selectedBranch={selectedBranch}
+            onBranchSelect={handleBranchSelect}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            selectedTime={selectedTime}
+            setSelectedTime={setSelectedTime}
+            partySize={partySize}
+            setPartySize={setPartySize}
+            floors={restaurantFloors}
+            tables={restaurantTables}
+            reservations={restaurantReservations}
+            bookedSlots={bookedSlots}
+            onBookTable={(id: string) => {
+              setSelectedTableId(id)
+              handleConfirm(id)
+            }}
+          />
+        ) : (
+          <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
+            <BusinessHero
+              name={partner.businessName}
+              image={partner.image}
+              rating={4.9}
+              reviewCount={124}
+              address={branches[0]?.address?.city || "Online Booking"}
+              status="Open Now"
+              estimatedWait="5 - 10 Minutes"
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+            />
 
-        {/* Tab Navigation */}
-        <div className="mt-8 mb-6 flex gap-1 p-1 bg-white rounded-xl border border-border/60 w-fit">
+            {/* Tab Navigation */}
+            <div className="mt-8 mb-6 flex gap-1 p-1 bg-white rounded-xl border border-border/60 w-fit">
           <button
             onClick={() => setActiveTab("book")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -425,7 +506,7 @@ export default function PublicBookingPage() {
             }`}
           >
             <Calendar className="h-4 w-4" />
-            {t("role.customerDesc", "Book Appointment")}
+            {isRestaurant ? t("role.bookTable", "Book Table") : t("role.customerDesc", "Book Appointment")}
           </button>
           <button
             onClick={() => setActiveTab("about")}
@@ -436,8 +517,35 @@ export default function PublicBookingPage() {
             }`}
           >
             <Info className="h-4 w-4" />
-            {t("book.yourInfo", "About Us")} {/* Approximate, needs a new key if not perfect */}
+            {t("book.yourInfo", "About Us")}
           </button>
+          
+          {isRestaurant && (
+            <>
+              <button
+                onClick={() => setActiveTab("menu")}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === "menu"
+                    ? "bg-[#E5555E] text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                }`}
+              >
+                <Info className="h-4 w-4" />
+                Menu
+              </button>
+              <button
+                onClick={() => setActiveTab("gallery")}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === "gallery"
+                    ? "bg-[#E5555E] text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                }`}
+              >
+                <Info className="h-4 w-4" />
+                Gallery
+              </button>
+            </>
+          )}
         </div>
 
         {viewMode === "map" && (
@@ -501,8 +609,8 @@ export default function PublicBookingPage() {
               </div>
             )}
 
-            {/* Services Section */}
-            {(!branches.length || selectedBranch) && (
+            {/* Services Section (Hidden for Restaurants) */}
+            {!isRestaurant && (!branches.length || selectedBranch) && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
@@ -519,8 +627,8 @@ export default function PublicBookingPage() {
               </div>
             )}
 
-            {/* Specialist Section */}
-            {selectedServices.length > 0 && (
+            {/* Specialist Section (Hidden for Restaurants) */}
+            {!isRestaurant && selectedServices.length > 0 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
@@ -537,11 +645,11 @@ export default function PublicBookingPage() {
             )}
 
             {/* Date & Time Section */}
-            {selectedSpecialist && (
+            {(isRestaurant || selectedSpecialist) && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
-                    {branches.length > 0 ? "4" : "3"}
+                    {branches.length > 0 ? (isRestaurant ? "2" : "4") : (isRestaurant ? "1" : "3")}
                   </div>
                   <h2 className="text-lg font-bold text-foreground">Date & Time</h2>
                 </div>
@@ -758,9 +866,89 @@ export default function PublicBookingPage() {
             </div>
           </div>
         )}
+
+        {isRestaurant && activeTab === "menu" && viewMode === "list" && (
+          <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-xl font-bold text-foreground">Our Menu</h2>
+            {branches.length > 0 && !selectedBranch ? (
+              <p className="text-muted-foreground">Please select a branch first to view the menu.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {(() => {
+                  const branchMenu = menuItems.filter(m => !m.branchId || m.branchId === selectedBranch || m.branchId?._id === selectedBranch)
+                  
+                  if (branchMenu.length === 0) {
+                    return <p className="text-muted-foreground col-span-full">No menu items available for this branch.</p>
+                  }
+
+                  return branchMenu.map((item: any) => (
+                    <div key={item._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-3">
+                      <div className="flex gap-4">
+                        {item.image ? (
+                          <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-[#FAFAFA] border border-border/60">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 shrink-0 rounded-lg bg-[#FAFAFA] border border-border/60 flex items-center justify-center">
+                            <Info className="w-6 h-6 text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground text-sm truncate">{item.name}</h3>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#C69C9B]">{item.category}</span>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
+                        </div>
+                      </div>
+                      <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-sm font-bold text-foreground">{formatPrice(item.price, partner?.currency)}</span>
+                        {!item.isAvailable && (
+                          <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded">Sold Out</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
+        {isRestaurant && activeTab === "gallery" && viewMode === "list" && (
+          <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-xl font-bold text-foreground">Gallery</h2>
+            {(() => {
+              const branchToDisplay = selectedBranch 
+                ? branches.find(b => b._id === selectedBranch) 
+                : branches[0]
+              
+              const gallery = branchToDisplay?.gallery || []
+              
+              if (gallery.length === 0) {
+                return <p className="text-muted-foreground">No photos available for this location.</p>
+              }
+
+              return (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {gallery.map((img: any, idx: number) => (
+                    <div key={idx} className="group relative aspect-square bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                      <img src={img.url} alt={`Gallery image ${idx}`} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                        <span className="bg-white/90 backdrop-blur-sm text-black text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider capitalize w-fit">
+                          {img.category}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+        )}
+          </div>
+        )}
       </main>
 
-      {activeTab === "book" && (
+      {!isRestaurant && activeTab === "book" && (
         <BookingFooter
           totalPrice={totalPrice}
           selectedDate={selectedDate}

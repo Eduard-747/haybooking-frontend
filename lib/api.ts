@@ -25,8 +25,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       // Don't clear token for login/signup attempts (those are expected 401s for wrong credentials)
       const url = error.config?.url || '';
-      if (!url.includes('/auth/login') && !url.includes('/auth/signup')) {
+      if (!url.includes('/auth/login') && !url.includes('/auth/signup') && !url.includes('/auth/recover')) {
         localStorage.removeItem('access_token');
+        if (window.location.pathname !== '/auth') {
+          window.location.href = '/auth';
+        }
       }
     }
     return Promise.reject(error);

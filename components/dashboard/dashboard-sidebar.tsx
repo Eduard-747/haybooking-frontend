@@ -11,9 +11,11 @@ import {
   BarChart3,
   Settings,
   PlusCircle,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
+import { useMobileNav } from "@/components/mobile-nav-context"
 
 import { Logo } from "@/components/ui/logo"
 
@@ -21,9 +23,10 @@ interface DashboardSidebarProps {
   activePath?: string
 }
 
-export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
+function SidebarContent({ activePath }: { activePath?: string }) {
   const pathname = usePathname()
   const { t } = useTranslation()
+  const { setIsOpen } = useMobileNav()
   const currentPath = activePath || pathname
 
   const navItems = [
@@ -37,10 +40,10 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
   ]
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-background">
+    <>
       {/* Logo */}
       <div className="p-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
           <Logo />
         </Link>
       </div>
@@ -54,6 +57,7 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={() => setIsOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     isActive
@@ -74,6 +78,7 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
       <div className="px-3 py-4 border-t border-border">
         <Link
           href="/dashboard/settings"
+          onClick={() => setIsOpen(false)}
           className={cn(
             "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
             currentPath === "/dashboard/settings"
@@ -85,6 +90,42 @@ export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
           {t("nav.settings", "Settings")}
         </Link>
       </div>
-    </aside>
+    </>
+  )
+}
+
+export function DashboardSidebar({ activePath }: DashboardSidebarProps) {
+  const { isOpen, setIsOpen } = useMobileNav()
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex flex-col w-60 border-r border-border bg-background shrink-0">
+        <SidebarContent activePath={activePath} />
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Drawer */}
+          <aside className="absolute left-0 top-0 h-full w-72 bg-background shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <SidebarContent activePath={activePath} />
+          </aside>
+        </div>
+      )}
+    </>
   )
 }

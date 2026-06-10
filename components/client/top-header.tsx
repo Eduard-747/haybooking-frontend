@@ -1,15 +1,17 @@
 "use client"
 
-import { Search, Bell, User, LogOut } from "lucide-react"
+import { Search, Bell, User, LogOut, Menu } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useMobileNav } from "@/components/mobile-nav-context"
 
 export function ClientTopHeader() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const { setIsOpen } = useMobileNav()
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -19,10 +21,18 @@ export function ClientTopHeader() {
   };
 
   return (
-    <header className="w-full bg-white border-b border-border/40 h-16 flex items-center px-4 sm:px-6 sticky top-0 z-40">
+    <header className="w-full bg-white border-b border-border/40 h-14 sm:h-16 flex items-center px-3 sm:px-6 sticky top-0 z-40 gap-2 sm:gap-4">
       
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="lg:hidden p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Middle: Search Bar */}
-      <div className="flex-1 max-w-2xl relative">
+      <div className="flex-1 max-w-2xl relative min-w-0">
         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           <Search className="h-4 w-4" />
         </div>
@@ -31,8 +41,8 @@ export function ClientTopHeader() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
-          placeholder="Search services or businesses... (Press Enter)" 
-          className="w-full h-10 pl-10 pr-4 bg-[#FAFAFA] border-none rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
+          placeholder="Search..." 
+          className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-3 sm:pr-4 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
         />
       </div>
 

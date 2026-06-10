@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Globe } from "lucide-react"
+import { Bell, Globe, Menu } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { usePartner } from "@/hooks/usePartner"
@@ -11,6 +11,7 @@ import { MapPin } from "lucide-react"
 import { NotificationsPopover } from "./notifications-popover"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
+import { useMobileNav } from "@/components/mobile-nav-context"
 
 export function DashboardHeader() {
   const { t } = useTranslation()
@@ -25,13 +26,23 @@ export function DashboardHeader() {
 
   const { branches, selectedBranchId, setSelectedBranchId } = useBranchContext()
 
+  const { setIsOpen } = useMobileNav()
+
   return (
-    <header className="h-16 border-b border-border/40 bg-white flex items-center justify-between px-6 sticky top-0 z-40">
+    <header className="h-14 sm:h-16 border-b border-border/40 bg-white flex items-center justify-between px-3 sm:px-6 sticky top-0 z-40">
       
-      {/* Left: Business Name & Branch Selector */}
-      <div className="flex-1 flex items-center gap-4">
-        <div className="flex items-center">
-          <span className="text-sm font-semibold text-foreground">
+      {/* Left: Hamburger + Business Name & Branch Selector */}
+      <div className="flex-1 flex items-center gap-2 sm:gap-4 min-w-0">
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setIsOpen(true)}
+          className="lg:hidden p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div className="flex items-center min-w-0">
+          <span className="text-sm font-semibold text-foreground truncate">
             {partner?.businessName || "Dashboard"}
           </span>
           {partner?.verified && (
@@ -67,7 +78,7 @@ export function DashboardHeader() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
         
         {/* Language Selector */}
         <LanguageSwitcher />

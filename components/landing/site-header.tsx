@@ -32,25 +32,23 @@ export function SiteHeader() {
 
 
         {/* Right: Auth */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:block">
-            <LanguageSwitcher />
-          </div>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <LanguageSwitcher />
           {user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => {
                   logout();
                   window.location.href = '/auth';
                 }} 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
               >
-                <LogOut className="h-4 w-4" />
-                {t("auth.logout", "Sign Out")}
+                <LogOut className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{t("auth.logout", "Sign Out")}</span>
               </button>
               <Avatar 
                 onClick={handleAvatarClick}
-                className="h-10 w-10 cursor-pointer border border-border bg-[#FDF6F6] hover:ring-2 hover:ring-[#C69C9B]/50 transition-all"
+                className="h-9 w-9 sm:h-10 sm:w-10 cursor-pointer border border-border bg-[#FDF6F6] hover:ring-2 hover:ring-[#C69C9B]/50 transition-all shrink-0"
               >
                 <AvatarFallback className="bg-[#FDF6F6]">
                   {user.name ? user.name.substring(0, 2).toUpperCase() : <User className="h-5 w-5 text-[#C69C9B]" />}
@@ -62,10 +60,10 @@ export function SiteHeader() {
             </div>
           ) : (
             <>
-              <Link href="/auth" className="px-4 py-2 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
+              <Link href="/auth" className="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#BC9B9E] text-white rounded-md text-xs sm:text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm whitespace-nowrap">
                 {t("auth.signIn", "Sign In")}
               </Link>
-              <Link href="/auth?tab=signup" className="px-4 py-2 bg-[#BC9B9E] text-white rounded-md text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm">
+              <Link href="/auth?tab=signup" className="hidden xs:inline-flex px-3 py-1.5 sm:px-4 sm:py-2 bg-[#BC9B9E] text-white rounded-md text-xs sm:text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm whitespace-nowrap">
                 {t("auth.signUp", "Sign Up")}
               </Link>
             </>

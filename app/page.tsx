@@ -206,7 +206,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className="min-h-screen bg-white flex flex-col font-sans overflow-x-hidden">
       <SiteHeader />
       
       <main className="flex-1 flex flex-col items-center">

@@ -133,7 +133,9 @@ export default function SuperAdminDashboard() {
       </div>
 
       <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-        <Table>
+        <div className="overflow-x-auto">
+          <div className="min-w-[800px]">
+            <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
               <TableHead className="font-semibold text-slate-900">Business Details</TableHead>
@@ -231,6 +233,8 @@ export default function SuperAdminDashboard() {
             )}
           </TableBody>
         </Table>
+          </div>
+        </div>
       </div>
 
       {/* Message Modal */}

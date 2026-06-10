@@ -87,13 +87,13 @@ export default function MyBookingsPage() {
           <p className="text-muted-foreground">Manage your appointments and view service history.</p>
         </div>
 
-        <div className="flex items-center gap-8 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded-xl px-8 py-5">
-          <div>
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded-xl px-6 sm:px-8 py-4 sm:py-5 w-full md:w-auto">
+          <div className="text-center md:text-left">
             <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase mb-1">Upcoming</p>
             <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
           </div>
-          <div className="w-px h-10 bg-[#C69C9B]/20" />
-          <div>
+          <div className="w-px h-10 bg-[#C69C9B]/20 hidden sm:block" />
+          <div className="text-center md:text-left">
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Completed</p>
             <p className="text-2xl font-bold text-foreground">{past.length}</p>
           </div>

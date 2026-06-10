@@ -7,7 +7,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher"
 
 export function AuthBranding() {
   return (
-    <aside className="hidden lg:w-[55%] lg:flex border-l border-border/40 relative overflow-hidden h-screen">
+    <aside className="hidden lg:w-[55%] lg:flex border-l border-border/40 relative overflow-hidden min-h-screen sticky top-0 h-screen">
       {/* Full-size Image filling the entire right panel edge-to-edge */}
       <Image
         src="/auth-booking.png"

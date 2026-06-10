@@ -2,15 +2,18 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Compass, Calendar, Heart, Settings, LogOut } from "lucide-react"
+import { Compass, Calendar, Heart, Settings, LogOut, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import { useMobileNav } from "@/components/mobile-nav-context"
 
 import { Logo } from "@/components/ui/logo"
-export function ClientSidebar() {
+
+function SidebarContent() {
   const pathname = usePathname()
   const router = useRouter()
   const { logout } = useAuth()
+  const { setIsOpen } = useMobileNav()
 
   const navItems = [
     { name: "Discover", href: "/client/discover", icon: Compass },
@@ -20,10 +23,10 @@ export function ClientSidebar() {
   ]
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-border/40 flex-col hidden lg:flex sticky top-0 h-screen">
+    <>
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border/40 shrink-0">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
           <Logo />
         </Link>
       </div>
@@ -36,6 +39,7 @@ export function ClientSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => setIsOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
@@ -50,6 +54,7 @@ export function ClientSidebar() {
         })}
         <button
           onClick={() => {
+            setIsOpen(false)
             logout()
             router.push('/auth')
           }}
@@ -66,11 +71,48 @@ export function ClientSidebar() {
         <p className="text-xs text-foreground font-medium mb-3">Register your business to accept bookings.</p>
         <Link 
           href="/auth?tab=signup"
+          onClick={() => setIsOpen(false)}
           className="block w-full text-center px-4 py-2 bg-white border border-border rounded-lg text-xs font-semibold text-[#C69C9B] hover:bg-[#FDF6F6] transition-colors"
         >
           Become a Partner
         </Link>
       </div>
-    </aside>
+    </>
+  )
+}
+
+export function ClientSidebar() {
+  const { isOpen, setIsOpen } = useMobileNav()
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="w-64 min-h-screen bg-white border-r border-border/40 flex-col hidden lg:flex sticky top-0 h-screen shrink-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Drawer */}
+          <aside className="absolute left-0 top-0 h-full w-72 bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+    </>
   )
 }

@@ -23,9 +23,9 @@ function AuthPageContent() {
   }, [tab])
 
   return (
-    <div className="flex h-screen w-full bg-slate-50/30 overflow-hidden">
+    <div className="flex min-h-screen w-full bg-slate-50/30">
       {/* Left side - Header, Tagline & Form */}
-      <main className="flex w-full lg:w-[45%] flex-col px-6 py-4 lg:py-8 lg:px-12 relative bg-white z-10 shadow-2xl h-full overflow-y-auto">
+      <main className="flex w-full lg:w-[45%] flex-col px-4 sm:px-6 py-4 lg:py-8 lg:px-12 relative bg-white z-10 shadow-2xl min-h-screen overflow-y-auto">
         {/* Logo - aligned to the very left padding edge of the screen */}
         <div className="w-full flex items-center justify-start mb-10">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -40,7 +40,7 @@ function AuthPageContent() {
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5555E]/10 text-[#E5555E] text-xs font-semibold tracking-wide normal-case">
               ✨ Haybooking Platform
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 sm:whitespace-nowrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
               {t("auth.intelligentScheduling")}
             </h1>
             <p className="text-slate-500 text-sm leading-relaxed max-w-md font-normal">

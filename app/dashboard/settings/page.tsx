@@ -387,7 +387,7 @@ export default function SettingsPage() {
                 </h3>
 
                 {/* Name */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">{t("common.firstName", "First Name")}</label>
                     <input
@@ -502,7 +502,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">{t("dashboard.newPassword", "New Password")}</label>
                       <input

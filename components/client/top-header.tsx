@@ -1,11 +1,12 @@
 "use client"
 
-import { Search, Bell, User, LogOut, Menu } from "lucide-react"
+import { Search, User, LogOut, Menu } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useMobileNav } from "@/components/mobile-nav-context"
+import { ClientNotificationsPopover } from "./client-notifications-popover"
 
 export function ClientTopHeader() {
   const { user, logout } = useAuth()
@@ -48,10 +49,7 @@ export function ClientTopHeader() {
 
       {/* Right: Actions */}
       <div className="ml-auto flex items-center gap-4 pl-4">
-        <button className="text-muted-foreground hover:text-foreground transition-colors p-2 relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#E5555E] rounded-full"></span>
-        </button>
+        <ClientNotificationsPopover />
 
         <button 
           onClick={() => { logout(); router.push('/auth'); }}

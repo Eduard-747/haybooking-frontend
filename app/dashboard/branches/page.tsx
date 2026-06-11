@@ -13,6 +13,7 @@ import dynamic from "next/dynamic"
 import { useTranslation } from "react-i18next"
 import { getPhonePrefixAndPlaceholderByName } from "@/lib/countries"
 import { useCountryCode } from "@/lib/hooks/use-country-code"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Dynamically import map components to avoid SSR issues
 const BranchMapOverview = dynamic(() => import("@/components/maps/branch-map-overview"), { ssr: false })
@@ -398,7 +399,7 @@ export default function BranchesPage() {
                 }
                 return (
                   <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="relative" ref={countryRef}>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.country", "Country")}</label>
                   <input
@@ -528,14 +529,19 @@ export default function BranchesPage() {
                 </div>
                 {form.breaks.map((b, idx) => (
                   <div key={idx} className="flex gap-2 items-center mb-2">
-                    <select value={b.weekday} onChange={e => {
+                    <Select value={b.weekday.toString()} onValueChange={val => {
                       const newBreaks = [...form.breaks];
-                      newBreaks[idx].weekday = parseInt(e.target.value);
+                      newBreaks[idx].weekday = parseInt(val);
                       setForm(p => ({ ...p, breaks: newBreaks }));
-                    }} className="flex-1 px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#C69C9B]">
-                      <option value="-1">{t("branchesPage.allWorkingDays", "All Working Days")}</option>
-                      {WEEKDAYS.map((d, i) => <option key={i} value={i}>{t(`calendar.${d.toLowerCase()}`, d)}</option>)}
-                    </select>
+                    }}>
+                      <SelectTrigger className="flex-1 h-[38px] bg-[#FAFAFA] border-border/60 focus:ring-[#C69C9B]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-1">{t("branchesPage.allWorkingDays", "All Working Days")}</SelectItem>
+                        {WEEKDAYS.map((d, i) => <SelectItem key={i} value={i.toString()}>{t(`calendar.${d.toLowerCase()}`, d)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                     <TimePicker 
                       value={b.startTime} 
                       onChange={val => {

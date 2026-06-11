@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import { Twitter, Instagram, Facebook } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
-import { useTranslation } from "react-i18next"
 import { ProductLinks } from "./product-links"
 import { SupportLinks } from "./support-links"
 import { LegalLinks } from "./legal-links"

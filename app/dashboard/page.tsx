@@ -13,6 +13,8 @@ import { OnboardingGuide } from "@/components/dashboard/onboarding-guide"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
+import { useRestaurant } from "@/hooks/useRestaurant"
+import { RestaurantDashboard } from "@/components/restaurant/restaurant-dashboard"
 
 interface Booking {
   _id: string
@@ -54,6 +56,7 @@ const MONTH_NAMES = ["january", "february", "march", "april", "may", "june", "ju
 export default function BusinessDashboardPage() {
   const { partnerId, partner, loading: partnerLoading } = usePartner()
   const { selectedBranchId, branches, isLoading: branchesLoading } = useBranchContext()
+  const { isRestaurant } = useRestaurant()
   const { t, i18n } = useTranslation()
   const [setupStatus, setSetupStatus] = useState({ services: 0, specialists: 0, isLoaded: false })
 
@@ -186,6 +189,10 @@ export default function BusinessDashboardPage() {
   const topServices = Object.values(serviceStats)
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+
+  if (isRestaurant) {
+    return <RestaurantDashboard />
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex font-sans">

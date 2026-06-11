@@ -19,6 +19,9 @@ interface BookingFromApi {
   serviceIds?: { _id: string; name: string; duration: number; price: number; image?: string }[]
   serviceId?: { _id: string; name: string; duration: number; price: number; image?: string } | null
   branchId?: { _id: string; address: { line1: string; city: string; country: string } } | string | null
+  type?: "standard" | "restaurant"
+  tableId?: { _id: string; tableNumber: string } | string | null
+  partySize?: number
 }
 
 function formatDate(iso: string, language: string = 'en') {
@@ -48,8 +51,17 @@ export default function MyBookingsPage() {
     const fetchBookings = async () => {
       try {
         setIsLoading(true)
-        const res = await api.get('/bookings/my')
-        setBookings(res.data)
+        const [stdRes, restRes] = await Promise.all([
+          api.get('/bookings/my').catch(() => ({ data: [] })),
+          api.get('/restaurant/reservations/my').catch(() => ({ data: [] }))
+        ])
+        
+        const standard = stdRes.data.map((b: any) => ({ ...b, type: "standard" }))
+        const restaurant = restRes.data.map((b: any) => ({ ...b, type: "restaurant" }))
+        
+        const allBookings = [...standard, ...restaurant].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+        
+        setBookings(allBookings)
       } catch (err) {
         console.error("Failed to fetch bookings", err)
       } finally {
@@ -65,12 +77,16 @@ export default function MyBookingsPage() {
   const past = bookings.filter(b => new Date(b.startTime) < now)
   const displayedBookings = tab === "upcoming" ? upcoming : past
 
-  const handleCancel = async (bookingId: string) => {
+  const handleCancel = async (booking: BookingFromApi) => {
     if (!confirm("Are you sure you want to cancel this booking?")) return
     try {
-      await api.patch(`/bookings/${bookingId}/status`, { status: 'cancelled' })
+      const endpoint = booking.type === "restaurant" 
+        ? `/restaurant/reservations/${booking._id}/status`
+        : `/bookings/${booking._id}/status`
+        
+      await api.patch(endpoint, { status: 'cancelled' })
       toast.success("Booking cancelled")
-      setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: 'cancelled' } : b))
+      setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'cancelled' } : b))
     } catch {
       toast.error("Failed to cancel booking")
     }
@@ -147,9 +163,11 @@ export default function MyBookingsPage() {
             const branchObj = booking.branchId && typeof booking.branchId === "object" ? booking.branchId : null;
             const branchAddress = branchObj?.address ? `${branchObj.address.line1}, ${branchObj.address.city}` : null;
 
-            const serviceName = booking.serviceIds && booking.serviceIds.length > 0 
-                      ? booking.serviceIds.length === 1 ? booking.serviceIds[0].name : `${booking.serviceIds[0].name} + ${booking.serviceIds.length - 1} more`
-                      : (booking.serviceId?.name || "Service")
+            const serviceName = booking.type === "restaurant"
+              ? `Table Reservation ${booking.tableId ? `- Table ${typeof booking.tableId === 'object' ? booking.tableId.tableNumber : '...'}` : ''} (${booking.partySize} people)`
+              : booking.serviceIds && booking.serviceIds.length > 0 
+                ? booking.serviceIds.length === 1 ? booking.serviceIds[0].name : `${booking.serviceIds[0].name} + ${booking.serviceIds.length - 1} more`
+                : (booking.serviceId?.name || "Service")
             
             const statusKey = booking.status?.toLowerCase() || "confirmed"
 
@@ -215,7 +233,7 @@ export default function MyBookingsPage() {
                   </button>
                   {(booking.status === 'pending' || booking.status === 'confirmed') && (
                     <button
-                      onClick={() => handleCancel(booking._id)}
+                      onClick={() => handleCancel(booking)}
                       className="flex-1 md:w-full py-2 text-muted-foreground text-xs font-bold uppercase tracking-wider hover:text-red-500 transition-colors"
                     >
                       Cancel

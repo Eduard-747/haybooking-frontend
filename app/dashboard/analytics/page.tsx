@@ -9,6 +9,7 @@ import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Booking {
   _id: string
@@ -154,22 +155,18 @@ export default function AnalyticsPage() {
                 <h1 className="text-2xl font-bold text-foreground">{t("analyticsPage.analyticsOverview", "Analytics Overview")}</h1>
                 <p className="text-muted-foreground mt-1 text-sm">{t("analyticsPage.realtimePerformance", "Real-time performance data for your business.")}</p>
               </div>
-              <div className="relative">
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value as any)}
-                  className="pl-4 pr-10 py-2.5 bg-white border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 appearance-none cursor-pointer transition-colors"
-                >
-                  <option value="all">{t("analyticsPage.allTime", "All Time")}</option>
-                  <option value="today">{t("analyticsPage.today", "Today")}</option>
-                  <option value="week">{t("analyticsPage.thisWeek", "This Week")}</option>
-                  <option value="month">{t("analyticsPage.thisMonth", "This Month")}</option>
-                  <option value="year">{t("analyticsPage.thisYear", "This Year")}</option>
-                </select>
-                <svg className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+              <Select value={timeRange} onValueChange={(val: any) => setTimeRange(val)}>
+                <SelectTrigger className="w-full sm:w-[180px] h-[42px] bg-white border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#C69C9B]/20 transition-colors">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("analyticsPage.allTime", "All Time")}</SelectItem>
+                  <SelectItem value="today">{t("analyticsPage.today", "Today")}</SelectItem>
+                  <SelectItem value="week">{t("analyticsPage.thisWeek", "This Week")}</SelectItem>
+                  <SelectItem value="month">{t("analyticsPage.thisMonth", "This Month")}</SelectItem>
+                  <SelectItem value="year">{t("analyticsPage.thisYear", "This Year")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {(isLoading || partnerLoading) ? (

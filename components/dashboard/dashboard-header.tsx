@@ -42,9 +42,9 @@ export function DashboardHeader() {
         </button>
 
         <div className="flex items-center min-w-0">
-          <span className="text-sm font-semibold text-foreground truncate">
+          <Link href="/dashboard" className="text-sm font-semibold text-foreground truncate hover:text-[#C69C9B] transition-colors cursor-pointer">
             {partner?.businessName || "Dashboard"}
-          </span>
+          </Link>
           {partner?.verified && (
             <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
               ✓ Verified

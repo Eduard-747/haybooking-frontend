@@ -14,6 +14,9 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41],
 })
 
+// Generate a random key on module load to prevent Leaflet "Map container is being reused" error during Next.js Hot Module Replacement
+const HMR_KEY = Math.random().toString(36).substring(7);
+
 interface MarkerData {
   id?: string
   branchId?: string
@@ -36,6 +39,7 @@ export default function BranchMapOverview({ markers, onMarkerClick }: BranchMapO
 
   return (
     <MapContainer
+      key={`${HMR_KEY}-${centerLat}-${centerLng}`}
       center={[centerLat, centerLng]}
       zoom={markers.length === 1 ? 14 : 10}
       style={{ height: "100%", width: "100%" }}

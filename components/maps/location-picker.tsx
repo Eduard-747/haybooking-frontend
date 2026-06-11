@@ -16,6 +16,9 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41],
 })
 
+// Generate a random key on module load to prevent Leaflet "Map container is being reused" error during Next.js Hot Module Replacement
+const HMR_KEY = Math.random().toString(36).substring(7);
+
 interface LocationPickerProps {
   initialLat: number
   initialLng: number
@@ -56,6 +59,7 @@ export default function LocationPicker({ initialLat, initialLng, onLocationSelec
 
   return (
     <MapContainer
+      key={HMR_KEY}
       center={position}
       zoom={13}
       style={{ height: "100%", width: "100%" }}

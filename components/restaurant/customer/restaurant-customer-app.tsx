@@ -65,7 +65,7 @@ export function RestaurantCustomerApp({
         )}
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-border/60 w-fit shadow-sm overflow-x-auto custom-scrollbar">
+        <div className="mb-8 flex gap-1 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-border/60 w-full md:w-fit shadow-sm overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("book")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${

@@ -137,7 +137,7 @@ export function BookingTab({
           </div>
         </div>
 
-        <div className="flex-1 min-w-[280px]">
+        <div className="w-full md:flex-1 min-w-0 md:min-w-[280px]">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Date & Time</span>
           <DateTimePicker
             selectedDate={selectedDate}
@@ -154,9 +154,9 @@ export function BookingTab({
 
       {selectedTime ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h2 className="text-xl font-bold text-foreground">Select a Table</h2>
-            <div className="flex items-center gap-3 text-xs font-semibold bg-white px-3 py-1.5 rounded-full border border-border/60 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold bg-white px-3 py-1.5 rounded-full border border-border/60 shadow-sm">
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-[#10b981]" /> Available</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-[#3b82f6]" /> Reserved</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-[#ef4444]" /> Too Small</div>

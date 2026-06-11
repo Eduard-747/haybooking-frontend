@@ -290,13 +290,13 @@ export default function BranchesPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">{t("branchesPage.branches", "Branches")}</h1>
                 <p className="text-sm text-muted-foreground mt-1">{branches.length} {t("branchesPage.locations", "locations")}</p>
               </div>
-              <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors">
-                <Plus className="h-4 w-4" /> {t("branchesPage.addBranch", "Add Branch")}
+              <button onClick={openAdd} className="flex items-center justify-center sm:justify-start gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+                <Plus className="h-4 w-4 shrink-0" /> {t("branchesPage.addBranch", "Add Branch")}
               </button>
             </div>
 

@@ -136,14 +136,14 @@ export default function SpecialistsPage() {
                 <h1 className="text-2xl font-bold text-foreground">{t("specialistsPage.specialists", "Specialists")}</h1>
                 <p className="text-sm text-muted-foreground mt-1">{specialists.length} {t("specialistsPage.teamMembers", "team members")}</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <input
                   value={search} onChange={e => setSearch(e.target.value)}
                   placeholder={t("specialistsPage.searchSpecialists", "Search specialists...")}
-                  className="px-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#C69C9B]"
+                  className="w-full sm:w-auto px-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#C69C9B]"
                 />
-                <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
-                  <Plus className="h-4 w-4" /> {t("specialistsPage.addSpecialist", "Add Specialist")}
+                <button onClick={openAdd} className="flex items-center justify-center sm:justify-start gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+                  <Plus className="h-4 w-4 shrink-0" /> {t("specialistsPage.addSpecialist", "Add Specialist")}
                 </button>
               </div>
             </div>

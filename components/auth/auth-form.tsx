@@ -41,13 +41,18 @@ interface AuthFormProps {
 }
 
 const businessTypes = [
-  { value: "salon", labelKey: "landing.catBeautyWellness" },
   { value: "medical", labelKey: "landing.catHealthMedical" },
+  { value: "salon", labelKey: "landing.catBeautyWellness" },
   { value: "fitness", labelKey: "landing.catFitnessSports" },
   { value: "consulting", labelKey: "landing.catProfessionalServices" },
-  { value: "restaurant", labelKey: "landing.catRestaurantHospitality" },
+  { value: "education", labelKey: "landing.catEducationTraining" },
   { value: "auto", labelKey: "landing.catAutomotive" },
+  { value: "home", labelKey: "landing.catHomeServices" },
   { value: "pet", labelKey: "landing.catPetServices" },
+  { value: "events", labelKey: "landing.catEventsPhotography" },
+  { value: "restaurant", labelKey: "landing.catRestaurantHospitality" },
+  { value: "technology", labelKey: "landing.catTechnologyServices" },
+  { value: "government", labelKey: "landing.catGovernmentServices" },
   { value: "other", labelKey: "landing.catOther" },
 ]
 

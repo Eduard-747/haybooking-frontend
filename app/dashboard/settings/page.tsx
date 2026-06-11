@@ -253,14 +253,19 @@ export default function SettingsPage() {
                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                   >
                     <option value="">{t("dashboard.selectType", "Select type")}</option>
-                    <option value="salon">Salon & Spa</option>
-                    <option value="medical">Medical Practice</option>
-                    <option value="fitness">Fitness Studio</option>
-                    <option value="consulting">Consulting Services</option>
-                    <option value="restaurant">Restaurant & Dining</option>
-                    <option value="auto">Auto Service</option>
-                    <option value="pet">Pet Grooming</option>
-                    <option value="other">Other</option>
+                    <option value="medical">{t("landing.catHealthMedical", "Medical Practice")}</option>
+                    <option value="salon">{t("landing.catBeautyWellness", "Beauty & Wellness")}</option>
+                    <option value="fitness">{t("landing.catFitnessSports", "Fitness Studio")}</option>
+                    <option value="consulting">{t("landing.catProfessionalServices", "Consulting Services")}</option>
+                    <option value="education">{t("landing.catEducationTraining", "Education & Training")}</option>
+                    <option value="auto">{t("landing.catAutomotive", "Auto Service")}</option>
+                    <option value="home">{t("landing.catHomeServices", "Home Services")}</option>
+                    <option value="pet">{t("landing.catPetServices", "Pet Grooming")}</option>
+                    <option value="events">{t("landing.catEventsPhotography", "Events & Photography")}</option>
+                    <option value="restaurant">{t("landing.catRestaurantHospitality", "Restaurant & Dining")}</option>
+                    <option value="technology">{t("landing.catTechnologyServices", "Technology Services")}</option>
+                    <option value="government">{t("landing.catGovernmentServices", "Government Services")}</option>
+                    <option value="other">{t("landing.catOther", "Other")}</option>
                   </select>
                 </div>
 

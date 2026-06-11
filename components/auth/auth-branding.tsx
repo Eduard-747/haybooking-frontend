@@ -7,7 +7,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher"
 
 export function AuthBranding() {
   return (
-    <aside className="hidden lg:w-[55%] lg:flex border-l border-border/40 relative overflow-hidden min-h-screen sticky top-0 h-screen">
+    <aside className="hidden lg:w-[55%] lg:flex relative overflow-hidden min-h-screen sticky top-0 h-screen">
       {/* Full-size Image filling the entire right panel edge-to-edge */}
       <Image
         src="/auth-booking.png"
@@ -16,6 +16,9 @@ export function AuthBranding() {
         className="object-cover"
         priority
       />
+
+      {/* Overlay gradient at left for seamless blend with white panel */}
+      <div className="absolute inset-y-0 left-0 w-2/3 lg:w-1/2 bg-gradient-to-r from-white via-white/70 to-transparent pointer-events-none z-10" />
 
       {/* Overlay gradient at bottom for text readability */}
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none z-10" />

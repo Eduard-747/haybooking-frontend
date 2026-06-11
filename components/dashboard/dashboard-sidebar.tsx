@@ -46,6 +46,7 @@ function SidebarContent({ activePath }: { activePath?: string }) {
     { label: t("nav.gallery", "Gallery"), href: "/dashboard/restaurant/gallery", icon: Image },
     { label: t("nav.branches", "Branches"), href: "/dashboard/branches", icon: MapPin },
     { label: t("nav.analytics", "Analytics"), href: "/dashboard/analytics", icon: BarChart3 },
+    { label: t("nav.settings", "Settings"), href: "/dashboard/restaurant/settings", icon: Settings },
   ] : [
     { label: t("nav.dashboard", "Home"), href: "/dashboard", icon: Home },
     { label: t("nav.calendar", "Calendar"), href: "/dashboard/calendar", icon: Calendar },
@@ -54,9 +55,8 @@ function SidebarContent({ activePath }: { activePath?: string }) {
     { label: t("nav.branches", "Branches"), href: "/dashboard/branches", icon: MapPin },
     { label: t("nav.specialists", "Specialists"), href: "/dashboard/specialists", icon: Users },
     { label: t("nav.analytics", "Analytics"), href: "/dashboard/analytics", icon: BarChart3 },
+    { label: t("nav.settings", "Settings"), href: "/dashboard/settings", icon: Settings },
   ]
-
-  const settingsHref = isRestaurant ? "/dashboard/restaurant/settings" : "/dashboard/settings"
 
   return (
     <>
@@ -93,22 +93,7 @@ function SidebarContent({ activePath }: { activePath?: string }) {
         </ul>
       </nav>
 
-      {/* Settings at bottom */}
-      <div className="px-3 py-4 border-t border-border">
-        <Link
-          href={settingsHref}
-          onClick={() => setIsOpen(false)}
-          className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-            currentPath === settingsHref
-              ? "bg-[#FDF6F6] text-[#E5555E]"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          {t("nav.settings", "Settings")}
-        </Link>
-      </div>
+
     </>
   )
 }

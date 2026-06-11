@@ -23,9 +23,9 @@ function AuthPageContent() {
   }, [tab])
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50/30">
+    <div className="flex h-screen w-full bg-slate-50/30 overflow-hidden">
       {/* Left side - Header, Tagline & Form */}
-      <main className="flex w-full lg:w-[45%] flex-col px-4 sm:px-6 py-4 lg:py-8 lg:px-12 relative bg-white z-10 shadow-2xl min-h-screen overflow-y-auto">
+      <main className="flex w-full lg:w-[45%] flex-col px-4 sm:px-6 py-4 lg:py-8 lg:px-12 relative bg-white z-10 h-full overflow-y-auto">
         {/* Logo - aligned to the very left padding edge of the screen */}
         <div className="w-full flex items-center justify-start mb-10">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -35,21 +35,8 @@ function AuthPageContent() {
 
         {/* Tagline & Form Container */}
         <div className="w-full max-w-md mx-auto flex-1 flex flex-col justify-start pt-2 sm:pt-6 pb-8">
-          {/* Tagline */}
-          <div className="space-y-3 mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5555E]/10 text-[#E5555E] text-xs font-semibold tracking-wide normal-case">
-              ✨ Haybooking Platform
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-              {t("auth.intelligentScheduling")}
-            </h1>
-            <p className="text-slate-500 text-sm leading-relaxed max-w-md font-normal">
-              {t("auth.joinThousands")}
-            </p>
-          </div>
-
-          {/* Form - pushed down slightly using margin-top */}
-          <div className="w-full mt-6 sm:mt-14">
+          {/* Form */}
+          <div className="w-full">
             <AuthForm activeTab={activeTab} onTabChange={setActiveTab} />
           </div>
         </div>

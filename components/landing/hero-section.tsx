@@ -55,9 +55,7 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
       </form>
 
       {/* Category Pills */}
-      <div className="flex flex-col items-center justify-center gap-2 sm:gap-3 w-full max-w-4xl">
-        {/* Row 1: 7 categories */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full max-w-4xl">
         <button 
           onClick={() => handleCategoryClick("All")} 
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors shadow-sm ${
@@ -122,9 +120,6 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
           <Car className="h-4 w-4" />
           {t("landing.catAutomotive")}
         </button>
-        </div>
-        {/* Row 2: 7 categories */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         <button 
           onClick={() => handleCategoryClick("home")} 
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors shadow-sm ${
@@ -188,7 +183,6 @@ export function HeroSection({ onSearch, onCategorySelect, activeCategory = "All"
           <MoreHorizontal className="h-4 w-4" />
           {t("landing.catOther")}
         </button>
-        </div>
       </div>
     </section>
   )

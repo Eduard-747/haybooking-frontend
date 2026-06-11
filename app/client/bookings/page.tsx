@@ -78,17 +78,17 @@ export default function MyBookingsPage() {
   const displayedBookings = tab === "upcoming" ? upcoming : past
 
   const handleCancel = async (booking: BookingFromApi) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) return
+    if (!confirm(t("clientBookings.cancelConfirm", "Are you sure you want to cancel this booking?"))) return
     try {
       const endpoint = booking.type === "restaurant" 
         ? `/restaurant/reservations/${booking._id}/status`
         : `/bookings/${booking._id}/status`
         
       await api.patch(endpoint, { status: 'cancelled' })
-      toast.success("Booking cancelled")
+      toast.success(t("clientBookings.bookingCancelled", "Booking cancelled"))
       setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'cancelled' } : b))
     } catch {
-      toast.error("Failed to cancel booking")
+      toast.error(t("clientBookings.cancelFailed", "Failed to cancel booking"))
     }
   }
 
@@ -99,18 +99,18 @@ export default function MyBookingsPage() {
         {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-1">My Bookings</h1>
-          <p className="text-muted-foreground">Manage your appointments and view service history.</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-1">{t("clientBookings.myBookings", "My Bookings")}</h1>
+          <p className="text-muted-foreground">{t("clientBookings.manageAppointments", "Manage your appointments and view service history.")}</p>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded-xl px-6 sm:px-8 py-4 sm:py-5 w-full md:w-auto">
           <div className="text-center md:text-left">
-            <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase mb-1">Upcoming</p>
+            <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase mb-1">{t("clientBookings.upcoming", "Upcoming")}</p>
             <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
           </div>
           <div className="w-px h-10 bg-[#C69C9B]/20 hidden sm:block" />
           <div className="text-center md:text-left">
-            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Completed</p>
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("clientBookings.completed", "Completed")}</p>
             <p className="text-2xl font-bold text-foreground">{past.length}</p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function MyBookingsPage() {
           onClick={() => setTab("upcoming")}
           className={`relative pb-4 text-sm font-bold transition-colors ${tab === "upcoming" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
-          Upcoming
+          {t("clientBookings.upcoming", "Upcoming")}
           {upcoming.length > 0 && <span className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-[#E5555E] rounded-full" />}
           {tab === "upcoming" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#C69C9B]" />}
         </button>
@@ -130,7 +130,7 @@ export default function MyBookingsPage() {
           onClick={() => setTab("past")}
           className={`relative pb-4 text-sm font-semibold transition-colors ${tab === "past" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
-          Past
+          {t("clientBookings.past", "Past")}
           {tab === "past" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#C69C9B]" />}
         </button>
       </div>
@@ -145,9 +145,9 @@ export default function MyBookingsPage() {
           <div className="h-16 w-16 rounded-full bg-[#FDF6F6] flex items-center justify-center mb-4">
             <Calendar className="h-8 w-8 text-[#C69C9B]" />
           </div>
-          <h2 className="text-lg font-bold text-foreground mb-2">No {tab} bookings</h2>
+          <h2 className="text-lg font-bold text-foreground mb-2">{tab === "upcoming" ? t("clientBookings.noUpcoming", "No upcoming bookings") : t("clientBookings.noPast", "No past bookings")}</h2>
           <p className="text-sm text-muted-foreground">
-            {tab === "upcoming" ? "Book a service to see your appointments here." : "Your past appointments will appear here."}
+            {tab === "upcoming" ? t("clientBookings.bookService", "Book a service to see your appointments here.") : t("clientBookings.pastAppointments", "Your past appointments will appear here.")}
           </p>
         </div>
       ) : (
@@ -166,7 +166,7 @@ export default function MyBookingsPage() {
             const serviceName = booking.type === "restaurant"
               ? `Table Reservation ${booking.tableId ? `- Table ${typeof booking.tableId === 'object' ? booking.tableId.tableNumber : '...'}` : ''} (${booking.partySize} people)`
               : booking.serviceIds && booking.serviceIds.length > 0 
-                ? booking.serviceIds.length === 1 ? booking.serviceIds[0].name : `${booking.serviceIds[0].name} + ${booking.serviceIds.length - 1} more`
+                ? booking.serviceIds.length === 1 ? booking.serviceIds[0].name : `${booking.serviceIds[0].name} + ${booking.serviceIds.length - 1} ${t("clientBookings.more", "more")}`
                 : (booking.serviceId?.name || "Service")
             
             const statusKey = booking.status?.toLowerCase() || "confirmed"
@@ -226,17 +226,17 @@ export default function MyBookingsPage() {
                 <div className="shrink-0 flex md:flex-col items-center gap-3 md:gap-3 md:w-28 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border/40">
                   <button
                     className="flex-1 md:w-full py-2 rounded-lg border border-border/40 text-muted-foreground text-xs font-bold uppercase tracking-wider cursor-not-allowed opacity-50"
-                    title="Coming soon"
+                    title={t("clientBookings.comingSoon", "Coming soon")}
                     disabled
                   >
-                    Reschedule
+                    {t("clientBookings.reschedule", "Reschedule")}
                   </button>
                   {(booking.status === 'pending' || booking.status === 'confirmed') && (
                     <button
                       onClick={() => handleCancel(booking)}
                       className="flex-1 md:w-full py-2 text-muted-foreground text-xs font-bold uppercase tracking-wider hover:text-red-500 transition-colors"
                     >
-                      Cancel
+                      {t("clientBookings.cancelBooking", "Cancel")}
                     </button>
                   )}
                 </div>

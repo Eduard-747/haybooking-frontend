@@ -9,8 +9,10 @@ import { RoleGuard } from "@/components/auth/role-guard"
 import { useCountryCode } from "@/lib/hooks/use-country-code"
 import { getPhonePlaceholder } from "@/lib/countries"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTranslation } from "react-i18next"
 
 export default function SettingsPage() {
+  const { t } = useTranslation()
   const { user, logout, updateToken } = useAuth()
   const [form, setForm] = useState({
     name: "",
@@ -73,7 +75,7 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("Image must be smaller than 2MB");
+        toast.error(t("clientSettings.imageTooLarge", "Image must be smaller than 2MB"));
         return;
       }
       const reader = new FileReader();
@@ -101,11 +103,11 @@ export default function SettingsPage() {
       }
 
       if (shouldShowToast) {
-        toast.success("Settings saved successfully!");
+        toast.success(t("clientSettings.settingsSaved", "Settings saved successfully!"));
       }
       return true;
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to save profile");
+      toast.error(err.response?.data?.message || t("clientSettings.failedToSave", "Failed to save profile"));
       return false;
     }
   };
@@ -113,7 +115,7 @@ export default function SettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (form.newPassword && form.newPassword !== form.confirmPassword) {
-      toast.error("New passwords don't match")
+      toast.error(t("clientSettings.passwordsDontMatch", "New passwords don't match"))
       return
     }
     
@@ -131,7 +133,7 @@ export default function SettingsPage() {
         setIsSaving(false);
         return; // wait for modal
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to send SMS to new number");
+        toast.error(err.response?.data?.message || t("clientSettings.failedToSendSms", "Failed to send SMS to new number"));
         setIsSaving(false);
         return;
       }
@@ -143,7 +145,7 @@ export default function SettingsPage() {
 
   const handleVerifyPhoneAndSave = async () => {
     if (otpCode.length < 4) {
-      toast.error("Please enter a valid code");
+      toast.error(t("clientSettings.enterValidCode", "Please enter a valid code"));
       return;
     }
     setIsVerifying(true);
@@ -168,12 +170,12 @@ export default function SettingsPage() {
       const success = await saveProfileData(false);
       
       if (success) {
-        toast.success("Phone verified and settings saved successfully!");
+        toast.success(t("clientSettings.phoneVerified", "Phone verified and settings saved successfully!"));
         setShowSmsModal(false);
         setOtpCode("");
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to verify phone number");
+      toast.error(err.response?.data?.message || t("clientSettings.failedToVerify", "Failed to verify phone number"));
     } finally {
       setIsVerifying(false);
     }
@@ -183,8 +185,8 @@ export default function SettingsPage() {
     <RoleGuard allowedRole="client">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24">
         <div className="mb-10">
-        <h1 className="text-3xl font-bold text-foreground">Account Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your profile and preferences.</p>
+        <h1 className="text-3xl font-bold text-foreground">{t("clientSettings.accountSettings", "Account Settings")}</h1>
+        <p className="text-muted-foreground mt-1">{t("clientSettings.manageProfile", "Manage your profile and preferences.")}</p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
@@ -206,14 +208,14 @@ export default function SettingsPage() {
               <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground">Personal Information</h2>
-              <p className="text-xs text-muted-foreground">Update your photo, name and contact details</p>
+              <h2 className="font-bold text-foreground">{t("clientSettings.personalInfo", "Personal Information")}</h2>
+              <p className="text-xs text-muted-foreground">{t("clientSettings.updatePhotoName", "Update your photo, name and contact details")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">First Name</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("common.firstName", "First Name")}</label>
               <input
                 type="text"
                 value={form.name}
@@ -223,7 +225,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Last Name</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("common.lastName", "Last Name")}</label>
               <input
                 type="text"
                 value={form.surname}
@@ -233,7 +235,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phone Number</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("common.phone", "Phone Number")}</label>
               <div className="flex gap-2">
                 <Select value={countryCode} onValueChange={setCountryCode}>
                   <SelectTrigger className="w-[110px] shrink-0 h-10 border-border/60 bg-[#FAFAFA] focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]">
@@ -257,7 +259,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Email Address</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("common.email", "Email Address")}</label>
               <input
                 type="email"
                 value={form.email}
@@ -276,14 +278,14 @@ export default function SettingsPage() {
               <Shield className="h-5 w-5 text-[#C69C9B]" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground">Password</h2>
-              <p className="text-xs text-muted-foreground">Leave blank to keep your current password</p>
+              <h2 className="font-bold text-foreground">{t("clientSettings.passwordTitle", "Password")}</h2>
+              <p className="text-xs text-muted-foreground">{t("clientSettings.leaveBlank", "Leave blank to keep your current password")}</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Current Password</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("clientSettings.currentPassword", "Current Password")}</label>
               <input
                 type="password"
                 value={form.currentPassword}
@@ -294,7 +296,7 @@ export default function SettingsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">New Password</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("clientSettings.newPassword", "New Password")}</label>
                 <input
                   type="password"
                   value={form.newPassword}
@@ -304,7 +306,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Confirm Password</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("clientSettings.confirmPassword", "Confirm Password")}</label>
                 <input
                   type="password"
                   value={form.confirmPassword}
@@ -324,15 +326,15 @@ export default function SettingsPage() {
               <Bell className="h-5 w-5 text-[#C69C9B]" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground">Notifications</h2>
-              <p className="text-xs text-muted-foreground">Choose what you'd like to be notified about</p>
+              <h2 className="font-bold text-foreground">{t("clientSettings.notificationsTitle", "Notifications")}</h2>
+              <p className="text-xs text-muted-foreground">{t("clientSettings.chooseNotifications", "Choose what you'd like to be notified about")}</p>
             </div>
           </div>
           <div className="space-y-4">
             {[
-              { key: "bookingReminders" as const, label: "Booking Reminders", desc: "Get notified before your appointments" },
-              { key: "promotions" as const, label: "Promotions & Deals", desc: "Receive special offers from businesses" },
-              { key: "newMessages" as const, label: "New Messages", desc: "Be alerted when businesses message you" },
+              { key: "bookingReminders" as const, label: t("clientSettings.bookingReminders", "Booking Reminders"), desc: t("clientSettings.bookingRemindersDesc", "Get notified before your appointments") },
+              { key: "promotions" as const, label: t("clientSettings.promotions", "Promotions & Deals"), desc: t("clientSettings.promotionsDesc", "Receive special offers from businesses") },
+              { key: "newMessages" as const, label: t("clientSettings.newMessages", "New Messages"), desc: t("clientSettings.newMessagesDesc", "Be alerted when businesses message you") },
             ].map(({ key, label, desc }) => (
               <div key={key} className="flex items-center justify-between py-2">
                 <div>
@@ -360,7 +362,7 @@ export default function SettingsPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-[#E5555E] hover:bg-[#D4444D] text-white text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? t("common.saving", "Saving...") : t("clientSettings.saveChanges", "Save Changes")}
           </button>
         </div>
       </form>
@@ -371,17 +373,17 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-[#FAFAFA]">
-              <h2 className="text-lg font-bold">Verify New Phone Number</h2>
+              <h2 className="text-lg font-bold">{t("clientSettings.verifyNewPhone", "Verify New Phone Number")}</h2>
               <button type="button" onClick={() => setShowSmsModal(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-muted-foreground">
-                We've sent a verification code to <span className="font-bold text-foreground">{form.phone}</span>. Please enter it below to confirm your new phone number.
+                {t("clientSettings.verifyCodeSent", "We've sent a verification code to")} <span className="font-bold text-foreground">{form.phone}</span>. {t("clientSettings.enterBelowToConfirm", "Please enter it below to confirm your new phone number.")}
               </p>
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Verification Code</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("clientSettings.verificationCode", "Verification Code")}</label>
                 <input
                   type="text"
                   maxLength={6}
@@ -397,7 +399,7 @@ export default function SettingsPage() {
                 disabled={isVerifying || otpCode.length < 4}
                 className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50"
               >
-                {isVerifying ? "Verifying..." : "Verify & Save Profile"}
+                {isVerifying ? t("clientSettings.verifying", "Verifying...") : t("clientSettings.verifyAndSave", "Verify & Save Profile")}
               </button>
             </div>
           </div>

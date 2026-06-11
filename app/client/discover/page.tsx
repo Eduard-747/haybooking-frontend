@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, Suspense, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { Filter, MapPin, Search as SearchIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { Filter, MapPin, Search as SearchIcon, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
 import { ClientBusinessCard, type BusinessCardData } from "@/components/client/business-card"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
@@ -95,6 +95,21 @@ function DiscoverContent() {
 
   const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [searchQuery, setSearchQuery] = useState(urlQuery)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [showExpandButton, setShowExpandButton] = useState(false)
+  const categoryContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (categoryContainerRef.current) {
+        setShowExpandButton(categoryContainerRef.current.scrollHeight > 100)
+      }
+    }
+    checkOverflow()
+    window.addEventListener('resize', checkOverflow)
+    return () => window.removeEventListener('resize', checkOverflow)
+  }, [])
+
   const [businesses, setBusinesses] = useState<BusinessCardData[]>(fallbackBusinesses)
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -245,27 +260,58 @@ function DiscoverContent() {
               <p className="text-muted-foreground mt-1">{t("landing.browseTopRated", "Browse the top-rated professionals in your area")}</p>
             )}
           </div>
-          <Button variant="outline" className="shrink-0 bg-white shadow-sm border-border">
-            <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-            {t("common.allFilters", "All Filters")}
-          </Button>
+          <div className="relative w-full sm:w-64 shrink-0">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder={t("common.search", "Search...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#C69C9B] shadow-sm transition-colors"
+            />
+          </div>
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map((category) => (
-            <button
-              key={category.value}
-              onClick={() => setActiveCategory(category.value)}
-              className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-colors border ${
-                activeCategory === category.value 
-                  ? "bg-[#C69C9B] border-[#C69C9B] text-white shadow-sm" 
-                  : "bg-white border-border/60 text-muted-foreground hover:border-[#C69C9B] hover:text-[#C69C9B]"
-              }`}
-            >
-              {t(category.label, category.fallback)}
-            </button>
-          ))}
+        <div className="relative mb-2">
+          <div 
+            ref={categoryContainerRef}
+            className={`flex flex-wrap items-center gap-3 transition-all duration-300 relative ${!isExpanded ? 'max-h-[96px] overflow-hidden' : 'pb-2'}`}
+          >
+            {categories.map((category) => (
+              <button
+                key={category.value}
+                onClick={() => setActiveCategory(category.value)}
+                className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-colors border ${
+                  activeCategory === category.value 
+                    ? "bg-[#C69C9B] border-[#C69C9B] text-white shadow-sm" 
+                    : "bg-white border-border/60 text-muted-foreground hover:border-[#C69C9B] hover:text-[#C69C9B]"
+                }`}
+              >
+                {t(category.label, category.fallback)}
+              </button>
+            ))}
+          </div>
+          {showExpandButton && !isExpanded && (
+            <div className="absolute bottom-2 right-0 bg-gradient-to-l from-background via-background to-transparent pl-12 pr-1 flex items-center z-10">
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="bg-white shadow-sm border border-border/60 rounded-full px-4 py-1.5 text-sm font-bold text-muted-foreground hover:text-[#C69C9B] transition-colors"
+              >
+                ...
+              </button>
+            </div>
+          )}
+          {showExpandButton && isExpanded && (
+            <div className="flex justify-center mt-3">
+              <button
+                 onClick={() => setIsExpanded(false)}
+                 className="bg-white shadow-sm border border-border/60 rounded-full px-5 py-1.5 text-xs font-bold text-foreground hover:border-[#C69C9B] transition-colors flex items-center gap-1"
+              >
+                 {t("common.showLess", "Show Less")} <ChevronUp className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -273,10 +319,10 @@ function DiscoverContent() {
       <div className="mb-16">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-6 bg-[#C69C9B] rounded-full" />
-          <h2 className="text-xl font-bold text-foreground">Recommended for You</h2>
+          <h2 className="text-xl font-bold text-foreground">{t("landing.recommendedForYou", "Recommended for You")}</h2>
           {!isLoading && (
             <span className="text-xs text-muted-foreground ml-auto">
-              {businesses.length} businesses
+              {businesses.length} {t("landing.businesses", "businesses")}
             </span>
           )}
         </div>
@@ -296,9 +342,9 @@ function DiscoverContent() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-bold text-foreground">
-                {searchQuery ? "Search Results" : activeCategory !== "All" ? `${activeCategory} Specialists` : "Recommended for You"}
+                {searchQuery ? t("landing.searchResults", "Search Results") : activeCategory !== "All" ? `${t(categories.find(c => c.value === activeCategory)?.label || "", activeCategory)} ${t("landing.specialists", "Specialists")}` : t("landing.recommendedForYou", "Recommended for You")}
               </h2>
-              <span className="text-sm font-semibold text-muted-foreground">{filteredBusinesses.length} Results</span>
+              <span className="text-sm font-semibold text-muted-foreground">{filteredBusinesses.length} {t("common.results", "Results")}</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -312,15 +358,15 @@ function DiscoverContent() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
                   <SearchIcon className="w-8 h-8 text-muted-foreground/50" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">No results found</h3>
+                <h3 className="text-xl font-bold text-foreground mb-2">{t("landing.noResultsFound", "No results found")}</h3>
                 <p className="text-muted-foreground max-w-md">
-                  We couldn't find any businesses matching your filters. Try adjusting your search criteria.
+                  {t("landing.noResultsDesc", "We couldn't find any businesses matching your filters. Try adjusting your search criteria.")}
                 </p>
                 <button 
                   onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
                   className="mt-6 px-6 py-2.5 bg-foreground text-background font-semibold rounded-xl transition-colors"
                 >
-                  Clear Filters
+                  {t("common.clearFilters", "Clear Filters")}
                 </button>
               </div>
             )}
@@ -368,20 +414,20 @@ function DiscoverContent() {
       {/* CTA Section */}
       <div className="w-full bg-white rounded-3xl p-8 md:p-12 border border-border/40 shadow-sm flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
         <div className="flex-1 space-y-4 relative z-10">
-          <h2 className="text-2xl font-bold text-foreground">Don't see what you're looking for?</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("landing.dontSeeWhatYouNeed", "Don't see what you're looking for?")}</h2>
           <p className="text-muted-foreground leading-relaxed max-w-lg">
-            Our database is updated daily with hundreds of new service providers. Search by location or specific treatment to find exactly what fits your schedule.
+            {t("landing.databaseUpdatedDaily", "Our database is updated daily with hundreds of new service providers. Search by location or specific treatment to find exactly what fits your schedule.")}
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <Button className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-full px-8">
-              Explore All Categories
+              {t("landing.exploreAllCategories", "Explore All Categories")}
             </Button>
             <Button 
               variant="outline" 
               className="rounded-full px-8 bg-white border-border/60 hover:bg-[#FAFAFA] text-muted-foreground hover:text-foreground"
               onClick={() => setShowMapModal(true)}
             >
-              View Map
+              {t("landing.viewMap", "View Map")}
             </Button>
           </div>
         </div>
@@ -393,7 +439,7 @@ function DiscoverContent() {
               <div className="h-10 w-10 rounded-full bg-[#FDEAEA] flex items-center justify-center shrink-0">
                 <MapPin className="h-5 w-5 text-[#C69C9B]" />
               </div>
-              <p className="font-semibold text-sm text-foreground">Over 500+ locations near you</p>
+              <p className="font-semibold text-sm text-foreground">{t("landing.over500Locations", "Over 500+ locations near you")}</p>
             </div>
           </div>
         </div>
@@ -405,8 +451,8 @@ function DiscoverContent() {
           <div className="w-full max-w-5xl h-[80vh] bg-white rounded-2xl shadow-xl border border-border/60 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-foreground">Discover via Map</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">Find businesses near your location.</p>
+                <h3 className="text-xl font-bold text-foreground">{t("landing.discoverViaMap", "Discover via Map")}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("landing.findNearLocation", "Find businesses near your location.")}</p>
               </div>
               <button
                 onClick={() => setShowMapModal(false)}
@@ -430,7 +476,7 @@ function DiscoverContent() {
               {mapMarkers.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-border">
-                    <p className="text-sm font-medium text-muted-foreground">No map locations available yet.</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t("landing.noMapLocations", "No map locations available yet.")}</p>
                   </div>
                 </div>
               )}

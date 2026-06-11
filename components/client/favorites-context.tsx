@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useAuth } from '@/components/auth/auth-provider'
 import api from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 interface Business {
   id: string
@@ -26,6 +27,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [favorites, setFavorites] = useState<Business[]>([])
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
@@ -51,6 +53,13 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
           const partnerRequests = ids.map(id =>
             api.get(`/partners/${id}`).catch(() => null)
           )
+          const typeLabels: Record<string, string> = {
+            salon: "landing.catBeautyWellness",
+            medical: "landing.catHealthMedical",
+            fitness: "landing.catFitnessSports",
+            consulting: "landing.catProfessionalServices",
+            restaurant: "landing.catRestaurantHospitality",
+          }
           const results = await Promise.all(partnerRequests)
           const loadedFavorites: Business[] = results
             .filter(r => r?.data)
@@ -60,8 +69,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
               rating: 4.8,
               reviews: 0,
               image: r!.data.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
-              distance: "Nearby",
-              tags: [r!.data.businessType || "Service"],
+              distance: t("common.nearby", "Nearby"),
+              tags: [typeLabels[r!.data.businessType] || "landing.catOther"],
             }))
           setFavorites(loadedFavorites)
         } else {

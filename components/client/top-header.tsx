@@ -7,8 +7,11 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useMobileNav } from "@/components/mobile-nav-context"
 import { ClientNotificationsPopover } from "./client-notifications-popover"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { useTranslation } from "react-i18next"
 
 export function ClientTopHeader() {
+  const { t } = useTranslation()
   const { user, logout } = useAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
@@ -42,19 +45,20 @@ export function ClientTopHeader() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
-          placeholder="Search..." 
+          placeholder={t("common.search", "Search...")} 
           className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-3 sm:pr-4 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
         />
       </div>
 
       {/* Right: Actions */}
-      <div className="ml-auto flex items-center gap-4 pl-4">
+      <div className="ml-auto flex items-center gap-2 sm:gap-4 pl-4">
+        <LanguageSwitcher />
         <ClientNotificationsPopover />
 
         <button 
           onClick={() => { logout(); router.push('/auth'); }}
           className="text-muted-foreground hover:text-red-500 transition-colors p-2 md:hidden"
-          title="Sign Out"
+          title={t("auth.signOut", "Sign Out")}
         >
           <LogOut className="h-5 w-5" />
         </button>

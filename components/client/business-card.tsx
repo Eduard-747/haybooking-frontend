@@ -67,8 +67,8 @@ export function ClientBusinessCard({ business }: ClientBusinessCardProps) {
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-6">
           {business.tags.map(tag => (
-            <span key={tag} className="px-2 py-1 bg-[#FAFAFA] border border-border/50 rounded text-xs font-medium text-muted-foreground line-clamp-1" title={tag}>
-              {tag}
+            <span key={tag} className="px-2 py-1 bg-[#FAFAFA] border border-border/50 rounded text-xs font-medium text-muted-foreground line-clamp-1" title={t(tag)}>
+              {t(tag)}
             </span>
           ))}
         </div>

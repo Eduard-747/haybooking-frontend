@@ -23,19 +23,19 @@ export function SiteFooter() {
               <Logo />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("landing.footerDesc")}
+              {t("landing.footerDesc", "Simplifying appointments for busy people. Find, book, and enjoy your local services with ease.")}
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.product")}</h4>
+            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.product", "Product")}</h4>
             <ProductLinks />
           </div>
 
           {/* Support */}
           <div>
-            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.support")}</h4>
+            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.support", "Support")}</h4>
             <SupportLinks />
           </div>
 
@@ -47,7 +47,7 @@ export function SiteFooter() {
 
           {/* Company */}
           <div>
-            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.company")}</h4>
+            <h4 className="font-bold text-sm tracking-wider uppercase text-foreground mb-4">{t("landing.company", "Company")}</h4>
             <CompanyLinks />
           </div>
         </div>
@@ -55,7 +55,7 @@ export function SiteFooter() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            {t("landing.copyright")}
+            {t("landing.copyright", "© 2026 HayBooking Technologies Inc. All rights reserved.")}
           </p>
           <div className="flex items-center gap-4 text-muted-foreground">
             <Link href="#" className="hover:text-foreground"><Twitter className="h-4 w-4" /></Link>

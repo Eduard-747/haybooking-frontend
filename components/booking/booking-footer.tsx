@@ -50,18 +50,18 @@ export function BookingFooter({
         </div>
 
         {/* Right: Action */}
-        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end">
           {/* Mobile Price Display */}
-          <div className="sm:hidden">
+          <div className="sm:hidden shrink-0">
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">{t("book.total", "Total")}</p>
-            <p className="text-lg font-bold text-foreground">{formatPrice(totalPrice, currency)}</p>
+            <p className="text-lg font-bold text-foreground whitespace-nowrap">{formatPrice(totalPrice, currency)}</p>
           </div>
 
           <Button 
             size="lg" 
             onClick={onConfirm}
             disabled={!isReady || isSubmitting}
-            className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md px-8 font-semibold shadow-sm w-full sm:w-auto transition-colors"
+            className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md px-4 sm:px-8 font-semibold shadow-sm flex-1 sm:flex-none transition-colors whitespace-nowrap"
           >
             {isSubmitting ? (
               <>

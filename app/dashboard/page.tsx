@@ -15,6 +15,7 @@ import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
 import { useRestaurant } from "@/hooks/useRestaurant"
 import { RestaurantDashboard } from "@/components/restaurant/restaurant-dashboard"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Booking {
   _id: string
@@ -272,19 +273,19 @@ export default function BusinessDashboardPage() {
                               </span>
                             </div>
                             <div className="flex items-center gap-2 self-start sm:self-auto">
-                              <span className="font-bold text-foreground mr-2">{price}</span>
-                              <select
-                                value={booking.status}
-                                onChange={(e) => updateStatus(booking._id, e.target.value)}
-                                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 transition-colors cursor-pointer"
-                              >
-                                <option value="pending">{t("common.pending", "Pending")}</option>
-                                <option value="confirmed">{t("common.confirmed", "Confirmed")}</option>
-                                <option value="completed">{t("common.completed", "Completed")}</option>
-                                <option value="no-show">{t("common.no-show", "No-Show")}</option>
-                                <option value="declined">{t("common.declined", "Declined")}</option>
-                                <option value="cancelled">{t("common.cancelled", "Cancelled")}</option>
-                              </select>
+                              <Select value={booking.status} onValueChange={(value) => updateStatus(booking._id, value)}>
+                                <SelectTrigger className="h-8 w-[130px] px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:ring-[#C69C9B]/20 transition-colors">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">{t("common.pending", "Pending")}</SelectItem>
+                                  <SelectItem value="confirmed">{t("common.confirmed", "Confirmed")}</SelectItem>
+                                  <SelectItem value="completed">{t("common.completed", "Completed")}</SelectItem>
+                                  <SelectItem value="no-show">{t("common.no-show", "No-Show")}</SelectItem>
+                                  <SelectItem value="declined">{t("common.declined", "Declined")}</SelectItem>
+                                  <SelectItem value="cancelled">{t("common.cancelled", "Cancelled")}</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
 

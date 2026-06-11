@@ -200,7 +200,7 @@ export default function DashboardBookPage() {
             {/* Client Info */}
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 space-y-4">
               <h3 className="font-semibold text-foreground">{t("bookDashboard.clientInfo")}</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text" placeholder={t("bookDashboard.clientName")} value={clientName}
                   onChange={e => setClientName(e.target.value)}

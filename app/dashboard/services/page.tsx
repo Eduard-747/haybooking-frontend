@@ -11,6 +11,7 @@ import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Service {
   _id: string
@@ -232,31 +233,31 @@ export default function ManageServicesPage() {
                 />
               </div>
               
-              <div className="relative group">
-                <select 
-                  value={selectedCategory} 
-                  onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
-                  className="appearance-none h-10 px-4 pr-8 border border-border/60 rounded-lg text-sm font-medium hover:bg-[#FAFAFA] bg-transparent outline-none cursor-pointer"
-                >
-                  {categories.map(cat => <option key={cat} value={cat}>{cat === "All" ? t("servicesPage.allCategories") : cat}</option>)}
-                </select>
-                <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
+              <div className="w-[180px]">
+                <Select value={selectedCategory} onValueChange={(val) => { setSelectedCategory(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 px-4 border border-border/60 rounded-lg text-sm font-medium hover:bg-[#FAFAFA] bg-transparent outline-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat === "All" ? t("servicesPage.allCategories") : cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="sm:ml-auto flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">{t("servicesPage.sortBy")}</span>
-                <div className="relative">
-                  <select 
-                    value={sortBy} 
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none pl-2 pr-6 font-semibold bg-transparent outline-none cursor-pointer"
-                  >
-                    <option value="last-modified">{t("servicesPage.lastModified")}</option>
-                    <option value="price-asc">{t("servicesPage.priceLowHigh")}</option>
-                    <option value="price-desc">{t("servicesPage.priceHighLow")}</option>
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-foreground absolute right-0 top-1 pointer-events-none" />
-                </div>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-8 border-none shadow-none font-semibold bg-transparent focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="last-modified">{t("servicesPage.lastModified")}</SelectItem>
+                    <SelectItem value="price-asc">{t("servicesPage.priceLowHigh")}</SelectItem>
+                    <SelectItem value="price-desc">{t("servicesPage.priceHighLow")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

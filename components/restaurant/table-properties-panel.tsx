@@ -2,6 +2,7 @@
 
 import { useTranslation } from "react-i18next"
 import { Save, Trash, Plus, Square, Circle, RectangleHorizontal } from "lucide-react"
+import { ColorPalette } from "./color-palette"
 
 interface TablePropertiesPanelProps {
   selectedTable: any
@@ -16,8 +17,8 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
   if (!selectedTable) return null
 
   return (
-    <div className="w-80 bg-white border-l border-border/60 flex flex-col h-full shrink-0">
-      <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA]">
+    <div className="absolute top-4 right-4 w-80 bg-white border border-border/60 shadow-xl rounded-xl flex flex-col max-h-[calc(100%-32px)] z-20">
+      <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA] rounded-t-xl">
         <h3 className="font-bold text-foreground">Table Properties</h3>
         <button onClick={onDeselect} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
       </div>
@@ -86,35 +87,56 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
           <label className="text-sm font-medium text-foreground">Shape</label>
           <div className="grid grid-cols-3 gap-2">
             <button
-              onClick={() => onUpdate({ shape: "square" })}
+              onClick={() => {
+                const size = selectedTable.size || { width: 80, height: 80 }
+                onUpdate({ shape: "square", size: { width: Math.max(size.width, size.height), height: Math.max(size.width, size.height) } })
+              }}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "square" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <Square className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Square</span>
             </button>
             <button
-              onClick={() => onUpdate({ shape: "round" })}
+              onClick={() => {
+                const size = selectedTable.size || { width: 80, height: 80 }
+                onUpdate({ shape: "round", size: { width: Math.max(size.width, size.height), height: Math.max(size.width, size.height) } })
+              }}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "round" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <Circle className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Round</span>
             </button>
             <button
-              onClick={() => onUpdate({ shape: "rectangular" })}
+              onClick={() => {
+                const size = selectedTable.size || { width: 80, height: 80 }
+                const updates: any = { shape: "rectangular" }
+                if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
+                onUpdate(updates)
+              }}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "rectangular" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <RectangleHorizontal className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Rectangle</span>
             </button>
             <button
-              onClick={() => onUpdate({ shape: "oval" })}
+              onClick={() => {
+                const size = selectedTable.size || { width: 80, height: 80 }
+                const updates: any = { shape: "oval" }
+                if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
+                onUpdate(updates)
+              }}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "oval" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <div className="h-4 w-6 rounded-[50%] border-2 border-current mb-1" />
               <span className="text-[10px] font-medium">Oval</span>
             </button>
             <button
-              onClick={() => onUpdate({ shape: "banquet" })}
+              onClick={() => {
+                const size = selectedTable.size || { width: 80, height: 80 }
+                const updates: any = { shape: "banquet" }
+                if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
+                onUpdate(updates)
+              }}
               className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "banquet" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <div className="h-4 w-6 rounded-full border-2 border-current mb-1" />
@@ -160,6 +182,10 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
             <option value="out_of_service">Out of Service</option>
             <option value="blocked">Blocked</option>
           </select>
+        </div>
+        
+        <div className="pt-2 border-t border-border/60">
+          <ColorPalette color={selectedTable.color || "#e5e7eb"} onChange={(c) => onUpdate({ color: c })} />
         </div>
 
         <div className="space-y-2">

@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, ZoomIn, ZoomOut, Save, Maximize, MousePointer2, Undo, Redo } from "lucide-react"
+import { Plus, ZoomIn, ZoomOut, Save, Maximize, MousePointer2, Undo, Redo, Hand } from "lucide-react"
 
 interface FloorPlanToolbarProps {
   onAddTable: (shape: string) => void
@@ -15,9 +15,11 @@ interface FloorPlanToolbarProps {
   onRedo?: () => void
   canUndo?: boolean
   canRedo?: boolean
+  mode?: string
+  setMode?: (mode: "select" | "draw_room" | "draw_event" | "pan") => void
 }
 
-export function FloorPlanToolbar({ onAddTable, onAddArea, onAddEventArea, onZoomIn, onZoomOut, onResetZoom, onSave, isSaving, onUndo, onRedo, canUndo, canRedo }: FloorPlanToolbarProps) {
+export function FloorPlanToolbar({ onAddTable, onAddArea, onAddEventArea, onZoomIn, onZoomOut, onResetZoom, onSave, isSaving, onUndo, onRedo, canUndo, canRedo, mode = "select", setMode }: FloorPlanToolbarProps) {
   return (
     <div className="bg-white border-b border-border/60 p-3 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-sm z-10 relative">
       <div className="flex items-center gap-2">
@@ -36,14 +38,14 @@ export function FloorPlanToolbar({ onAddTable, onAddArea, onAddEventArea, onZoom
 
         <button 
           onClick={onAddArea}
-          className="flex items-center gap-2 px-3 py-1.5 bg-[#FAFAFA] border border-border/60 hover:bg-gray-50 rounded-lg text-sm font-semibold text-foreground transition-colors"
+          className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm font-semibold transition-colors ${mode === "draw_room" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-[#FAFAFA] border-border/60 text-foreground hover:bg-gray-50"}`}
         >
           <MousePointer2 className="h-4 w-4" /> Draw Room
         </button>
 
         <button 
           onClick={onAddEventArea}
-          className="flex items-center gap-2 px-3 py-1.5 bg-[#FAFAFA] border border-border/60 hover:bg-gray-50 rounded-lg text-sm font-semibold text-foreground transition-colors text-amber-600 hover:bg-amber-50"
+          className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm font-semibold transition-colors ${mode === "draw_event" ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-[#FAFAFA] border-border/60 text-amber-600 hover:bg-amber-50"}`}
         >
           <MousePointer2 className="h-4 w-4" /> Draw Event Area
         </button>
@@ -54,6 +56,21 @@ export function FloorPlanToolbar({ onAddTable, onAddArea, onAddEventArea, onZoom
           </button>
           <button onClick={onRedo} disabled={!canRedo} className="p-1.5 hover:bg-[#FAFAFA] border border-transparent hover:border-border/60 rounded-md text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="Redo">
             <Redo className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center ml-2 border-l border-border/60 pl-4 gap-2">
+          <button 
+            onClick={() => setMode?.("select")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm font-semibold transition-colors ${mode === "select" ? "bg-gray-200 border-gray-300 text-gray-900 shadow-inner" : "bg-[#FAFAFA] border-border/60 text-muted-foreground hover:bg-gray-50"}`}
+          >
+            <MousePointer2 className="h-4 w-4" /> Selection Tool
+          </button>
+          <button 
+            onClick={() => setMode?.("pan")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm font-semibold transition-colors ${mode === "pan" ? "bg-gray-200 border-gray-300 text-gray-900 shadow-inner" : "bg-[#FAFAFA] border-border/60 text-muted-foreground hover:bg-gray-50"}`}
+          >
+            <Hand className="h-4 w-4" /> Move/Pan Tool
           </button>
         </div>
       </div>

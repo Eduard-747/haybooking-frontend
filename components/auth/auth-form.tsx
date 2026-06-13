@@ -61,6 +61,8 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
   const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
+  const [signupMethod, setSignupMethod] = useState<"phone" | "email">("email")
+  const [signinMethod, setSigninMethod] = useState<"phone" | "email">("email")
   const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
   const [formData, setFormData] = useState({
     firstName: "",
@@ -100,22 +102,33 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
     setLoading(true);
     try {
       if (activeTab === "signup") {
-        const fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, '')}`
+        let fullPhone = undefined;
+        let payloadEmail = undefined;
+
+        if (signupMethod === "phone") {
+          fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, '')}`;
+        } else {
+          payloadEmail = formData.email;
+        }
+
         const payload = {
-          phoneNumber: fullPhone,
+          ...(fullPhone && { phoneNumber: fullPhone }),
+          ...(payloadEmail && { email: payloadEmail }),
           password: formData.password,
           name: formData.firstName,
           surname: formData.lastName,
-          email: formData.email || undefined,
           role: isBusinessPartner ? 'partner' : 'client',
           businessName: isBusinessPartner ? formData.businessName : undefined,
           businessType: isBusinessPartner ? formData.businessType : undefined
         };
         const res = await api.post('/auth/signup', payload);
-        login(res.data.access_token, { userId: '', phoneNumber: fullPhone, role: payload.role }, redirectTo);
+        login(res.data.access_token, { userId: '', phoneNumber: fullPhone, email: payloadEmail, role: payload.role }, redirectTo);
 
-        // Show SMS verification step
-        setShowSmsVerification(true)
+        if (signupMethod === "phone") {
+          setShowSmsVerification(true)
+        } else {
+          toast.success('Account created successfully! 🎉')
+        }
       } else if (activeTab === "forgot") {
         let fullPhone = formData.phone;
         if (fullPhone !== 'haybooking_super_admin') {
@@ -146,17 +159,23 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
         toast.success(res.data.message || 'Password reset successful');
         onTabChange("signin");
       } else {
-        let fullPhone = formData.phone;
-        if (fullPhone !== 'haybooking_super_admin') {
-          fullPhone = fullPhone.startsWith('+') ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\\D/g, '')}`;
+        let identifier = "";
+        if (signinMethod === "phone") {
+          identifier = formData.phone;
+          if (identifier !== 'haybooking_super_admin') {
+            identifier = identifier.startsWith('+') ? identifier : `${formData.countryCode}${identifier.replace(/\D/g, '')}`;
+          }
+        } else {
+          identifier = formData.email;
         }
+
         const res = await api.post('/auth/login', {
-          phoneNumber: fullPhone,
+          identifier,
           password: formData.password
         });
 
         const targetRedirect = res.data.role === 'super_admin' ? '/admin/dashboard' : redirectTo;
-        login(res.data.access_token, { userId: '', phoneNumber: fullPhone, role: res.data.role || 'client' }, targetRedirect);
+        login(res.data.access_token, { userId: '', phoneNumber: signinMethod === "phone" ? identifier : undefined, email: signinMethod === "email" ? identifier : undefined, role: res.data.role || 'client' }, targetRedirect);
         toast.success('Logged in successfully!');
       }
     } catch (err: any) {
@@ -246,13 +265,22 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
             isBusinessPartner={isBusinessPartner}
             setIsBusinessPartner={setIsBusinessPartner}
             countryCodesList={countryCodesList}
+            signupMethod={signupMethod}
+            setSignupMethod={setSignupMethod}
           />
         ) : activeTab === "forgot" ? (
           <ForgotPasswordForm formData={formData} onInputChange={handleInputChange} countryCodesList={countryCodesList} />
         ) : activeTab === "reset-verify" ? (
           <ResetVerifyForm formData={formData} onInputChange={handleInputChange} />
         ) : (
-          <SignInForm formData={formData} onInputChange={handleInputChange} onForgot={() => onTabChange("forgot")} countryCodesList={countryCodesList} />
+          <SignInForm 
+            formData={formData} 
+            onInputChange={handleInputChange} 
+            onForgot={() => onTabChange("forgot")} 
+            countryCodesList={countryCodesList} 
+            signinMethod={signinMethod}
+            setSigninMethod={setSigninMethod}
+          />
         )}
 
         {/* Submit Button */}
@@ -354,6 +382,8 @@ interface SignUpFormProps {
   isBusinessPartner: boolean
   setIsBusinessPartner: (value: boolean) => void
   countryCodesList: { code: string; country: string; flag: string }[]
+  signupMethod: "phone" | "email"
+  setSignupMethod: (method: "phone" | "email") => void
 }
 
 function SignUpForm({
@@ -362,6 +392,8 @@ function SignUpForm({
   isBusinessPartner,
   setIsBusinessPartner,
   countryCodesList,
+  signupMethod,
+  setSignupMethod,
 }: SignUpFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
@@ -395,54 +427,78 @@ function SignUpForm({
         </div>
       </div>
 
-      {/* Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email">{t("common.email")}</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="email"
-            type="email"
-            placeholder="jane.doe@example.com"
-            value={formData.email}
-            onChange={(e) => onInputChange("email", e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      {/* Method Toggle */}
+      <div className="flex gap-4 mb-4">
+        <button
+          type="button"
+          onClick={() => setSignupMethod("email")}
+          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+            signupMethod === "email" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {t("common.email", "Email")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setSignupMethod("phone")}
+          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+            signupMethod === "phone" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {t("common.phone", "Phone Number")}
+        </button>
       </div>
 
-      {/* Phone with Country Code */}
-      <div className="space-y-2">
-        <Label htmlFor="phone">{t("common.phone")}</Label>
-        <div className="flex gap-2">
-          <Select
-            value={formData.countryCode}
-            onValueChange={(value) => onInputChange("countryCode", value)}
-          >
-            <SelectTrigger className="w-[120px] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {countryCodesList.map((cc) => (
-                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
-                  {cc.flag} {cc.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1">
-            <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      {signupMethod === "email" ? (
+        <div className="space-y-2">
+          <Label htmlFor="email">{t("common.email")}</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              id="phone"
-              type="tel"
-              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
-              value={formData.phone}
-              onChange={(e) => onInputChange("phone", e.target.value)}
+              id="email"
+              type="email"
+              placeholder="jane.doe@example.com"
+              value={formData.email}
+              onChange={(e) => onInputChange("email", e.target.value)}
               className="pl-10"
+              required
             />
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor="phone">{t("common.phone")}</Label>
+          <div className="flex gap-2">
+            <Select
+              value={formData.countryCode}
+              onValueChange={(value) => onInputChange("countryCode", value)}
+            >
+              <SelectTrigger className="w-[120px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {countryCodesList.map((cc) => (
+                  <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                    {cc.flag} {cc.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
+                value={formData.phone}
+                onChange={(e) => onInputChange("phone", e.target.value)}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Password */}
       <div className="space-y-2">
@@ -558,46 +614,88 @@ interface SignInFormProps {
   onInputChange: (field: string, value: string) => void
   onForgot?: () => void
   countryCodesList: { code: string; country: string; flag: string }[]
+  signinMethod: "phone" | "email"
+  setSigninMethod: (method: "phone" | "email") => void
 }
 
-function SignInForm({ formData, onInputChange, onForgot, countryCodesList }: SignInFormProps) {
+function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signinMethod, setSigninMethod }: SignInFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <>
-      {/* Phone Number with Country Code */}
-      <div className="space-y-2">
-        <Label htmlFor="signin-phone">{t("common.phone")}</Label>
-        <div className="flex gap-2">
-          <Select
-            value={formData.countryCode}
-            onValueChange={(value) => onInputChange("countryCode", value)}
-          >
-            <SelectTrigger className="w-[120px] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {countryCodesList.map((cc) => (
-                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
-                  {cc.flag} {cc.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1">
-            <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      {/* Method Toggle */}
+      <div className="flex gap-4 mb-4">
+        <button
+          type="button"
+          onClick={() => setSigninMethod("email")}
+          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+            signinMethod === "email" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {t("common.email", "Email")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setSigninMethod("phone")}
+          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+            signinMethod === "phone" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {t("common.phone", "Phone Number")}
+        </button>
+      </div>
+
+      {signinMethod === "email" ? (
+        <div className="space-y-2">
+          <Label htmlFor="signin-email">{t("common.email")}</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              id="signin-phone"
-              type="tel"
-              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
-              value={formData.phone}
-              onChange={(e) => onInputChange("phone", e.target.value)}
+              id="signin-email"
+              type="email"
+              placeholder="jane.doe@example.com"
+              value={formData.email}
+              onChange={(e) => onInputChange("email", e.target.value)}
               className="pl-10"
+              required
             />
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor="signin-phone">{t("common.phone")}</Label>
+          <div className="flex gap-2">
+            <Select
+              value={formData.countryCode}
+              onValueChange={(value) => onInputChange("countryCode", value)}
+            >
+              <SelectTrigger className="w-[120px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {countryCodesList.map((cc) => (
+                  <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                    {cc.flag} {cc.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="signin-phone"
+                type="tel"
+                placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
+                value={formData.phone}
+                onChange={(e) => onInputChange("phone", e.target.value)}
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Password with eye toggle */}
       <div className="space-y-2">

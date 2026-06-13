@@ -13,10 +13,12 @@ export function Logo({ className, width = 160, height = 48 }: LogoProps) {
       alt="HayBooking Logo"
       width={width}
       height={height}
-      className={`object-contain w-auto h-auto ${className || ""}`}
+      className={`object-contain ${className || ""}`}
       style={{
         maxWidth: width,
         maxHeight: height,
+        width: "auto",
+        height: "auto",
       }}
       priority
     />

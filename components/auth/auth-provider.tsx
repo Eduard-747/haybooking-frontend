@@ -6,7 +6,7 @@ import api from '@/lib/api';
 
 interface User {
   userId: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   role: string;
   name?: string;
   surname?: string;

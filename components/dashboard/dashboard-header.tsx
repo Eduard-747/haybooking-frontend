@@ -43,7 +43,7 @@ export function DashboardHeader() {
 
         <div className="flex items-center min-w-0">
           <Link href="/dashboard" className="text-sm font-semibold text-foreground truncate hover:text-[#C69C9B] transition-colors cursor-pointer">
-            {partner?.businessName || "Dashboard"}
+            {partner?.businessName || "La Bohem"}
           </Link>
           {partner?.verified && (
             <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
@@ -54,13 +54,13 @@ export function DashboardHeader() {
 
         {branches.length > 0 && (
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-border">|</span>
+            <span className="text-muted-foreground/50 font-medium">/</span>
             <div className="relative flex items-center">
               <MapPin className="w-3.5 h-3.5 text-muted-foreground absolute left-2 pointer-events-none" />
               <select
                 value={selectedBranchId || ""}
                 onChange={(e) => setSelectedBranchId(e.target.value || null)}
-                className="pl-7 pr-8 py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#C69C9B] rounded-lg text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#C69C9B] appearance-none cursor-pointer transition-colors"
+                className="pl-7 pr-8 py-1 bg-transparent hover:bg-gray-50 rounded-lg text-sm font-medium text-muted-foreground focus:outline-none appearance-none cursor-pointer transition-colors"
               >
                 <option value="">{t("common.allBranches")}</option>
                 {branches.map(b => (
@@ -88,11 +88,11 @@ export function DashboardHeader() {
         
         {/* Business Image / Avatar */}
         <Link href="/dashboard/settings">
-          <Avatar className="h-10 w-10 rounded-xl border border-border cursor-pointer bg-[#C69C9B]/20 hover:ring-2 hover:ring-[#C69C9B]/50 transition-all">
+          <Avatar className="h-9 w-9 rounded-full border border-border cursor-pointer bg-[#C69C9B]/20 hover:ring-2 hover:ring-[#C69C9B]/50 transition-all flex items-center justify-center">
             {partner?.image ? (
-              <AvatarImage src={partner.image} alt={partner.businessName} className="object-cover rounded-xl" />
+              <AvatarImage src={partner.image} alt={partner.businessName} className="object-cover rounded-full" />
             ) : null}
-            <AvatarFallback className="text-[#C69C9B] font-semibold text-sm rounded-xl">
+            <AvatarFallback className="text-[#C69C9B] font-semibold text-xs rounded-full flex items-center justify-center">
               {initials}
             </AvatarFallback>
           </Avatar>

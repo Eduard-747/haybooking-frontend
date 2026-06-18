@@ -277,8 +277,8 @@ export default function FloorPlanPage() {
       type,
       x: spawnX,
       y: spawnY,
-      width: type === 'wall' ? 200 : type === 'door' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40,
-      height: type === 'wall' ? 10 : type === 'door' ? 10 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40,
+      width: type === 'wall' ? 200 : type === 'window' ? 60 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40,
+      height: type === 'wall' ? 10 : type === 'window' ? 10 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40,
       rotation: 0,
       color: type === 'plant' ? '#10b981' : '#4b5563'
     }
@@ -325,10 +325,10 @@ export default function FloorPlanPage() {
         type,
         x: pos.x,
         y: pos.y,
-        width: type === 'wall' ? 200 : type === 'door' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40,
-        height: type === 'wall' ? 10 : type === 'door' ? 10 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40,
+        width: payload.width || (type === 'wall' ? 200 : type === 'window' ? 60 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40),
+        height: payload.height || (type === 'wall' ? 10 : type === 'window' ? 10 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40),
         rotation: 0,
-        color: type === 'plant' ? '#10b981' : '#4b5563'
+        color: payload.color || (type === 'plant' ? '#10b981' : '#4b5563')
       }
       setElements([...elements, newElement])
       setSelectedElementIds([newElement.id])
@@ -616,6 +616,28 @@ export default function FloorPlanPage() {
                       <button onClick={() => setSelectedElementId(null)} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
                     </div>
                     <div className="p-4 space-y-4">
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Length</label>
+                           <input
+                             type="number"
+                             value={selectedElement.width}
+                             onChange={(e) => handleUpdateElement(selectedElement.id, { width: parseInt(e.target.value) || 20 }, true)}
+                             className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
+                             min="10"
+                           />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thickness</label>
+                           <input
+                             type="number"
+                             value={selectedElement.height}
+                             onChange={(e) => handleUpdateElement(selectedElement.id, { height: parseInt(e.target.value) || 10 }, true)}
+                             className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
+                             min="2"
+                           />
+                         </div>
+                       </div>
                        <ColorPalette color={selectedElement.color || "#4b5563"} onChange={(c) => handleUpdateElement(selectedElement.id, { color: c }, true)} />
                        <button
                         onClick={() => handleDeleteElement(selectedElement.id)}

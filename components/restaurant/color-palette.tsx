@@ -6,8 +6,8 @@ interface ColorPaletteProps {
 }
 
 const PRESET_COLORS = [
-  "#ef4444", "#3b82f6", "#10b981", "#eab308", "#6b7280",
-  "#f97316", "#8b5cf6", "#14b8a6", "#ec4899", "#000000"
+  "#e5555e", "#3b82f6", "#10b981", "#fbbf24", "#6b7280",
+  "#9f1239", "#1d4ed8", "#a16207", "#374151", "#d1d5db"
 ]
 
 export function ColorPalette({ color, onChange }: ColorPaletteProps) {
@@ -26,13 +26,16 @@ export function ColorPalette({ color, onChange }: ColorPaletteProps) {
       </div>
       <div className="pt-2">
         <label className="text-sm font-medium text-foreground block mb-2">Custom Color</label>
-        <div className="flex gap-2">
-          <input
-            type="color"
-            value={color || "#000000"}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-10 h-10 rounded-md border border-border cursor-pointer"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 shrink-0">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-red-500 pointer-events-none" style={{ background: 'conic-gradient(from 180deg, red, yellow, lime, aqua, blue, magenta, red)' }}></div>
+            <input
+              type="color"
+              value={color || "#000000"}
+              onChange={(e) => onChange(e.target.value)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
           <input
             type="text"
             value={color || ""}

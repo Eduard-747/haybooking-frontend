@@ -97,8 +97,8 @@ export function FloorPlanCanvas({
     }
   }
 
-  // Snap to grid (20px)
-  const snap = (val: number) => Math.round(val / 20) * 20
+  // Snap to grid (5px for finer alignment of architectural elements)
+  const snap = (val: number) => Math.round(val / 5) * 5
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button === 1 || e.altKey || mode === "pan") {
@@ -147,8 +147,77 @@ export function FloorPlanCanvas({
     const pos = getWorkspacePos(e)
 
     if (interactionState.action === 'move') {
-      const snappedX = snap(pos.x - dragOffset.x)
-      const snappedY = snap(pos.y - dragOffset.y)
+      let snappedX = snap(pos.x - dragOffset.x)
+      let snappedY = snap(pos.y - dragOffset.y)
+
+      if (interactionState.type === 'element') {
+        const w = interactionState.originalSize?.w || 40;
+        const h = interactionState.originalSize?.h || 40;
+        const movingEl = elements.find((e: any) => e.id === interactionState.id);
+        const movingRot = movingEl?.rotation || 0;
+        
+        const getAABB = (x: number, y: number, w: number, h: number, rot: number) => {
+          if (rot % 180 === 0) return { vx: x, vy: y, vw: w, vh: h };
+          if (rot % 90 === 0) return { vx: x + w/2 - h/2, vy: y + h/2 - w/2, vw: h, vh: w };
+          const rad = rot * Math.PI / 180;
+          const cx = x + w/2;
+          const cy = y + h/2;
+          const pts = [
+            {x: -w/2, y: -h/2}, {x: w/2, y: -h/2},
+            {x: w/2, y: h/2}, {x: -w/2, y: h/2}
+          ].map(p => ({
+            x: cx + p.x * Math.cos(rad) - p.y * Math.sin(rad),
+            y: cy + p.x * Math.sin(rad) + p.y * Math.cos(rad)
+          }));
+          const minX = Math.min(...pts.map(p => p.x));
+          const maxX = Math.max(...pts.map(p => p.x));
+          const minY = Math.min(...pts.map(p => p.y));
+          const maxY = Math.max(...pts.map(p => p.y));
+          return { vx: minX, vy: minY, vw: maxX - minX, vh: maxY - minY };
+        };
+
+        const movingAABB = getAABB(snappedX, snappedY, w, h, movingRot);
+
+        let bestDistX = 15;
+        let bestDistY = 15;
+        let dx = 0;
+        let dy = 0;
+
+        elements.forEach((other: any) => {
+          if (other.id === interactionState.id) return;
+          const ow = other.width || 40;
+          const oh = other.height || 40;
+          const orot = other.rotation || 0;
+          
+          const otherAABB = getAABB(other.x, other.y, ow, oh, orot);
+          
+          const movingXs = [movingAABB.vx, movingAABB.vx + movingAABB.vw];
+          const movingYs = [movingAABB.vy, movingAABB.vy + movingAABB.vh];
+          const otherXs = [otherAABB.vx, otherAABB.vx + otherAABB.vw, otherAABB.vx + 10, otherAABB.vx + otherAABB.vw - 10];
+          const otherYs = [otherAABB.vy, otherAABB.vy + otherAABB.vh, otherAABB.vy + 10, otherAABB.vy + otherAABB.vh - 10];
+
+          movingXs.forEach(mx => {
+            otherXs.forEach(ox => {
+              if (Math.abs(mx - ox) < bestDistX) {
+                bestDistX = Math.abs(mx - ox);
+                dx = ox - mx;
+              }
+            });
+          });
+
+          movingYs.forEach(my => {
+            otherYs.forEach(oy => {
+              if (Math.abs(my - oy) < bestDistY) {
+                bestDistY = Math.abs(my - oy);
+                dy = oy - my;
+              }
+            });
+          });
+        });
+
+        if (bestDistX < 15) snappedX += dx;
+        if (bestDistY < 15) snappedY += dy;
+      }
 
       if (interactionState.type === 'table') {
         onUpdateTable(interactionState.id, { position: { x: snappedX, y: snappedY } })
@@ -262,7 +331,16 @@ export function FloorPlanCanvas({
       onSelectElement(id, e.shiftKey)
     }
     const pos = getWorkspacePos(e)
-    setInteractionState({ id, type, action: 'move', startPos: pos })
+    let size = {w: 40, h: 40};
+    if (type === 'element') {
+      const el = elements.find((el: any) => el.id === id);
+      if (el) size = {w: el.width || 40, h: el.height || 40};
+    } else if (type === 'table') {
+      const tb = tables.find((t: any) => t._id === id || t.id === id);
+      if (tb) size = {w: tb.size?.width || 80, h: tb.size?.height || 80};
+    }
+    
+    setInteractionState({ id, type, action: 'move', startPos: pos, originalSize: size })
     setDragOffset({ x: pos.x - elementPos.x, y: pos.y - elementPos.y })
     svgRef.current?.setPointerCapture(e.pointerId)
   }
@@ -289,163 +367,119 @@ export function FloorPlanCanvas({
     svgRef.current?.setPointerCapture(e.pointerId)
   }
 
-  // Draw Chairs function
+  // ── Unified Realistic Beige Fabric Chair ──────────────────────────────
+  const ChairSVG = ({
+    cx, cy, angleDeg, scale = 1, shadow = true,
+  }: { cx: number; cy: number; angleDeg: number; scale?: number; shadow?: boolean }) => {
+    const W = 20, H = 20  // chair footprint
+    return (
+      <g transform={`translate(${cx},${cy}) rotate(${angleDeg}) scale(${scale})`} filter={shadow ? "url(#chair-shadow)" : undefined}>
+        {/* Outer wrap (armrests and back) outline/shadow */}
+        <path d={`M${-W / 2 + 1},${H / 2} L${-W / 2 + 1},${-H / 2 + 5} Q${-W / 2 + 1},${-H / 2 - 1} 0,${-H / 2 - 1} Q${W / 2 - 1},${-H / 2 - 1} ${W / 2 - 1},${-H / 2 + 5} L${W / 2 - 1},${H / 2}`}
+          fill="none" stroke="#6b5b4a" strokeWidth="8" strokeLinecap="round" opacity="0.6" filter="url(#drop-shadow-sm)"/>
+        
+        {/* Outer wrap inner fill (warm beige) */}
+        <path d={`M${-W / 2 + 1},${H / 2} L${-W / 2 + 1},${-H / 2 + 5} Q${-W / 2 + 1},${-H / 2 - 1} 0,${-H / 2 - 1} Q${W / 2 - 1},${-H / 2 - 1} ${W / 2 - 1},${-H / 2 + 5} L${W / 2 - 1},${H / 2}`}
+          fill="none" stroke="#e6dbcc" strokeWidth="7" strokeLinecap="round" />
+          
+        {/* Wrap highlight (top edge) */}
+        <path d={`M${-W / 2 + 1},${H / 2} L${-W / 2 + 1},${-H / 2 + 5} Q${-W / 2 + 1},${-H / 2 - 1} 0,${-H / 2 - 1} Q${W / 2 - 1},${-H / 2 - 1} ${W / 2 - 1},${-H / 2 + 5} L${W / 2 - 1},${H / 2}`}
+          fill="none" stroke="#ffffff" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+
+        {/* Central Cushion */}
+        <rect x={-W / 2 + 4} y={-H / 2 + 2} width={W - 8} height={H - 2} rx={3} ry={3}
+          fill="#dcd1c2" stroke="#a4937e" strokeWidth="0.8"/>
+          
+        {/* Cushion Tufting/Creases */}
+        <line x1={0} y1={-H / 2 + 4} x2={0} y2={H / 2 - 1} stroke="#a4937e" strokeWidth="0.5" opacity="0.6" />
+        <line x1={-W / 2 + 6} y1={0} x2={W / 2 - 6} y2={0} stroke="#a4937e" strokeWidth="0.5" opacity="0.6" />
+      </g>
+    )
+  }
+
+
+
+  // ── renderChairs: place realistic chairs around any table shape ──────────
   const renderChairs = (table: any) => {
-    const chairs = []
+    const chairs: React.ReactNode[] = []
     const count = table.capacity
     if (!count || count < 1) return null
 
     const w = table.size?.width || 80
     const h = table.size?.height || 80
-    const chairSize = 14
-    const offset = 10 // distance from table edge
+    const GAP = 2   // tight gap for unified chairs
 
-    if (table.shape === 'round' || table.shape === 'oval') {
-      const rx = (w / 2) + offset
-      const ry = (h / 2) + offset
-      const cx = w / 2
-      const cy = h / 2
-      for (let i = 0; i < count; i++) {
-        const angle = (i * 2 * Math.PI) / count - (Math.PI / 2)
-        const cx_chair = cx + rx * Math.cos(angle)
-        const cy_chair = cy + ry * Math.sin(angle)
-        chairs.push(<circle key={i} cx={cx_chair} cy={cy_chair} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-      }
-    } else if (table.shape === 'banquet') {
-      // Perimeter math to wrap chairs perfectly around flat edges and rounded corners
-      const R = Math.min(w, h) / 2
-      const R_out = R + offset
-      const L_straight_w = Math.max(0, w - 2*R)
-      const L_straight_h = Math.max(0, h - 2*R)
-      const L_arc = (Math.PI / 2) * R_out
-      const P = 2 * L_straight_w + 2 * L_straight_h + 4 * L_arc
-      
-      for (let i = 0; i < count; i++) {
-        let d = (i / count) * P
-        let current = 0
-        let pt = { x: w/2, y: -offset }
-
-        // 1. Top-Right straight
-        let len = L_straight_w / 2
-        if (d <= current + len + 0.001) {
-          pt = { x: w/2 + d - current, y: -offset }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 2. TR arc
-        len = L_arc
-        if (d <= current + len + 0.001) {
-          let t = (d - current) / len
-          let angle = -Math.PI/2 + t * (Math.PI/2)
-          pt = { x: w - R + R_out * Math.cos(angle), y: R + R_out * Math.sin(angle) }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 3. Right straight
-        len = L_straight_h
-        if (d <= current + len + 0.001) {
-          pt = { x: w + offset, y: R + d - current }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 4. BR arc
-        len = L_arc
-        if (d <= current + len + 0.001) {
-          let t = (d - current) / len
-          let angle = 0 + t * (Math.PI/2)
-          pt = { x: w - R + R_out * Math.cos(angle), y: h - R + R_out * Math.sin(angle) }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 5. Bottom straight
-        len = L_straight_w
-        if (d <= current + len + 0.001) {
-          pt = { x: w - R - (d - current), y: h + offset }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 6. BL arc
-        len = L_arc
-        if (d <= current + len + 0.001) {
-          let t = (d - current) / len
-          let angle = Math.PI/2 + t * (Math.PI/2)
-          pt = { x: R + R_out * Math.cos(angle), y: h - R + R_out * Math.sin(angle) }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 7. Left straight
-        len = L_straight_h
-        if (d <= current + len + 0.001) {
-          pt = { x: -offset, y: h - R - (d - current) }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 8. TL arc
-        len = L_arc
-        if (d <= current + len + 0.001) {
-          let t = (d - current) / len
-          let angle = Math.PI + t * (Math.PI/2)
-          pt = { x: R + R_out * Math.cos(angle), y: R + R_out * Math.sin(angle) }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-        current += len
-
-        // 9. Top-Left straight
-        len = L_straight_w / 2
-        if (d <= current + len + 0.001) {
-          pt = { x: R + (d - current), y: -offset }
-          chairs.push(<circle key={i} cx={pt.x} cy={pt.y} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-          continue
-        }
-      }
+    // Calculate chair scaling based on current table size vs default required size
+    let baseW = 80;
+    let baseH = 80;
+    if (['rectangular', 'banquet'].includes(table.shape)) {
+      baseW = Math.max(80, count * 20);
+      baseH = 80;
     } else {
-       // Proportional rectangular distribution for square/rect
-       let tb_total = Math.round(count * (w / (w + h)))
-       
-       // Keep symmetry for even counts
-       if (count % 2 === 0 && tb_total % 2 !== 0) {
-         if (tb_total < count) tb_total += 1
-         else tb_total -= 1
-       }
-       
-       let lr_total = count - tb_total
+      const sq = Math.max(80, Math.ceil(Math.sqrt(count) * 40));
+      baseW = sq;
+      baseH = sq;
+    }
+    // Cap at 1.1 so chairs don't get comically huge, but allow them to shrink infinitely
+    const chairScale = Math.min(1.1, Math.min(w / baseW, h / baseH));
 
-       let top = Math.ceil(tb_total / 2)
-       let bottom = Math.floor(tb_total / 2)
-       let left = Math.ceil(lr_total / 2)
-       let right = Math.floor(lr_total / 2)
+    if (table.shape === 'u_conf') {
+      // U-shape chair layout (Outer perimeter only: left, top, right)
+      // Assume top is closed, bottom is open.
+      // Left side, top side, right side.
+      const sideCapacity = Math.floor((count - 2) / 2) // e.g. 10 total -> 4 left, 2 top, 4 right
+      const topCapacity = count - (sideCapacity * 2)
 
-       // top
-       for(let i=0; i<top; i++) {
-         chairs.push(<circle key={`t${i}`} cx={(w/(top+1))*(i+1)} cy={-offset} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-       }
-       // bottom
-       for(let i=0; i<bottom; i++) {
-         chairs.push(<circle key={`b${i}`} cx={(w/(bottom+1))*(i+1)} cy={h+offset} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-       }
-       // left
-       for(let i=0; i<left; i++) {
-         chairs.push(<circle key={`l${i}`} cx={-offset} cy={(h/(left+1))*(i+1)} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-       }
-       // right
-       for(let i=0; i<right; i++) {
-         chairs.push(<circle key={`r${i}`} cx={w+offset} cy={(h/(right+1))*(i+1)} r={chairSize/2} fill="#e5e7eb" stroke="#9ca3af" strokeWidth="1" />)
-       }
+      // Left column
+      for (let i = 0; i < sideCapacity; i++) {
+        chairs.push(<ChairSVG key={`l${i}`} cx={-GAP} cy={(h / (sideCapacity + 1)) * (i + 1)} angleDeg={90} scale={chairScale} />)
+      }
+      // Right column
+      for (let i = 0; i < sideCapacity; i++) {
+        chairs.push(<ChairSVG key={`r${i}`} cx={w + GAP} cy={(h / (sideCapacity + 1)) * (i + 1)} angleDeg={-90} scale={chairScale} />)
+      }
+      // Top row
+      for (let i = 0; i < topCapacity; i++) {
+        chairs.push(<ChairSVG key={`t${i}`} cx={(w / (topCapacity + 1)) * (i + 1)} cy={-GAP} angleDeg={180} scale={chairScale} />)
+      }
+    }
+    // ── Round / Oval ──────────────────────────────────────────────
+    else if (['round', 'oval'].includes(table.shape)) {
+      const rx = w / 2 + GAP
+      const ry = h / 2 + GAP
+      const cx = w / 2, cy = h / 2
+      for (let i = 0; i < count; i++) {
+        const angle = (i * 2 * Math.PI) / count - Math.PI / 2
+        const px = cx + rx * Math.cos(angle)
+        const py = cy + ry * Math.sin(angle)
+        const deg = (angle * 180) / Math.PI + 90   // face toward table centre
+        chairs.push(<ChairSVG key={i} cx={px} cy={py} angleDeg={deg} scale={chairScale} />)
+      }
+    }
+    // ── Rectangular / Square / Banquet ──────────────────────────────────────────────
+    else if (['rectangular', 'square', 'banquet'].includes(table.shape)) {
+      let tb_total = Math.round(count * (w / (w + h)))
+      if (count % 2 === 0 && tb_total % 2 !== 0) {
+        tb_total = tb_total < count ? tb_total + 1 : tb_total - 1
+      }
+      const lr_total = count - tb_total
+      const top = Math.ceil(tb_total / 2)
+      const bottom = Math.floor(tb_total / 2)
+      const left = Math.ceil(lr_total / 2)
+      const right = Math.floor(lr_total / 2)
+
+      for (let i = 0; i < top; i++) {
+        chairs.push(<ChairSVG key={`t${i}`} cx={(w / (top + 1)) * (i + 1)} cy={-GAP} angleDeg={180} scale={chairScale} />)
+      }
+      for (let i = 0; i < bottom; i++) {
+        chairs.push(<ChairSVG key={`b${i}`} cx={(w / (bottom + 1)) * (i + 1)} cy={h + GAP} angleDeg={0} scale={chairScale} />)
+      }
+      for (let i = 0; i < left; i++) {
+        chairs.push(<ChairSVG key={`l${i}`} cx={-GAP} cy={(h / (left + 1)) * (i + 1)} angleDeg={90} scale={chairScale} />)
+      }
+      for (let i = 0; i < right; i++) {
+        chairs.push(<ChairSVG key={`r${i}`} cx={w + GAP} cy={(h / (right + 1)) * (i + 1)} angleDeg={-90} scale={chairScale} />)
+      }
     }
     return chairs
   }
@@ -489,6 +523,42 @@ export function FloorPlanCanvas({
           <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform={`translate(${pan.x}, ${pan.y}) scale(${scale})`}>
             <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d1d5db" strokeWidth="0.5"/>
           </pattern>
+          {/* Shadows */}
+          <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur" />
+            <feOffset dx="0" dy="10" result="offsetblur" />
+            <feFlood floodColor="#000000" floodOpacity="0.3" />
+            <feComposite in2="offsetblur" operator="in" />
+            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="drop-shadow-sm" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+            <feOffset dx="0" dy="5" result="offsetblur" />
+            <feFlood floodColor="#000000" floodOpacity="0.25" />
+            <feComposite in2="offsetblur" operator="in" />
+            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="chair-shadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="1" dy="2" result="offsetblur" />
+            <feFlood floodColor="#0f172a" floodOpacity="0.2" />
+            <feComposite in2="offsetblur" operator="in" />
+            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+
+          {/* ── Realistic Wood Grain pattern ── */}
+          <radialGradient id="wood-base" cx="42%" cy="45%" r="60%">
+            <stop offset="0%" stopColor="#8a5a3a" />
+            <stop offset="50%" stopColor="#613c23" />
+            <stop offset="100%" stopColor="#402615" />
+          </radialGradient>
+          <pattern id="wood-grain-pat" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+            <rect width="120" height="120" fill="url(#wood-base)" />
+            <path d="M0 20 Q 30 10 60 30 T 120 40 M0 60 Q 40 50 80 70 T 120 80" stroke="rgba(0,0,0,0.15)" strokeWidth="1.5" fill="none" opacity="0.4" />
+            <path d="M0 40 Q 20 30 50 60 T 120 50" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+          </pattern>
+          
+
         </defs>
 
         {/* Infinite Background Grid */}
@@ -614,23 +684,62 @@ export function FloorPlanCanvas({
                 onPointerDown={(e) => startDrag(e, table._id || table.id, 'table', pos)}
                 className={readOnly ? "cursor-pointer" : isSelected ? "cursor-grabbing" : "cursor-grab"}
               >
-                {/* Render Chairs */}
-                {renderChairs(table)}
-
-                {/* Render Table Shape */}
-                {table.shape === 'round' ? (
-                  <circle cx={w/2} cy={h/2} r={w/2} fill={colors.fill} stroke={isSelected ? "#3b82f6" : colors.stroke} strokeWidth={isSelected ? 3 : 2} />
+                {/* Render Unified Realistic Wood Tables & Custom Shapes */}
+                {table.shape === 'u_conf' ? (
+                  <g filter="url(#drop-shadow)">
+                    {/* Dark borders */}
+                    <path d={`M 0 0 L ${w} 0 L ${w} ${h} L ${w-30} ${h} L ${w-30} 30 L 30 30 L 30 ${h} L 0 ${h} Z`} fill="#301a0e" />
+                    {/* Wood grain */}
+                    <path d={`M 2 2 L ${w-2} 2 L ${w-2} ${h-2} L ${w-28} ${h-2} L ${w-28} 28 L 28 28 L 28 ${h-2} L 2 ${h-2} Z`} fill="url(#wood-grain-pat)" />
+                    {/* Bevel highlight */}
+                    <path d={`M 4 4 L ${w-4} 4 L ${w-4} ${h-4} L ${w-26} ${h-4} L ${w-26} 26 L 26 26 L 26 ${h-4} L 4 ${h-4} Z`} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    {/* Joints (simulating 3 pieces) */}
+                    <line x1={30} y1={2} x2={30} y2={28} stroke="rgba(0,0,0,0.5)" strokeWidth="2" />
+                    <line x1={w-30} y1={2} x2={w-30} y2={28} stroke="rgba(0,0,0,0.5)" strokeWidth="2" />
+                    {isSelected && <path d={`M -4 -4 L ${w+4} -4 L ${w+4} ${h+4} L ${w-34} ${h+4} L ${w-34} 34 L 34 34 L 34 ${h+4} L -4 ${h+4} Z`} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4,3" />}
+                  </g>
+                ) : table.shape === 'round' ? (
+                  <g filter="url(#drop-shadow)">
+                    {/* Base dark wood border */}
+                    <circle cx={w / 2} cy={h / 2} r={w / 2} fill="#301a0e" />
+                    {/* Wood grain surface */}
+                    <circle cx={w / 2} cy={h / 2} r={w / 2 - 2} fill="url(#wood-grain-pat)" />
+                    {/* Inner highlight ring */}
+                    <circle cx={w / 2} cy={h / 2} r={w / 2 - 4} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    {/* Selection ring */}
+                    {isSelected && <circle cx={w / 2} cy={h / 2} r={w / 2 + 4} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4,3" />}
+                  </g>
                 ) : table.shape === 'oval' ? (
-                  <ellipse cx={w/2} cy={h/2} rx={w/2} ry={h/2} fill={colors.fill} stroke={isSelected ? "#3b82f6" : colors.stroke} strokeWidth={isSelected ? 3 : 2} />
-                ) : table.shape === 'banquet' ? (
-                  <rect x={0} y={0} width={w} height={h} rx={h/2} fill={colors.fill} stroke={isSelected ? "#3b82f6" : colors.stroke} strokeWidth={isSelected ? 3 : 2} />
+                  <g filter="url(#drop-shadow)">
+                    {/* Base dark wood border */}
+                    <ellipse cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} fill="#301a0e" />
+                    {/* Wood grain surface */}
+                    <ellipse cx={w / 2} cy={h / 2} rx={w / 2 - 2} ry={h / 2 - 2} fill="url(#wood-grain-pat)" />
+                    {/* Inner highlight ring */}
+                    <ellipse cx={w / 2} cy={h / 2} rx={w / 2 - 4} ry={h / 2 - 4} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    {/* Selection ring */}
+                    {isSelected && <ellipse cx={w / 2} cy={h / 2} rx={w / 2 + 4} ry={h / 2 + 4} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4,3" />}
+                  </g>
+                ) : table.shape === 'square' || table.shape === 'rectangular' || table.shape === 'banquet' ? (
+                  <g filter="url(#drop-shadow)">
+                    {/* Base dark wood border */}
+                    <rect x={0} y={0} width={w} height={h} rx={6} fill="#301a0e" />
+                    {/* Wood grain surface */}
+                    <rect x={2} y={2} width={w - 4} height={h - 4} rx={4} fill="url(#wood-grain-pat)" />
+                    {/* Inner bevel highlight */}
+                    <rect x={4} y={4} width={w - 8} height={h - 8} rx={2} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    {/* Selection outline */}
+                    {isSelected && <rect x={-4} y={-4} width={w + 8} height={h + 8} rx={8} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4,3" />}
+                  </g>
                 ) : (
-                  // Square, Rectangular, Custom fallback
-                  <rect x={0} y={0} width={w} height={h} rx={8} fill={colors.fill} stroke={isSelected ? "#3b82f6" : colors.stroke} strokeWidth={isSelected ? 3 : 2} />
+                  <rect x={0} y={0} width={w} height={h} rx={8} fill="url(#wood-grain-pat)" stroke="#301a0e" strokeWidth={2} filter="url(#drop-shadow-sm)" />
                 )}
 
+                {/* Chairs rendered OVER table for correct depth */}
+                {renderChairs(table)}
+
                 {/* Table Number */}
-                <text x={w/2} y={h/2} textAnchor="middle" dominantBaseline="central" fill={colors.text} fontSize="14" fontWeight="bold" className="pointer-events-none">
+                <text x={w/2} y={h/2} textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.9)" fontSize="14" fontWeight="600" className="pointer-events-none" style={{ textShadow: "0px 1px 3px rgba(0,0,0,0.8)" }}>
                   {table.tableNumber}
                 </text>
                 
@@ -681,13 +790,62 @@ export function FloorPlanCanvas({
                   </g>
                 )}
                 {element.type === 'wall' && (
-                  <rect width={w} height={h} fill={color} stroke={isSelected ? "#3b82f6" : "none"} strokeWidth={2} />
+                  <g>
+                    <rect width={w} height={h} fill="#4b5563" stroke={isSelected ? "#3b82f6" : "none"} strokeWidth={2} />
+                    {/* Dimension line */}
+                    <g transform={`translate(0, ${-20})`}>
+                      <path d={`M 0 0 L ${w} 0`} fill="none" stroke="#9ca3af" strokeWidth={1} strokeDasharray="3,3" />
+                      <path d={`M 0 -3 L 0 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                      <path d={`M ${w} -3 L ${w} 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                      <polygon points={`0,0 4,-3 4,3`} fill="#9ca3af" />
+                      <polygon points={`${w},0 ${w-4},-3 ${w-4},3`} fill="#9ca3af" />
+                      <rect x={w/2 - 15} y={-8} width={30} height={16} fill="white" />
+                      <text x={w/2} y={3} fontSize={10} fill="#4b5563" textAnchor="middle" fontWeight="500">{Math.floor(w/10)}' {Math.round(w%10)}"</text>
+                    </g>
+                  </g>
                 )}
                 {element.type === 'door' && (
                   <g>
-                    <rect width={8} height={h} fill={color} />
-                    <rect x={w-8} width={8} height={h} fill={color} />
-                    <path d={`M 8 ${h} Q ${w/2} 0 ${w-8} ${h}`} fill="none" stroke={isSelected ? "#3b82f6" : color} strokeWidth={2} strokeDasharray="4,4" />
+                    {/* Threshold line connecting the opening */}
+                    <line x1={0} y1={0} x2={w} y2={0} stroke="#9ca3af" strokeWidth={1} />
+                    {/* Swing arc (solid line) */}
+                    <path d={`M 4 ${w} A ${w} ${w} 0 0 0 ${w} 0`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                    {/* Door leaf (OPEN 90 degrees DOWN inside bounding box) */}
+                    <rect x={0} y={0} width={4} height={w} fill="#ffffff" stroke="#9ca3af" strokeWidth={1} />
+                  </g>
+                )}
+                {element.type === 'window' && (
+                  <g>
+                    <rect width={w} height={h} fill="#4b5563" />
+                    <rect x={4} y={2} width={(w-8)/2} height={h-4} fill="#e0f2fe" stroke="#0ea5e9" strokeWidth={1} />
+                    <rect x={4 + (w-8)/2} y={2} width={(w-8)/2} height={h-4} fill="#e0f2fe" stroke="#0ea5e9" strokeWidth={1} />
+                  </g>
+                )}
+                {element.type === 'corner_wall' && (
+                  <g>
+                    {/* Vertical part */}
+                    <rect x={0} y={0} width={10} height={h} fill="#4b5563" />
+                    {/* Horizontal part */}
+                    <rect x={0} y={h-10} width={w} height={10} fill="#4b5563" />
+                    
+                    {/* Vertical dimension */}
+                    <g transform={`translate(${-20}, 0)`}>
+                      <path d={`M 0 0 L 0 ${h}`} fill="none" stroke="#9ca3af" strokeWidth={1} strokeDasharray="3,3" />
+                      <path d={`M -3 0 L 3 0`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                      <path d={`M -3 ${h} L 3 ${h}`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                      <polygon points={`0,0 -3,4 3,4`} fill="#9ca3af" />
+                      <polygon points={`0,${h} -3,${h-4} 3,${h-4}`} fill="#9ca3af" />
+                      <rect x={-12} y={h/2 - 15} width={24} height={30} fill="white" />
+                      <text x={0} y={h/2} fontSize={10} fill="#4b5563" textAnchor="middle" dominantBaseline="central" transform={`rotate(-90, 0, ${h/2})`} fontWeight="500">{Math.floor(h/10)}' {Math.round(h%10)}"</text>
+                    </g>
+                  </g>
+                )}
+                {element.type === 'level_marker' && (
+                  <g>
+                    <circle cx={w/2} cy={h/2} r={w/2-2} fill="white" stroke="#4b5563" strokeWidth={1.5} />
+                    <line x1={w/2} y1={0} x2={w/2} y2={h} stroke="#4b5563" strokeWidth={1.5} />
+                    <line x1={0} y1={h/2} x2={w} y2={h/2} stroke="#4b5563" strokeWidth={1.5} />
+                    <circle cx={w/2} cy={h/2} r={3} fill="#4b5563" />
                   </g>
                 )}
                 {element.type === 'partition' && (

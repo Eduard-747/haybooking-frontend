@@ -6,7 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { usePartner } from "@/hooks/usePartner"
 import { toast } from "sonner"
-import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle } from "lucide-react"
+import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle, ArrowRightLeft } from "lucide-react"
 import api from "@/lib/api"
 import { format } from "date-fns"
 
@@ -18,6 +18,8 @@ export default function ReservationsManagementPage() {
   const [tables, setTables] = useState<any[]>([])
   const [date, setDate] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
+  const [reassignDialog, setReassignDialog] = useState<{isOpen: boolean, reservationId: string | null, newTableId: string, reason: string}>({ isOpen: false, reservationId: null, newTableId: "", reason: "" })
+  const [isReassigning, setIsReassigning] = useState(false)
 
   useEffect(() => {
     if (selectedBranchId && partnerId) {
@@ -28,7 +30,7 @@ export default function ReservationsManagementPage() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const dateStr = date.toISOString()
+      const dateStr = format(date, 'yyyy-MM-dd')
       const branchQuery = selectedBranchId ? `&branchId=${selectedBranchId}` : ''
       const partnerQuery = partnerId ? `partnerId=${partnerId}` : ''
       
@@ -56,11 +58,34 @@ export default function ReservationsManagementPage() {
     }
   }
 
+  const handleReassign = async () => {
+    if (!reassignDialog.reservationId || !reassignDialog.newTableId || !reassignDialog.reason) {
+      toast.error("Please fill in all fields")
+      return
+    }
+    setIsReassigning(true)
+    try {
+      await api.patch(`/restaurant/reservations/${reassignDialog.reservationId}/reassign`, {
+        tableId: reassignDialog.newTableId,
+        reason: reassignDialog.reason
+      })
+      toast.success("Table reassigned successfully")
+      setReassignDialog({ isOpen: false, reservationId: null, newTableId: "", reason: "" })
+      loadData()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to reassign table")
+    } finally {
+      setIsReassigning(false)
+    }
+  }
+
   const statusColors: Record<string, string> = {
+    pending: "bg-blue-50 text-blue-700 border-blue-200",
     confirmed: "bg-amber-50 text-amber-700 border-amber-200",
-    seated: "bg-blue-50 text-blue-700 border-blue-200",
+    seated: "bg-purple-50 text-purple-700 border-purple-200",
     completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     cancelled: "bg-red-50 text-red-700 border-red-200",
+    rejected: "bg-red-50 text-red-700 border-red-200",
     no_show: "bg-gray-100 text-gray-500 border-gray-200",
   }
 
@@ -76,7 +101,7 @@ export default function ReservationsManagementPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Reservations</h1>
-                <p className="text-muted-foreground mt-1">Manage today's bookings and seated guests.</p>
+                <p className="text-muted-foreground mt-1">Manage today&apos;s bookings and seated guests.</p>
               </div>
               
               <div className="flex items-center gap-3 bg-white px-4 py-2 border border-border/60 rounded-lg shadow-sm">
@@ -150,6 +175,22 @@ export default function ReservationsManagementPage() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {res.status === 'pending' && (
+                                <>
+                                  <button 
+                                    onClick={() => handleStatusChange(res._id, 'confirmed')}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-colors"
+                                  >
+                                    Approve
+                                  </button>
+                                  <button 
+                                    onClick={() => handleStatusChange(res._id, 'rejected')}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold transition-colors"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
                               {res.status === 'confirmed' && (
                                 <button 
                                   onClick={() => handleStatusChange(res._id, 'seated')}
@@ -168,6 +209,15 @@ export default function ReservationsManagementPage() {
                               )}
                               {(res.status === 'confirmed' || res.status === 'seated') && (
                                 <button 
+                                  onClick={() => setReassignDialog({ isOpen: true, reservationId: res._id, newTableId: res.tableId?._id || "", reason: "" })}
+                                  className="p-1.5 text-muted-foreground hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                                  title="Reassign Table"
+                                >
+                                  <ArrowRightLeft className="h-4 w-4" />
+                                </button>
+                              )}
+                              {(res.status === 'confirmed' || res.status === 'seated' || res.status === 'pending') && (
+                                <button 
                                   onClick={() => handleStatusChange(res._id, 'cancelled')}
                                   className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                                   title="Cancel"
@@ -182,6 +232,63 @@ export default function ReservationsManagementPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Reassign Dialog */}
+            {reassignDialog.isOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+                  <div className="p-6 border-b border-border/40">
+                    <h3 className="text-xl font-bold text-foreground">Reassign Table</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Move this reservation to another table.</p>
+                  </div>
+                  
+                  <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">New Table</label>
+                      <select 
+                        value={reassignDialog.newTableId}
+                        onChange={(e) => setReassignDialog(prev => ({...prev, newTableId: e.target.value}))}
+                        className="w-full h-10 px-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                      >
+                        <option value="" disabled>Select a table</option>
+                        {tables.map(t => (
+                          <option key={t._id} value={t._id}>{t.tableNumber} (Capacity: {t.capacity})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">Reason for Reassignment</label>
+                      <textarea
+                        value={reassignDialog.reason}
+                        onChange={(e) => setReassignDialog(prev => ({...prev, reason: e.target.value}))}
+                        placeholder="e.g. Previous table had a leak, accommodating a larger group..."
+                        className="w-full h-24 p-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none"
+                      />
+                      <p className="text-xs text-muted-foreground">This reason will be sent to the customer.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 border-t border-border/40 flex justify-end gap-3 bg-[#FAFAFA]/50">
+                    <button
+                      onClick={() => setReassignDialog({ isOpen: false, reservationId: null, newTableId: "", reason: "" })}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-foreground bg-white border border-border/60 hover:bg-gray-50 transition-colors"
+                      disabled={isReassigning}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleReassign}
+                      disabled={isReassigning || !reassignDialog.newTableId || !reassignDialog.reason.trim()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#E5555E] hover:bg-[#D4444D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isReassigning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />}
+                      Reassign
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

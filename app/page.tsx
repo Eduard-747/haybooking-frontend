@@ -232,7 +232,7 @@ export default function HomePage() {
               </h2>
               {searchQuery && (
                 <p className="text-foreground text-sm font-medium mb-3">
-                  {t("common.showingResultsFor")} "{searchQuery}"
+                  {t("common.showingResultsFor")} &quot;{searchQuery}&quot;
                 </p>
               )}
               {activeCategory !== "All" && !searchQuery && (

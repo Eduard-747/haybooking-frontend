@@ -17,6 +17,10 @@ export function RestaurantCustomerApp({
   setSelectedDate,
   selectedTime,
   setSelectedTime,
+  selectedEndTime,
+  setSelectedEndTime,
+  reservationNotes,
+  setReservationNotes,
   partySize,
   setPartySize,
   floors,
@@ -29,7 +33,7 @@ export function RestaurantCustomerApp({
   const [activeTab, setActiveTab] = useState<"overview" | "book" | "menu" | "reviews">("book")
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
       <BusinessHero
         name={partner.businessName}
         image={partner.image}
@@ -42,7 +46,7 @@ export function RestaurantCustomerApp({
         onViewChange={() => {}}
       />
 
-      <div className="max-w-5xl mx-auto px-4 mt-8">
+      <div className="mt-8">
         
         {/* Branch Selector (if multiple) */}
         {branches.length > 1 && (
@@ -113,7 +117,7 @@ export function RestaurantCustomerApp({
         </div>
 
         {/* Tab Contents */}
-        <div className="pb-32">
+        <div className="pb-8">
           {activeTab === "overview" && (
             <OverviewTab partner={partner} branches={branches} />
           )}
@@ -127,6 +131,10 @@ export function RestaurantCustomerApp({
               setSelectedDate={setSelectedDate}
               selectedTime={selectedTime}
               setSelectedTime={setSelectedTime}
+              selectedEndTime={selectedEndTime}
+              setSelectedEndTime={setSelectedEndTime}
+              reservationNotes={reservationNotes}
+              setReservationNotes={setReservationNotes}
               partySize={partySize}
               setPartySize={setPartySize}
               floors={floors}

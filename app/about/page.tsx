@@ -13,7 +13,7 @@ export default function AboutPage() {
         </div>
         <h1 className="text-4xl font-extrabold text-foreground tracking-tight">About Us</h1>
         <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto">
-          We're actively working on this page. Our team is crafting something special for you. Please check back later!
+          We&apos;re actively working on this page. Our team is crafting something special for you. Please check back later!
         </p>
         <div className="pt-8">
           <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#E5555E] text-white text-sm font-bold rounded-xl hover:bg-[#d64c54] transition-colors shadow-sm">

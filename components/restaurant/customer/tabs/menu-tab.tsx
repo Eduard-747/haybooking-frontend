@@ -14,7 +14,7 @@ export function MenuTab({ partnerId, branchId }: { partnerId: string, branchId: 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const query = branchId ? `?branchId=${branchId}` : `?partnerId=${partnerId}`
+        const query = branchId ? `?branchId=${branchId}&partnerId=${partnerId}` : `?partnerId=${partnerId}`
         const res = await api.get(`/restaurant/menu${query}`)
         setMenuItems(res.data)
       } catch (err) {
@@ -39,7 +39,7 @@ export function MenuTab({ partnerId, branchId }: { partnerId: string, branchId: 
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-gray-50 rounded-2xl border border-dashed border-border/60">
         <UtensilsCrossed className="h-12 w-12 mb-4 opacity-50" />
         <h3 className="text-lg font-bold text-foreground">Menu Coming Soon</h3>
-        <p className="text-sm">This restaurant hasn't uploaded their digital menu yet.</p>
+        <p className="text-sm">This restaurant hasn&apos;t uploaded their digital menu yet.</p>
       </div>
     )
   }

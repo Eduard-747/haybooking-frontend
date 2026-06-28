@@ -71,14 +71,14 @@ export function RestaurantDashboard() {
           <div className="max-w-6xl mx-auto space-y-8">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Restaurant Dashboard</h1>
-              <p className="text-muted-foreground mt-2">Welcome back. Here's what's happening at your restaurant today.</p>
+              <p className="text-muted-foreground mt-2">Welcome back. Here&apos;s what&apos;s happening at your restaurant today.</p>
             </div>
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Stat Cards */}
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">Today's Bookings</h3>
+                  <h3 className="font-semibold text-muted-foreground">Today&apos;s Bookings</h3>
                   <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
                     <CalendarCheck className="h-5 w-5 text-blue-500" />
                   </div>

@@ -19,7 +19,7 @@ function DragItem({
 }: {
   label?: string
   payload: object
-  onClick: () => void
+  onClick?: () => void
   children: React.ReactNode
 }) {
   return (

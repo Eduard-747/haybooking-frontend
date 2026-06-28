@@ -78,7 +78,7 @@ export function FloorPlanCanvas({
   const height = floor?.dimensions?.height || 2000
 
   // Coordinate Conversion
-  const getMousePos = (e: React.PointerEvent | PointerEvent) => {
+  const getMousePos = (e: { clientX: number; clientY: number }) => {
     if (!svgRef.current) return { x: 0, y: 0 }
     const CTM = svgRef.current.getScreenCTM()
     if (!CTM) return { x: 0, y: 0 }
@@ -89,7 +89,7 @@ export function FloorPlanCanvas({
   }
 
   // Get position relative to the scaled/panned workspace
-  const getWorkspacePos = (e: React.PointerEvent | PointerEvent) => {
+  const getWorkspacePos = (e: { clientX: number; clientY: number }) => {
     const pos = getMousePos(e)
     return {
       x: (pos.x - pan.x) / scale,
@@ -130,7 +130,7 @@ export function FloorPlanCanvas({
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (isPanning) {
-      onPanChange({
+      onPanChange?.({
         x: e.clientX - panStart.current.x,
         y: e.clientY - panStart.current.y
       })
@@ -800,7 +800,7 @@ export function FloorPlanCanvas({
                       <polygon points={`0,0 4,-3 4,3`} fill="#9ca3af" />
                       <polygon points={`${w},0 ${w-4},-3 ${w-4},3`} fill="#9ca3af" />
                       <rect x={w/2 - 15} y={-8} width={30} height={16} fill="white" />
-                      <text x={w/2} y={3} fontSize={10} fill="#4b5563" textAnchor="middle" fontWeight="500">{Math.floor(w/10)}' {Math.round(w%10)}"</text>
+                      <text x={w/2} y={3} fontSize={10} fill="#4b5563" textAnchor="middle" fontWeight="500">{Math.floor(w/10)}&apos; {Math.round(w%10)}&quot;</text>
                     </g>
                   </g>
                 )}
@@ -836,7 +836,7 @@ export function FloorPlanCanvas({
                       <polygon points={`0,0 -3,4 3,4`} fill="#9ca3af" />
                       <polygon points={`0,${h} -3,${h-4} 3,${h-4}`} fill="#9ca3af" />
                       <rect x={-12} y={h/2 - 15} width={24} height={30} fill="white" />
-                      <text x={0} y={h/2} fontSize={10} fill="#4b5563" textAnchor="middle" dominantBaseline="central" transform={`rotate(-90, 0, ${h/2})`} fontWeight="500">{Math.floor(h/10)}' {Math.round(h%10)}"</text>
+                      <text x={0} y={h/2} fontSize={10} fill="#4b5563" textAnchor="middle" dominantBaseline="central" transform={`rotate(-90, 0, ${h/2})`} fontWeight="500">{Math.floor(h/10)}&apos; {Math.round(h%10)}&quot;</text>
                     </g>
                   </g>
                 )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Bell, Check, Clock } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -26,7 +26,7 @@ export function ClientNotificationsPopover() {
 
   const dateLocale = i18n.language === 'am' ? hy : i18n.language === 'ru' ? ru : enUS
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return
     try {
       const res = await api.get(`/notifications/user`)
@@ -34,20 +34,20 @@ export function ClientNotificationsPopover() {
     } catch (err) {
       console.error("Failed to fetch notifications", err)
     }
-  }
+  }, [user])
 
   // Fetch on mount and when popover opens
   useEffect(() => {
     if (user) {
       fetchNotifications()
     }
-  }, [user])
+  }, [user, fetchNotifications])
 
   useEffect(() => {
     if (isOpen) {
       fetchNotifications()
     }
-  }, [isOpen])
+  }, [isOpen, fetchNotifications])
 
   const markAsRead = async (id: string) => {
     if (!user) return

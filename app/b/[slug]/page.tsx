@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { MapPin, Info, Calendar, Phone, Clock, CheckSquare, Map, Coffee } from "lucide-react"
+import { format } from "date-fns"
 
 import { BookingHeader } from "@/components/booking/booking-header"
 import { BookingFooter } from "@/components/booking/booking-footer"
@@ -18,6 +19,7 @@ import { DateTimePicker } from "@/components/booking/date-time-picker"
 import { formatPrice } from "@/lib/currency"
 import { useCountryCode } from "@/lib/hooks/use-country-code"
 import { RestaurantCustomerApp } from "@/components/restaurant/customer/restaurant-customer-app"
+import { BranchSelector } from "@/components/booking/branch-selector"
 
 // Dynamic import for map to avoid SSR
 import dynamic from "next/dynamic"
@@ -45,6 +47,7 @@ interface BranchData {
   location?: { latitude: number; longitude: number }
   workingHours: { weekday: number; openTime: string; closeTime: string }[]
   breaks?: { weekday: number; startTime: string; endTime: string }[]
+  gallery?: string[]
 }
 
 interface ServiceData {
@@ -88,7 +91,7 @@ export default function PublicBookingPage() {
 
   const { t } = useTranslation()
   const initialTab = searchParams.get("tab") === "about" ? "about" : "book"
-  const [activeTab, setActiveTab] = useState<"book" | "about">(initialTab)
+  const [activeTab, setActiveTab] = useState<"book" | "about" | "menu" | "gallery">(initialTab)
 
   // Selections
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null)
@@ -99,8 +102,11 @@ export default function PublicBookingPage() {
   const [menuItems, setMenuItems] = useState<any[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [selectedEndTime, setSelectedEndTime] = useState<string | null>(null)
+  const [reservationNotes, setReservationNotes] = useState<string>("")
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   // Guest Checkout State
   const [showGuestModal, setShowGuestModal] = useState(false)
@@ -205,9 +211,9 @@ export default function PublicBookingPage() {
         return
       }
       try {
-        const dateStr = selectedDate.toISOString()
+        const dateStr = format(selectedDate, 'yyyy-MM-dd')
         
-        if (partner?.businessType === "restaurant") {
+        if (partner?.businessType === "restaurant" || partner?.category === "Restaurant") {
           const [fRes, tRes, rRes] = await Promise.all([
             api.get(`/restaurant/floors?branchId=${selectedBranch}`),
             api.get(`/restaurant/tables?branchId=${selectedBranch}`),
@@ -337,7 +343,21 @@ export default function PublicBookingPage() {
         parseInt(mm, 10),
         0
       )
-      const endTime = new Date(startTime.getTime() + (isRestaurant ? 120 : totalDuration) * 60000)
+      
+      let endTime: Date;
+      if (isRestaurant && selectedEndTime) {
+        const [ehh, emm] = selectedEndTime.split(':')
+        endTime = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          parseInt(ehh, 10),
+          parseInt(emm, 10),
+          0
+        )
+      } else {
+        endTime = new Date(startTime.getTime() + (isRestaurant ? 120 : totalDuration) * 60000)
+      }
 
       let userId = "000000000000000000000000"
       try {
@@ -362,7 +382,8 @@ export default function PublicBookingPage() {
           tableId: finalTable,
           floorId: restaurantTables.find(t => t._id === finalTable)?.floorId,
           partySize,
-          date: startTime.toISOString(),
+          notes: reservationNotes,
+          date: format(selectedDate, 'yyyy-MM-dd'),
           source: 'online'
         }
       } else {
@@ -384,13 +405,7 @@ export default function PublicBookingPage() {
       await api.post(endpoint, payload)
       toast.success("Booking submitted! 🎉")
       setShowGuestModal(false)
-      // If guest, show a generic success message or redirect to a guest success page
-      if (!user) {
-        toast.success("We've sent a confirmation to your email.")
-        setTimeout(() => window.location.reload(), 2000)
-      } else {
-        router.push("/client/bookings")
-      }
+      setIsSuccess(true)
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit booking")
     } finally {
@@ -456,8 +471,32 @@ export default function PublicBookingPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-foreground">Business not found</h1>
-        <p className="text-muted-foreground">The business you're looking for doesn't exist.</p>
+        <p className="text-muted-foreground">The business you&apos;re looking for doesn&apos;t exist.</p>
         <button onClick={() => router.push('/')} className="text-[#E5555E] font-medium hover:underline">Go Home</button>
+      </div>
+    )
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col relative">
+        <BookingHeader />
+        <main className="flex-1 w-full flex flex-col items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-500">
+           <div className="bg-emerald-50 rounded-full p-4 mb-6">
+             <CheckSquare className="h-12 w-12 text-emerald-500" />
+           </div>
+           <h1 className="text-3xl font-bold text-foreground mb-3 text-center">Reservation Submitted!</h1>
+           <p className="text-muted-foreground text-center max-w-md mb-8">
+             Your request has been sent successfully. You will receive a confirmation once the business approves your booking.
+           </p>
+           <button 
+             onClick={() => window.location.reload()}
+             className="px-6 py-3 bg-[#E5555E] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
+           >
+             Make Another Booking
+           </button>
+        </main>
+        <BookingFooter />
       </div>
     )
   }
@@ -468,26 +507,45 @@ export default function PublicBookingPage() {
       
       <main className="flex-1 w-full flex flex-col items-center">
         {isRestaurant ? (
-          <RestaurantCustomerApp
-            partner={partner}
-            branches={branches}
-            selectedBranch={selectedBranch}
-            onBranchSelect={handleBranchSelect}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            selectedTime={selectedTime}
-            setSelectedTime={setSelectedTime}
-            partySize={partySize}
-            setPartySize={setPartySize}
-            floors={restaurantFloors}
-            tables={restaurantTables}
-            reservations={restaurantReservations}
-            bookedSlots={bookedSlots}
-            onBookTable={(id: string) => {
-              setSelectedTableId(id)
-              handleConfirm(id)
-            }}
-          />
+          (branches.length > 1 && !selectedBranch) ? (
+            <div className="w-full max-w-5xl mx-auto px-4 py-8 space-y-12">
+              <BusinessHero
+                name={partner.businessName}
+                image={partner.image}
+                rating={4.9}
+                reviewCount={124}
+                address={t("book.multipleLocations", "Multiple Locations")}
+                status={t("book.openNow", "Open Now")}
+                estimatedWait={t("book.waitDesc", "5 - 10 Minutes")}
+              />
+              <BranchSelector branches={branches} onSelect={setSelectedBranch} />
+            </div>
+          ) : (
+            <RestaurantCustomerApp
+              partner={partner}
+              branches={branches}
+              selectedBranch={selectedBranch}
+              onBranchSelect={handleBranchSelect}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              selectedTime={selectedTime}
+              setSelectedTime={setSelectedTime}
+              selectedEndTime={selectedEndTime}
+              setSelectedEndTime={setSelectedEndTime}
+              reservationNotes={reservationNotes}
+              setReservationNotes={setReservationNotes}
+              partySize={partySize}
+              setPartySize={setPartySize}
+              floors={restaurantFloors}
+              tables={restaurantTables}
+              reservations={restaurantReservations}
+              bookedSlots={bookedSlots}
+              onBookTable={(id: string) => {
+                setSelectedTableId(id)
+                handleConfirm(id)
+              }}
+            />
+          )
         ) : (
           <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
             <BusinessHero
@@ -495,126 +553,88 @@ export default function PublicBookingPage() {
               image={partner.image}
               rating={4.9}
               reviewCount={124}
-              address={branches[0]?.address?.city || t("book.onlineBooking", "Online Booking")}
+              address={selectedBranch ? (branches.find(b => b._id === selectedBranch)?.address?.city || t("book.onlineBooking", "Online Booking")) : t("book.multipleLocations", "Multiple Locations")}
               status={t("book.openNow", "Open Now")}
               estimatedWait={t("book.waitDesc", "5 - 10 Minutes")}
               viewMode={viewMode}
               onViewChange={setViewMode}
             />
 
-            {/* Tab Navigation */}
-            <div className="mt-8 mb-6 flex gap-1 p-1 bg-white rounded-xl border border-border/60 w-fit">
-          <button
-            onClick={() => setActiveTab("book")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === "book"
-                ? "bg-[#E5555E] text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-            }`}
-          >
-            <Calendar className="h-4 w-4" />
-            {isRestaurant ? t("role.bookTable", "Book Table") : t("role.customerDesc", "Book Appointment")}
-          </button>
-          <button
-            onClick={() => setActiveTab("about")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === "about"
-                ? "bg-[#E5555E] text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-            }`}
-          >
-            <Info className="h-4 w-4" />
-            {t("book.businessInfo", "Business Information")}
-          </button>
-          
-          {isRestaurant && (
-            <>
-              <button
-                onClick={() => setActiveTab("menu")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === "menu"
-                    ? "bg-[#E5555E] text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                }`}
-              >
-                <Info className="h-4 w-4" />
-                Menu
-              </button>
-              <button
-                onClick={() => setActiveTab("gallery")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === "gallery"
-                    ? "bg-[#E5555E] text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                }`}
-              >
-                <Info className="h-4 w-4" />
-                Gallery
-              </button>
-            </>
-          )}
-        </div>
-
-        {viewMode === "map" && (
-          <div className="mt-8 mb-10 h-[400px] w-full rounded-2xl overflow-hidden border border-border/60 shadow-sm relative z-0">
-            {mapMarkers.length > 0 ? (
-              <BranchMapOverview 
-                markers={mapMarkers} 
-                onMarkerClick={(id) => {
-                  handleBranchSelect(id);
-                  toast.success("Branch selected!");
-                  setViewMode("list");
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[#FAFAFA] text-muted-foreground">
-                No location data available for map view.
+            {(branches.length > 1 && !selectedBranch) ? (
+              <div className="mt-12">
+                <BranchSelector branches={branches} onSelect={setSelectedBranch} />
               </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "book" && viewMode === "list" && (
-          <div className="mt-8 space-y-10">
-            {/* Branch Selection Section */}
-            {branches.length > 0 && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">1</div>
-                  <h2 className="text-lg font-bold text-foreground">{t("book.selectBranch")}</h2>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {branches.map(b => (
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full mt-8 mb-6">
+                  {/* Tab Navigation */}
+                  <div className="flex gap-1 p-1 bg-white rounded-xl border border-border/60 w-fit">
                     <button
-                      key={b._id}
-                      onClick={() => handleBranchSelect(b._id)}
-                      className={`flex items-start gap-4 p-4 rounded-xl border transition-all text-left ${
-                        selectedBranch === b._id
-                          ? 'border-[#E5555E] bg-[#FDF6F6]'
-                          : 'border-border/60 hover:border-[#C69C9B] hover:bg-[#FAFAFA]'
+                      onClick={() => setActiveTab("book")}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === "book"
+                          ? "bg-[#E5555E] text-white shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
                       }`}
                     >
-                      <div className="h-10 w-10 rounded-lg bg-[#F5EAEA] flex items-center justify-center shrink-0 mt-0.5">
-                        <MapPin className="h-5 w-5 text-[#C69C9B]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-foreground truncate">
-                          {b.address.line1}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">{b.address.city}, {b.address.country}</p>
-                        {b.phoneNumbers && b.phoneNumbers.length > 0 ? (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {b.phoneNumbers[0]} {b.phoneNumbers.length > 1 && `(+${b.phoneNumbers.length - 1})`}
-                          </p>
-                        ) : (b.phoneNumber && (
-                          <p className="text-xs text-muted-foreground mt-1">{b.phoneNumber}</p>
-                        ))}
-                      </div>
+                      <Calendar className="h-4 w-4" />
+                      {isRestaurant ? t("role.bookTable", "Book Table") : t("role.customerDesc", "Book Appointment")}
                     </button>
-                  ))}
+                    <button
+                      onClick={() => setActiveTab("about")}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === "about"
+                          ? "bg-[#E5555E] text-white shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                      }`}
+                    >
+                      <Info className="h-4 w-4" />
+                      {t("book.businessInfo", "Business Information")}
+                    </button>
+                    
+                    {isRestaurant && (
+                      <>
+                        <button
+                          onClick={() => setActiveTab("menu")}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            activeTab === "menu"
+                              ? "bg-[#E5555E] text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                          }`}
+                        >
+                          <Info className="h-4 w-4" />
+                          Menu
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("gallery")}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            activeTab === "gallery"
+                              ? "bg-[#E5555E] text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                          }`}
+                        >
+                          <Info className="h-4 w-4" />
+                          Gallery
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  
+                  {branches.length > 1 && (
+                    <button 
+                      onClick={() => {
+                        setSelectedBranch(null);
+                        setActiveTab("book");
+                      }} 
+                      className="text-sm font-medium text-[#E5555E] hover:underline"
+                    >
+                      Change Location
+                    </button>
+                  )}
                 </div>
-              </div>
-            )}
+
+                {activeTab === "book" && (
+                  <div className="space-y-10">
 
             {/* Services Section (Hidden for Restaurants) */}
             {!isRestaurant && (!branches.length || selectedBranch) && (
@@ -956,6 +976,8 @@ export default function PublicBookingPage() {
             })()}
           </div>
         )}
+              </>
+            )}
           </div>
         )}
       </main>

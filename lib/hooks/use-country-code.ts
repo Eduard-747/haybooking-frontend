@@ -60,6 +60,8 @@ export function useCountryCode(initialCode: string = "+1") {
               code: fetchedCode,
               country: isoCode,
               flag: getFlagEmoji(isoCode),
+              name: isoCode,
+              placeholder: ""
             },
           ]
         }

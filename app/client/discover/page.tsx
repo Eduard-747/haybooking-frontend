@@ -254,7 +254,7 @@ function DiscoverContent() {
             {searchQuery ? (
               <p className="text-muted-foreground mt-1 flex items-center gap-2">
                 <SearchIcon className="h-4 w-4" />
-                {t("common.showingResultsFor", "Results for")} "<span className="font-semibold text-foreground">{searchQuery}</span>"
+                {t("common.showingResultsFor", "Results for")} &quot;<span className="font-semibold text-foreground">{searchQuery}</span>&quot;
               </p>
             ) : (
               <p className="text-muted-foreground mt-1">{t("landing.browseTopRated", "Browse the top-rated professionals in your area")}</p>

@@ -605,7 +605,7 @@ export default function FloorPlanPage() {
                     selectedTable={selectedTable}
                     onUpdate={(updates) => handleUpdateTable(selectedTable._id || selectedTable.id, updates, true)}
                     onDelete={() => handleDeleteTable(selectedTable._id || selectedTable.id)}
-                    onDeselect={() => setSelectedElementId(null)}
+                    onDeselect={() => setSelectedElementIds([])}
                   />
                 )}
 
@@ -613,7 +613,7 @@ export default function FloorPlanPage() {
                   <div className="absolute top-4 right-4 w-80 bg-white border border-border/60 shadow-xl rounded-xl flex flex-col z-20">
                     <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA] rounded-t-xl">
                       <h3 className="font-bold text-foreground capitalize">{selectedElement.type.replace('_', ' ')} Properties</h3>
-                      <button onClick={() => setSelectedElementId(null)} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
+                      <button onClick={() => setSelectedElementIds([])} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
                     </div>
                     <div className="p-4 space-y-4">
                        <div className="grid grid-cols-2 gap-4">
@@ -654,7 +654,7 @@ export default function FloorPlanPage() {
                   <div className="absolute top-4 right-4 w-80 bg-white border border-border/60 shadow-xl rounded-xl flex flex-col z-20">
                      <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA] rounded-t-xl">
                         <h3 className="font-bold text-foreground">Area Properties</h3>
-                        <button onClick={() => setSelectedElementId(null)} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
+                        <button onClick={() => setSelectedElementIds([])} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
                       </div>
                       <div className="p-4 space-y-4">
                         <div className="space-y-2">
@@ -688,7 +688,7 @@ export default function FloorPlanPage() {
                             if (window.confirm("Delete this area?")) {
                               handleUpdateArea(selectedArea.id, { deleted: true }) // Actually remove it from array
                               setFloors(floors.map(f => f._id === activeFloorId ? { ...f, areas: f.areas.filter((a: any) => a.id !== selectedArea.id) } : f))
-                              setSelectedElementId(null)
+                              setSelectedElementIds([])
                             }
                           }}
                           className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-semibold transition-colors"

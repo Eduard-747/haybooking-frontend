@@ -1,8 +1,24 @@
 "use client"
 
 import { useState } from "react"
-import { PaintBucket, Layers } from "lucide-react"
-import { ColorPalette } from "./color-palette"
+import { 
+  ChevronDown, ChevronRight, LayoutPanelTop, Search, 
+  Move3d, Trees, UtensilsCrossed, MonitorSpeaker, Tags,
+  Square, CornerRightDown, CircleDashed, SeparatorHorizontal, Grid2X2, DoorClosed, DoorOpen, ArrowLeftRight, Maximize, Rainbow, Cylinder, MoveUp,
+  Circle, RectangleHorizontal, Sofa, GlassWater, Martini, PenTool, Armchair, Wine, ConciergeBell, Banknote, Soup, Shirt, Archive,
+  ChefHat, Flame, Microwave, Droplet, Snowflake, Waves, LayoutGrid, Table, Bath, User, Accessibility, Wrench, ArrowUpDown,
+  Flower2, TreePine, Umbrella, Grid3X3, LayoutDashboard, Sun, Tag,
+  Minus, TrendingUp, XSquare, ArrowUpRight, Pill, Link, MoveHorizontal, FoldHorizontal, Coffee, Users, Baby, PartyPopper
+} from "lucide-react"
+import { 
+  RoundTableIcon, SquareTableIcon, RectangleTableIcon, OvalTableIcon, CapsuleTableIcon, BarTableIcon, HighTableIcon, BoothIcon, CustomTableIcon,
+  TwoSeatTableIcon, FourSeatTableIcon, SixSeatTableIcon, ConnectableTableIcon, ExpandableTableIcon, FoldableTableIcon,
+  CoffeeTableIcon, SofaTableIcon, BenchSeatingIcon, UShapedBoothIcon, CornerBoothIcon, BanquetteIcon,
+  BarCounterIcon, BarTable2Icon, HighTable2Icon, BarStoolIcon,
+  PatioTableIcon, UmbrellaTableIcon, PicnicTableIcon, GardenTableIcon,
+  ChefTableIcon, PrivateDiningIcon, EventTableIcon,
+  WoodenChairIcon, ArmchairIcon, SofaSeatIcon, BabyChairIcon 
+} from "./floor-plan-icons"
 
 interface Props {
   onAddTable: (shape: string, capacity: number, presetColor?: string) => void
@@ -13,273 +29,208 @@ interface Props {
 
 function DragItem({
   label,
+  icon,
   payload,
   onClick,
-  children,
+  badge,
 }: {
-  label?: string
+  label: string
+  icon?: React.ReactNode
   payload: object
   onClick?: () => void
-  children: React.ReactNode
+  badge?: string
 }) {
   return (
-    <button
+    <div
       draggable
       onDragStart={(e) => e.dataTransfer.setData("floor-plan-item", JSON.stringify(payload))}
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-gray-50 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all duration-150 cursor-grab active:cursor-grabbing active:scale-95"
+      className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing transition-colors group"
     >
-      {children}
-      {label && <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight">{label}</span>}
-    </button>
-  )
-}
-
-/* ── 3D Realistic Table Icons ── */
-
-function ChairIcon({ className }: { className: string }) {
-  return (
-    <div className={`absolute w-[14px] h-[12px] rounded-sm bg-[#e6dbcc] shadow-[0_2px_4px_rgba(0,0,0,0.3)] border border-[#a4937e] ${className}`} />
-  )
-}
-
-function TableWood({ className, children, style }: { className: string, children?: React.ReactNode, style?: React.CSSProperties }) {
-  return (
-    <div className={`bg-gradient-to-br from-[#8a5a3a] via-[#613c23] to-[#402615] shadow-[0_4px_8px_rgba(0,0,0,0.5)] border border-[#301a0e] relative z-10 flex items-center justify-center overflow-hidden ${className}`} style={style}>
-      {/* Wood grain highlight */}
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,0.1) 2px,rgba(255,255,255,0.1) 3px)' }} />
-      {children}
-    </div>
-  )
-}
-
-function Round2() {
-  return (
-    <div className="relative w-12 h-12 flex items-center justify-center">
-      <TableWood className="w-8 h-8 rounded-full" />
-      <ChairIcon className="left-0 top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-0 top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-    </div>
-  )
-}
-
-function Round4() {
-  return (
-    <div className="relative w-14 h-14 flex items-center justify-center">
-      <TableWood className="w-10 h-10 rounded-full" />
-      <ChairIcon className="left-0 top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-0 top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="top-0 left-1/2 -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="bottom-0 left-1/2 -translate-x-1/2 rounded-b-md h-1.5" />
-    </div>
-  )
-}
-
-function Oval6() {
-  return (
-    <div className="relative w-[70px] h-12 flex items-center justify-center">
-      <TableWood className="w-[50px] h-8" style={{ borderRadius: '50%' }} />
-      <ChairIcon className="left-0 top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-0 top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="top-0 left-[35%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="top-0 left-[65%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[35%] -translate-x-1/2 rounded-b-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[65%] -translate-x-1/2 rounded-b-md h-1.5" />
-    </div>
-  )
-}
-
-function Square4() {
-  return (
-    <div className="relative w-12 h-12 flex items-center justify-center">
-      <TableWood className="w-8 h-8 rounded-md" />
-      <ChairIcon className="left-0 top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-0 top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="top-0 left-1/2 -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="bottom-0 left-1/2 -translate-x-1/2 rounded-b-md h-1.5" />
-    </div>
-  )
-}
-
-function Rect6() {
-  return (
-    <div className="relative w-[60px] h-12 flex items-center justify-center">
-      <TableWood className="w-[44px] h-8 rounded-md" />
-      <ChairIcon className="left-[2px] top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-[2px] top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="top-0 left-[35%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="top-0 left-[65%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[35%] -translate-x-1/2 rounded-b-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[65%] -translate-x-1/2 rounded-b-md h-1.5" />
-    </div>
-  )
-}
-
-function Rect8() {
-  return (
-    <div className="relative w-[70px] h-12 flex items-center justify-center">
-      <TableWood className="w-[54px] h-8 rounded-md" />
-      <ChairIcon className="left-[2px] top-1/2 -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-[2px] top-1/2 -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="top-0 left-[25%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="top-0 left-[50%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="top-0 left-[75%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[25%] -translate-x-1/2 rounded-b-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[50%] -translate-x-1/2 rounded-b-md h-1.5" />
-      <ChairIcon className="bottom-0 left-[75%] -translate-x-1/2 rounded-b-md h-1.5" />
-    </div>
-  )
-}
-
-function UConfIcon() {
-  return (
-    <div className="relative w-[70px] h-[70px] flex items-center justify-center">
-      <div className="absolute top-1 left-3 bottom-1 w-3 bg-gradient-to-br from-[#8a5a3a] via-[#613c23] to-[#402615] shadow-sm border border-[#301a0e]" />
-      <div className="absolute top-1 right-3 bottom-1 w-3 bg-gradient-to-br from-[#8a5a3a] via-[#613c23] to-[#402615] shadow-sm border border-[#301a0e]" />
-      <div className="absolute top-1 left-3 right-3 h-3 bg-gradient-to-br from-[#8a5a3a] via-[#613c23] to-[#402615] shadow-sm border border-[#301a0e]" />
-      <ChairIcon className="top-0 left-[35%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="top-0 left-[65%] -translate-x-1/2 rounded-t-md h-1.5" />
-      <ChairIcon className="left-1 top-[35%] -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="left-1 top-[65%] -translate-y-1/2 rounded-l-md w-1.5" />
-      <ChairIcon className="right-1 top-[35%] -translate-y-1/2 rounded-r-md w-1.5" />
-      <ChairIcon className="right-1 top-[65%] -translate-y-1/2 rounded-r-md w-1.5" />
-    </div>
-  )
-}
-
-/* ── Architecture Icons ── */
-
-function WallIcon() {
-  return <div className="w-8 h-2.5 bg-[#4b5563] shadow-sm rounded-[1px] border border-[#374151]" />
-}
-
-function DoorIcon() {
-  return (
-    <div className="w-6 h-8 bg-[#8a5a3a] border border-[#613c23] shadow-sm rounded-[2px] relative">
-      <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-600 rounded-full" />
-    </div>
-  )
-}
-
-function WindowIcon() {
-  return (
-    <div className="w-8 h-8 bg-[#8a7f72] p-[2px] shadow-sm rounded-[2px] flex">
-      <div className="flex-1 bg-[#e0f2fe] border-r border-[#8a7f72]" />
-      <div className="flex-1 bg-[#e0f2fe]" />
-    </div>
-  )
-}
-
-function CornerWallIcon() {
-  return (
-    <div className="w-8 h-8 relative">
-      <div className="absolute top-0 left-0 w-2.5 h-8 bg-[#4b5563] rounded-[1px] shadow-sm border border-[#374151]" />
-      <div className="absolute top-0 left-0 w-8 h-2.5 bg-[#4b5563] rounded-[1px] shadow-sm border border-[#374151]" />
-    </div>
-  )
-}
-
-function LevelMarkerIcon() {
-  return (
-    <div className="w-8 h-8 relative flex items-center justify-center">
-      <div className="absolute w-5 h-5 border border-gray-600 rounded-full" />
-      <div className="absolute w-full h-[1px] bg-gray-600" />
-      <div className="absolute h-full w-[1px] bg-gray-600" />
-    </div>
-  )
-}
-
-export function FloorPlanSidebar({ onAddTable, activeColor, onColorChange }: Props) {
-  const [showPalette, setShowPalette] = useState(false)
-
-  return (
-    <div className="absolute top-4 left-4 bottom-4 w-[168px] bg-white shadow-xl rounded-2xl flex flex-col z-20 border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100 bg-white shrink-0">
-        <h2 className="text-[13px] font-bold text-gray-800 tracking-tight">Builder</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-6">
-        
-        {/* ── ARCHITECTURE ── */}
-        <div>
-          <h3 className="text-[11px] font-bold text-gray-800 uppercase tracking-wider mb-3 px-1">Architecture</h3>
-          <div className="grid grid-cols-2 gap-2">
-            <DragItem label="Wall" payload={{ category: 'element', type: 'wall', width: 100, height: 10 }}>
-              <WallIcon />
-            </DragItem>
-            <DragItem label="Door" payload={{ category: 'element', type: 'door', width: 40, height: 40 }}>
-              <DoorIcon />
-            </DragItem>
-            <DragItem label="Window" payload={{ category: 'element', type: 'window', width: 60, height: 10 }}>
-              <WindowIcon />
-            </DragItem>
-            <DragItem label="Corner Wall" payload={{ category: 'element', type: 'corner_wall', width: 60, height: 60 }}>
-              <CornerWallIcon />
-            </DragItem>
-            <DragItem label="Level Marker" payload={{ category: 'element', type: 'level_marker', width: 40, height: 40 }}>
-              <LevelMarkerIcon />
-            </DragItem>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="w-6 h-6 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+          {icon || <div className="w-2 h-2 rounded-full bg-gray-400 group-hover:bg-blue-500 transition-colors" />}
         </div>
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+      </div>
+      {badge && (
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded text-violet-600 border border-violet-300 bg-violet-50 tracking-wider">
+          {badge}
+        </span>
+      )}
+    </div>
+  )
+}
 
-        {/* ── REALISTIC TABLES ── */}
-        <div>
-          <h3 className="text-[11px] font-bold text-gray-800 uppercase tracking-wider mb-3 px-1">Tables</h3>
-          <div className="grid grid-cols-2 gap-2">
-          <DragItem label="Round 2" payload={{ category: 'table', shape: 'round', capacity: 2 }} onClick={() => onAddTable('round', 2)}>
-            <Round2 />
-          </DragItem>
-          <DragItem label="Square 4" payload={{ category: 'table', shape: 'square', capacity: 4 }} onClick={() => onAddTable('square', 4)}>
-            <Square4 />
-          </DragItem>
-          
-          <DragItem label="Round 4" payload={{ category: 'table', shape: 'round', capacity: 4 }} onClick={() => onAddTable('round', 4)}>
-            <Round4 />
-          </DragItem>
-          <DragItem label="Oval 6" payload={{ category: 'table', shape: 'oval', capacity: 6 }} onClick={() => onAddTable('oval', 6)}>
-            <Oval6 />
-          </DragItem>
-
-          <DragItem label="Rect 6" payload={{ category: 'table', shape: 'rectangular', capacity: 6 }} onClick={() => onAddTable('rectangular', 6)}>
-            <Rect6 />
-          </DragItem>
-          <DragItem label="Rect 8" payload={{ category: 'table', shape: 'rectangular', capacity: 8 }} onClick={() => onAddTable('rectangular', 8)}>
-            <Rect8 />
-          </DragItem>
-
-          {/* ── CUSTOM SHAPES ── */}
-          <div className="col-span-2 mt-2 pt-2 border-t border-gray-100 grid grid-cols-2 gap-2">
-            <DragItem label="U-Conf" payload={{ category: 'table', shape: 'u_conf', capacity: 10, width: 140, height: 120 }} onClick={() => onAddTable('u_conf', 10)}>
-              <UConfIcon />
-            </DragItem>
-          </div>
-          </div>
+function Category({ title, icon, defaultOpen = false, children }: { title: string, icon: React.ReactNode, defaultOpen?: boolean, children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+  return (
+    <div className="border-b border-gray-100 last:border-0">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+          {icon}
+          {title}
         </div>
-      </div>
-
-      {/* ── BOTTOM TABS ── */}
-      <div className="border-t border-gray-100 p-2 flex bg-gray-50 mt-auto shrink-0">
-        <button
-          onClick={() => setShowPalette(!showPalette)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg transition-colors ${showPalette ? 'bg-white shadow-sm text-[#1E293B] border border-gray-200' : 'text-gray-500 hover:bg-gray-100'}`}
-        >
-          <PaintBucket className="h-3.5 w-3.5" /> Color
-        </button>
-        <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-          <Layers className="h-3.5 w-3.5" /> Style
-        </button>
-      </div>
-
-      {/* Color Palette Popup */}
-      {showPalette && (
-        <div className="absolute bottom-14 left-2 w-60 bg-white border border-gray-200 shadow-xl rounded-xl z-50">
-          <div className="flex items-center justify-between p-3 border-b border-gray-100">
-            <h3 className="font-bold text-sm text-gray-800">Element Color</h3>
-            <button onClick={() => setShowPalette(false)} className="text-gray-400 hover:text-gray-600 text-xs font-medium">Close</button>
-          </div>
-          <div className="p-3"><ColorPalette color={activeColor} onChange={onColorChange} /></div>
+        {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+      </button>
+      {isOpen && (
+        <div className="px-2 pb-3 space-y-1">
+          {children}
         </div>
       )}
+    </div>
+  )
+}
+
+export function FloorPlanSidebar({ onAddTable, onAddElement, activeColor, onColorChange }: Props) {
+  const [search, setSearch] = useState("")
+
+  return (
+    <div className="w-[280px] h-full bg-white border-r border-gray-200 flex flex-col z-20 shrink-0 font-sans shadow-sm">
+      {/* Search Header */}
+      <div className="p-4 border-b border-gray-200 shrink-0">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input 
+            type="text" 
+            placeholder="Search assets..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <Category title="STRUCTURE" icon={<LayoutPanelTop className="w-4 h-4" />} defaultOpen>
+          <DragItem label="Wall" icon={<Minus className="w-4 h-4" />} payload={{ category: 'element', type: 'wall' }} />
+          <DragItem label="Corner Wall" icon={<CornerRightDown className="w-4 h-4" />} payload={{ category: 'element', type: 'corner_wall' }} />
+          <DragItem label="Curved Wall" icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 20c0-8.284 6.716-15 15-15"/></svg>} payload={{ category: 'element', type: 'curved_wall' }} />
+          <DragItem label="Divider" icon={<SeparatorHorizontal className="w-4 h-4" />} payload={{ category: 'element', type: 'divider' }} />
+          <DragItem label="Glass Wall" icon={<Grid2X2 className="w-4 h-4" />} payload={{ category: 'element', type: 'glass_wall' }} />
+          <DragItem label="Door" icon={<DoorClosed className="w-4 h-4" />} payload={{ category: 'element', type: 'door' }} />
+          <DragItem label="Double Door" icon={<DoorOpen className="w-4 h-4" />} payload={{ category: 'element', type: 'double_door' }} />
+          <DragItem label="Sliding Door" icon={<ArrowLeftRight className="w-4 h-4" />} payload={{ category: 'element', type: 'sliding_door' }} />
+          <DragItem label="Window" icon={<Maximize className="w-4 h-4" />} payload={{ category: 'element', type: 'window' }} />
+          <DragItem label="Arch" icon={<Rainbow className="w-4 h-4" />} payload={{ category: 'element', type: 'arch' }} />
+          <DragItem label="Column" icon={<Cylinder className="w-4 h-4" />} payload={{ category: 'element', type: 'column' }} />
+          <DragItem label="Stairs" icon={<MoveUp className="w-4 h-4" />} payload={{ category: 'element', type: 'stairs' }} />
+          <DragItem label="Escalator" icon={<ArrowUpRight className="w-4 h-4" />} payload={{ category: 'element', type: 'escalator' }} />
+          <DragItem label="Elevator" icon={<ArrowUpDown className="w-4 h-4" />} payload={{ category: 'element', type: 'elevator' }} />
+          <DragItem label="Wheelchair" icon={<Accessibility className="w-4 h-4" />} payload={{ category: 'element', type: 'wheelchair' }} />
+          <DragItem label="Ramp" icon={<TrendingUp className="w-4 h-4" />} payload={{ category: 'element', type: 'ramp' }} />
+          <DragItem label="Shaft" icon={<XSquare className="w-4 h-4" />} payload={{ category: 'element', type: 'shaft' }} />
+        </Category>
+
+        <Category title="Standard Tables" icon={<Move3d className="w-4 h-4" />} defaultOpen>
+          <DragItem label="Round Table" icon={<RoundTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'round', capacity: 4 }} onClick={() => onAddTable('round', 4)} />
+          <DragItem label="Square Table" icon={<SquareTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'square', capacity: 4 }} onClick={() => onAddTable('square', 4)} />
+          <DragItem label="Rectangle Table" icon={<RectangleTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'rectangular', capacity: 6 }} onClick={() => onAddTable('rectangular', 6)} />
+          <DragItem label="Oval Table" icon={<OvalTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'oval', capacity: 6 }} onClick={() => onAddTable('oval', 6)} />
+          <DragItem label="Capsule Table" icon={<CapsuleTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'capsule', capacity: 6 }} onClick={() => onAddTable('capsule', 6)} />
+          <DragItem label="2-Seat Table" icon={<TwoSeatTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'two_seat', capacity: 2 }} onClick={() => onAddTable('two_seat', 2)} />
+          <DragItem label="Bar Table" icon={<BarTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'bar', capacity: 6 }} onClick={() => onAddTable('bar', 6)} />
+          <DragItem label="High Table" icon={<HighTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'high', capacity: 3 }} onClick={() => onAddTable('high', 3)} />
+          <DragItem label="Booth" icon={<BoothIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'booth', capacity: 4 }} onClick={() => onAddTable('booth', 4)} />
+          <DragItem label="Connectable" icon={<ConnectableTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'connectable', capacity: 2 }} onClick={() => onAddTable('connectable', 2)} />
+          <DragItem label="Expandable" icon={<ExpandableTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'expandable', capacity: 4 }} onClick={() => onAddTable('expandable', 4)} />
+          <DragItem label="Foldable" icon={<FoldableTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'foldable', capacity: 2 }} onClick={() => onAddTable('foldable', 2)} />
+          <DragItem label="Custom Table" icon={<CustomTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'custom', capacity: 8 }} onClick={() => onAddTable('custom', 8)} />
+        </Category>
+
+        <Category title="Lounge & Cafe" icon={<Coffee className="w-4 h-4" />}>
+          <DragItem label="Coffee Table" icon={<CoffeeTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'coffee_table', capacity: 4 }} onClick={() => onAddTable('coffee_table', 4)} />
+          <DragItem label="Sofa Table" icon={<SofaTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'sofa_table', capacity: 4 }} onClick={() => onAddTable('sofa_table', 4)} />
+          <DragItem label="Bench Seating" icon={<BenchSeatingIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'bench_seating', capacity: 3 }} onClick={() => onAddTable('bench_seating', 3)} />
+          <DragItem label="U-Shaped Booth" icon={<UShapedBoothIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'u_conf', capacity: 6 }} onClick={() => onAddTable('u_conf', 6)} />
+          <DragItem label="Corner Booth" icon={<CornerBoothIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'corner_booth', capacity: 4 }} onClick={() => onAddTable('corner_booth', 4)} />
+          <DragItem label="Banquette" icon={<BanquetteIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'banquette', capacity: 4 }} onClick={() => onAddTable('banquette', 4)} />
+        </Category>
+
+        <Category title="Bar & High Tables" icon={<Wine className="w-4 h-4" />}>
+          <DragItem label="Bar Counter" icon={<BarCounterIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'bar_counter' }} />
+          <DragItem label="Bar Table" icon={<BarTable2Icon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'bar', capacity: 2 }} onClick={() => onAddTable('bar', 2)} />
+          <DragItem label="High Table" icon={<HighTable2Icon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'high', capacity: 2 }} onClick={() => onAddTable('high', 2)} />
+          <DragItem label="Bar Stool" icon={<BarStoolIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'bar_stool' }} />
+        </Category>
+
+        <Category title="Outdoor Tables" icon={<Sun className="w-4 h-4" />}>
+          <DragItem label="Patio Table" icon={<PatioTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'patio_table', capacity: 4 }} onClick={() => onAddTable('patio_table', 4)} />
+          <DragItem label="Umbrella Table" icon={<UmbrellaTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'umbrella_table', capacity: 4 }} onClick={() => onAddTable('umbrella_table', 4)} />
+          <DragItem label="Picnic Table" icon={<PicnicTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'picnic_table', capacity: 6 }} onClick={() => onAddTable('picnic_table', 6)} />
+          <DragItem label="Garden Table" icon={<GardenTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'garden_table', capacity: 4 }} onClick={() => onAddTable('garden_table', 4)} />
+        </Category>
+
+        <Category title="VIP & Private" icon={<Users className="w-4 h-4" />}>
+          <DragItem label="Chef's Table" icon={<ChefTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'chef_table', capacity: 8 }} onClick={() => onAddTable('chef_table', 8)} />
+          <DragItem label="Private Dining" icon={<PrivateDiningIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'private_dining', capacity: 10 }} onClick={() => onAddTable('private_dining', 10)} />
+          <DragItem label="Family Table" icon={<ChefTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'family_table', capacity: 8 }} onClick={() => onAddTable('family_table', 8)} />
+          <DragItem label="Event Table" icon={<EventTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'event_table', capacity: 12 }} onClick={() => onAddTable('event_table', 12)} />
+        </Category>
+
+        <Category title="Chairs & Seating" icon={<Armchair className="w-4 h-4" />}>
+          <DragItem label="Wooden Chair" icon={<WoodenChairIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'wooden_chair' }} />
+          <DragItem label="Armchair" icon={<ArmchairIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'armchair' }} />
+          <DragItem label="Bench" icon={<Square className="w-4 h-4" />} payload={{ category: 'element', type: 'bench' }} />
+          <DragItem label="Sofa Seat" icon={<SofaSeatIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'sofa_seat' }} />
+          <DragItem label="Baby Chair" icon={<BabyChairIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'baby_chair' }} />
+          <DragItem label="Wheelchair Space" icon={<Accessibility className="w-4 h-4" />} payload={{ category: 'element', type: 'wheelchair' }} />
+        </Category>
+
+        <Category title="Decor & Storage" icon={<Archive className="w-4 h-4" />}>
+          <DragItem label="Reception Desk" icon={<ConciergeBell className="w-4 h-4" />} payload={{ category: 'element', type: 'reception_desk' }} />
+          <DragItem label="Cashier" icon={<Banknote className="w-4 h-4" />} payload={{ category: 'element', type: 'cashier' }} />
+          <DragItem label="Buffet" icon={<Soup className="w-4 h-4" />} payload={{ category: 'element', type: 'buffet' }} />
+          <DragItem label="Waiting Bench" icon={<Armchair className="w-4 h-4" />} payload={{ category: 'element', type: 'waiting_bench' }} />
+          <DragItem label="Coat Rack" icon={<Shirt className="w-4 h-4" />} payload={{ category: 'element', type: 'coat_rack' }} />
+          <DragItem label="Cabinet" icon={<Archive className="w-4 h-4" />} payload={{ category: 'element', type: 'cabinet' }} />
+        </Category>
+
+        <Category title="Kitchen" icon={<UtensilsCrossed className="w-4 h-4" />}>
+          <DragItem label="Kitchen Area" icon={<ChefHat className="w-4 h-4" />} payload={{ category: 'element', type: 'kitchen_area' }} />
+          <DragItem label="Grill" icon={<Flame className="w-4 h-4" />} payload={{ category: 'element', type: 'grill' }} />
+          <DragItem label="Oven" icon={<Microwave className="w-4 h-4" />} payload={{ category: 'element', type: 'oven' }} />
+          <DragItem label="Sink" icon={<Droplet className="w-4 h-4" />} payload={{ category: 'element', type: 'sink' }} />
+          <DragItem label="Refrigerator" icon={<Snowflake className="w-4 h-4" />} payload={{ category: 'element', type: 'refrigerator' }} />
+          <DragItem label="Dishwasher" icon={<Waves className="w-4 h-4" />} payload={{ category: 'element', type: 'dishwasher' }} />
+          <DragItem label="Storage Shelf" icon={<LayoutGrid className="w-4 h-4" />} payload={{ category: 'element', type: 'storage_shelf' }} />
+          <DragItem label="Prep Table" icon={<Table className="w-4 h-4" />} payload={{ category: 'element', type: 'prep_table' }} />
+        </Category>
+
+        <Category title="Facilities" icon={<MonitorSpeaker className="w-4 h-4" />}>
+          <DragItem label="Restroom" icon={<Bath className="w-4 h-4" />} payload={{ category: 'element', type: 'restroom' }} />
+          <DragItem label="Men's Toilet" icon={<User className="w-4 h-4" />} payload={{ category: 'element', type: 'mens_toilet' }} />
+          <DragItem label="Women's Toilet" icon={<User className="w-4 h-4" />} payload={{ category: 'element', type: 'womens_toilet' }} />
+          <DragItem label="Accessible Toilet" icon={<Accessibility className="w-4 h-4" />} payload={{ category: 'element', type: 'accessible_toilet' }} />
+          <DragItem label="Utility Room" icon={<Wrench className="w-4 h-4" />} payload={{ category: 'element', type: 'utility_room' }} />
+          <DragItem label="Elevator" icon={<ArrowUpDown className="w-4 h-4" />} payload={{ category: 'element', type: 'elevator' }} />
+          <DragItem label="Emergency Exit" icon={<DoorOpen className="w-4 h-4" />} payload={{ category: 'element', type: 'emergency_exit' }} />
+        </Category>
+
+        <Category title="Outdoor" icon={<Trees className="w-4 h-4" />}>
+          <DragItem label="Plant" icon={<Flower2 className="w-4 h-4" />} payload={{ category: 'element', type: 'plant' }} />
+          <DragItem label="Tree" icon={<TreePine className="w-4 h-4" />} payload={{ category: 'element', type: 'tree' }} />
+          <DragItem label="Umbrella" icon={<Umbrella className="w-4 h-4" />} payload={{ category: 'element', type: 'umbrella' }} />
+          <DragItem label="Fence" icon={<Grid3X3 className="w-4 h-4" />} payload={{ category: 'element', type: 'fence' }} />
+          <DragItem label="Patio" icon={<LayoutDashboard className="w-4 h-4" />} payload={{ category: 'element', type: 'patio' }} />
+          <DragItem label="Terrace Furniture" icon={<Sun className="w-4 h-4" />} payload={{ category: 'element', type: 'terrace_furniture' }} />
+        </Category>
+
+        <Category title="Labels" icon={<Tags className="w-4 h-4" />}>
+          <DragItem label="Kitchen" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Kitchen' }} />
+          <DragItem label="Dining Area" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Dining Area' }} />
+          <DragItem label="VIP" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'VIP' }} />
+          <DragItem label="Terrace" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Terrace' }} />
+          <DragItem label="Smoking" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Smoking' }} />
+          <DragItem label="Bar" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Bar' }} />
+          <DragItem label="Waiting Area" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Waiting Area' }} />
+          <DragItem label="Private Room" icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Private Room' }} />
+        </Category>
+      </div>
     </div>
   )
 }

@@ -8,16 +8,16 @@ import { usePartner } from "@/hooks/usePartner"
 import { FloorPlanCanvas } from "@/components/restaurant/floor-plan-canvas"
 import { FloorPlanToolbar } from "@/components/restaurant/floor-plan-toolbar"
 import { FloorPlanSidebar } from "@/components/restaurant/floor-plan-sidebar"
-import { TablePropertiesPanel } from "@/components/restaurant/table-properties-panel"
-import { ColorPalette } from "@/components/restaurant/color-palette"
+import { PropertiesPanel } from "@/components/restaurant/properties-panel"
+import { FloorPlanStatusBar } from "@/components/restaurant/floor-plan-status-bar"
 import { toast } from "sonner"
-import { Loader2, Plus, Edit2, Trash2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import api from "@/lib/api"
 import { useTranslation } from "react-i18next"
 
 export default function FloorPlanPage() {
   const { partnerId } = usePartner()
-  const { selectedBranchId, branches } = useBranchContext()
+  const { selectedBranchId } = useBranchContext()
   const { t } = useTranslation()
 
   const [floors, setFloors] = useState<any[]>([])
@@ -30,22 +30,30 @@ export default function FloorPlanPage() {
   
   const [scale, setScale] = useState(1)
   const [pan, setPan] = useState<{x: number, y: number}>({ x: 0, y: 0 })
+  const [mouseCoordinates, setMouseCoordinates] = useState<{x: number, y: number}>({ x: 0, y: 0 })
   const [selectedElementIds, setSelectedElementIds] = useState<string[]>([])
   
-  // New features state
-  const [mode, setMode] = useState<"select" | "draw_room" | "draw_event" | "pan">("select")
+  // App State
+  const [mode, setMode] = useState<"select" | "pan" | "draw_wall" | "draw_room" | "add_table" | "add_label">("select")
+  const [gridEnabled, setGridEnabled] = useState(true)
+  const [snapEnabled, setSnapEnabled] = useState(true)
+  const [measurementEnabled, setMeasurementEnabled] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
   const [drawingPoints, setDrawingPoints] = useState<{x: number, y: number}[]>([])
+  
+  // History
   const [history, setHistory] = useState<{floors: any[], tables: any[], elements: any[]}[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
 
   useEffect(() => {
     if (selectedBranchId && partnerId) {
       loadData()
-    } else if (!selectedBranchId && !isLoading) {
+    } else {
       setFloors([])
       setTables([])
       setElements([])
       setActiveFloorId(null)
+      setIsLoading(false)
     }
   }, [selectedBranchId, partnerId])
 
@@ -54,70 +62,55 @@ export default function FloorPlanPage() {
       if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedElementIds.length > 0) {
-          const newTables = tables.filter(t => !selectedElementIds.includes(t._id || t.id))
-          const newElements = elements.filter(el => !selectedElementIds.includes(el.id))
-          
-          if (newTables.length !== tables.length || newElements.length !== elements.length) {
-            setTables(newTables)
-            setElements(newElements)
-            setSelectedElementIds([])
-            // Use setTimeout to allow state to settle before saving history
-            setTimeout(saveToHistory, 50)
-          }
-        }
+        handleDeleteSelected()
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        if (selectedElementIds.length > 0) {
-          const toCopy = [
-            ...tables.filter(t => selectedElementIds.includes(t._id || t.id)).map(t => ({...t, typeCategory: 'table'})),
-            ...elements.filter(el => selectedElementIds.includes(el.id)).map(el => ({...el, typeCategory: 'element'}))
-          ]
-          sessionStorage.setItem('floorPlanClipboard', JSON.stringify(toCopy))
-          toast.success("Copied to clipboard")
-        }
+        handleCopy()
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        const clipboard = sessionStorage.getItem('floorPlanClipboard')
-        if (clipboard) {
-          try {
-            const parsed = JSON.parse(clipboard)
-            const newIds: string[] = []
-            const newTables = [...tables]
-            const newElements = [...elements]
+        handlePaste()
+      }
+      
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        undo()
+      }
+      
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        redo()
+      }
+      
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Z') {
+        redo()
+      }
+      
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault()
+        handleDuplicate()
+      }
 
-            parsed.forEach((item: any) => {
-              const newId = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
-              newIds.push(newId)
-              
-              const newItem = { ...item, id: newId, _id: undefined }
-              
-              if (newItem.typeCategory === 'table') {
-                 newItem.tableNumber = newItem.tableNumber + " (Copy)"
-                 newItem.position = { x: newItem.position.x + 40, y: newItem.position.y + 40 }
-                 newTables.push(newItem)
-              } else {
-                 newItem.x = newItem.x + 40
-                 newItem.y = newItem.y + 40
-                 newElements.push(newItem)
-              }
-            })
+      if (e.key === ' ') {
+        e.preventDefault()
+        setMode("pan")
+      }
+      
+      if (e.key === 'v') setMode("select")
+    }
 
-            setTables(newTables)
-            setElements(newElements)
-            setSelectedElementIds(newIds)
-            setTimeout(saveToHistory, 50)
-            toast.success("Pasted from clipboard")
-          } catch (err) {}
-        }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === ' ' && mode === "pan") {
+        setMode("select")
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedElementIds, tables, elements])
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [selectedElementIds, tables, elements, mode, historyIndex])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -130,7 +123,6 @@ export default function FloorPlanPage() {
       setFloors(floorsRes.data)
       setTables(tablesRes.data)
       
-      // Extract elements from floors
       const allElements: any[] = []
       floorsRes.data.forEach((f: any) => {
         if (f.elements) {
@@ -157,7 +149,7 @@ export default function FloorPlanPage() {
     const currentState = { floors: JSON.parse(JSON.stringify(floors)), tables: JSON.parse(JSON.stringify(tables)), elements: JSON.parse(JSON.stringify(elements)) }
     const newHistory = history.slice(0, historyIndex + 1)
     newHistory.push(currentState)
-    if (newHistory.length > 20) newHistory.shift() // keep last 20
+    if (newHistory.length > 20) newHistory.shift()
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
   }
@@ -179,21 +171,81 @@ export default function FloorPlanPage() {
       setElements(history[historyIndex + 1].elements)
     }
   }
+  
+  const handleCopy = () => {
+    if (selectedElementIds.length > 0) {
+      const toCopy = [
+        ...tables.filter(t => selectedElementIds.includes(t._id || t.id)).map(t => ({...t, typeCategory: 'table'})),
+        ...elements.filter(el => selectedElementIds.includes(el.id)).map(el => ({...el, typeCategory: 'element'}))
+      ]
+      sessionStorage.setItem('floorPlanClipboard', JSON.stringify(toCopy))
+      toast.success("Copied to clipboard")
+    }
+  }
+  
+  const handlePaste = () => {
+    const clipboard = sessionStorage.getItem('floorPlanClipboard')
+    if (clipboard) {
+      try {
+        const parsed = JSON.parse(clipboard)
+        const newIds: string[] = []
+        const newTables = [...tables]
+        const newElements = [...elements]
+
+        parsed.forEach((item: any) => {
+          const newId = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
+          newIds.push(newId)
+          
+          const newItem = { ...item, id: newId, _id: undefined }
+          
+          if (newItem.typeCategory === 'table') {
+             newItem.tableNumber = newItem.tableNumber + " (Copy)"
+             newItem.position = { x: newItem.position.x + 40, y: newItem.position.y + 40 }
+             newItem.isNew = true
+             newTables.push(newItem)
+          } else {
+             newItem.x = newItem.x + 40
+             newItem.y = newItem.y + 40
+             newElements.push(newItem)
+          }
+        })
+
+        setTables(newTables)
+        setElements(newElements)
+        setSelectedElementIds(newIds)
+        setTimeout(saveToHistory, 50)
+      } catch (err) {}
+    }
+  }
+  
+  const handleDuplicate = () => {
+    handleCopy()
+    handlePaste()
+  }
+  
+  const handleDeleteSelected = () => {
+    if (selectedElementIds.length > 0) {
+      const newTables = tables.filter(t => !selectedElementIds.includes(t._id || t.id))
+      const newElements = elements.filter(el => !selectedElementIds.includes(el.id))
+      
+      if (newTables.length !== tables.length || newElements.length !== elements.length) {
+        setTables(newTables)
+        setElements(newElements)
+        setSelectedElementIds([])
+        setTimeout(saveToHistory, 50)
+      }
+    }
+  }
 
   const handleAddFloor = async () => {
-    if (!partnerId || !selectedBranchId) {
-      toast.error("Please select a branch first")
-      return
-    }
+    if (!partnerId || !selectedBranchId) return toast.error("Please select a branch first")
     try {
       const newFloor = {
-        partnerId,
-        branchId: selectedBranchId,
+        partnerId, branchId: selectedBranchId,
         name: `Floor ${floors.length + 1}`,
         order: floors.length,
-        dimensions: { width: 1200, height: 800 },
-        areas: [],
-        elements: []
+        dimensions: { width: 2000, height: 2000 },
+        areas: [], elements: []
       }
       const res = await api.post('/restaurant/floors', newFloor)
       setFloors([...floors, res.data])
@@ -204,57 +256,30 @@ export default function FloorPlanPage() {
     }
   }
 
-  const handleUpdateFloorName = async (id: string, name: string) => {
-    try {
-      await api.put(`/restaurant/floors/${id}`, { name })
-      setFloors(floors.map(f => f._id === id ? { ...f, name } : f))
-    } catch {
-      toast.error("Failed to update floor name")
-    }
-  }
-
-  const handleDeleteFloor = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this floor and all its tables?")) return
-    try {
-      await api.delete(`/restaurant/floors/${id}`)
-      setFloors(floors.filter(f => f._id !== id))
-      if (activeFloorId === id) setActiveFloorId(floors[0]?._id || null)
-      toast.success("Floor deleted")
-    } catch {
-      toast.error("Failed to delete floor")
-    }
-  }
-
-  const handleAddTable = (shape: string, presetCapacity?: number, presetColor?: string) => {
-    if (!activeFloorId) {
-      toast.error("Please select a floor first")
-      return
-    }
+  const handleAddTable = (shape: string, capacity?: number, presetColor?: string) => {
+    if (!activeFloorId) return toast.error("Please select a floor first")
     
     let size = { width: 80, height: 80 }
     if (shape === "rectangular") size = { width: 120, height: 80 }
-    if (presetCapacity === 6 && shape === "rectangular") size = { width: 160, height: 80 }
-
-    const spawnX = Math.round((-pan.x + 400) / scale / 20) * 20
-    const spawnY = Math.round((-pan.y + 300) / scale / 20) * 20
+    if (shape === "high") size = { width: 100, height: 30 }
+    if (shape === "expandable") size = { width: 120, height: 100 }
+    if (shape === "foldable" || shape === "connectable") size = { width: 100, height: 100 }
+    if (shape === "bar") size = { width: 80, height: 50 }
+    if (['chef_table', 'family_table'].includes(shape)) size = { width: 140, height: 60 }
+    if (shape === "event_table") size = { width: 160, height: 80 }
+    if (shape === "private_dining") size = { width: 100, height: 100 }
+    
+    const spawnX = Math.round((-pan.x + window.innerWidth / 2) / scale / 20) * 20
+    const spawnY = Math.round((-pan.y + window.innerHeight / 2) / scale / 20) * 20
 
     const newTable = {
       id: `temp_${Date.now()}`,
-      partnerId,
-      branchId: selectedBranchId,
-      floorId: activeFloorId,
+      partnerId, branchId: selectedBranchId, floorId: activeFloorId,
       tableNumber: `T${tables.filter(t => t.floorId === activeFloorId).length + 1}`,
-      capacity: presetCapacity || 4,
-      minCapacity: 1,
-      shape,
-      position: { x: spawnX, y: spawnY },
-      size,
-      rotation: 0,
-      status: "available",
-      location: "indoor",
-      isVip: false,
-      color: presetColor,
-      isNew: true // Flag to distinguish unsaved tables
+      capacity: capacity || 4, minCapacity: 1,
+      shape, position: { x: spawnX, y: spawnY }, size,
+      rotation: 0, status: "available", location: "indoor",
+      isVip: false, color: presetColor, isNew: true
     }
     
     setTables([...tables, newTable])
@@ -263,24 +288,26 @@ export default function FloorPlanPage() {
   }
 
   const handleAddElement = (type: string) => {
-    if (!activeFloorId) {
-      toast.error("Please select a floor first")
-      return
-    }
+    if (!activeFloorId) return toast.error("Please select a floor first")
     
-    const spawnX = Math.round((-pan.x + 400) / scale / 20) * 20
-    const spawnY = Math.round((-pan.y + 300) / scale / 20) * 20
+    const spawnX = Math.round((-pan.x + window.innerWidth / 2) / scale / 20) * 20
+    const spawnY = Math.round((-pan.y + window.innerHeight / 2) / scale / 20) * 20
+
+    let w = 40, h = 40
+    if (type === 'wall') { w = 200; h = 10 }
+    else if (['bench', 'sofa', 'waiting_bench', 'cabinet'].includes(type)) { w = 80; h = 40 }
+    else if (['cashier'].includes(type)) { w = 60; h = 40 }
+    else if (['buffet'].includes(type)) { w = 120; h = 40 }
+    else if (['reception_desk'].includes(type)) { w = 80; h = 80 }
+    else if (['wheelchair', 'sofa_seat'].includes(type)) { w = 60; h = 60 }
+    else if (['coat_rack'].includes(type)) { w = 40; h = 40 }
 
     const newElement = {
-      id: `elem_${Date.now()}`,
-      floorId: activeFloorId,
-      type,
-      x: spawnX,
-      y: spawnY,
-      width: type === 'wall' ? 200 : type === 'window' ? 60 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40,
-      height: type === 'wall' ? 10 : type === 'window' ? 10 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40,
-      rotation: 0,
-      color: type === 'plant' ? '#10b981' : '#4b5563'
+      id: `elem_${Date.now()}`, floorId: activeFloorId, type,
+      x: spawnX, y: spawnY,
+      width: w,
+      height: h,
+      rotation: 0, color: type === 'plant' ? '#10b981' : '#4b5563'
     }
     
     setElements([...elements, newElement])
@@ -292,43 +319,21 @@ export default function FloorPlanPage() {
     if (!activeFloorId) return
     
     if (payload.category === 'table') {
-      let size = { width: 80, height: 80 }
-      if (payload.shape === "rectangular") size = { width: 120, height: 80 }
-      if (payload.capacity === 6 && payload.shape === "rectangular") size = { width: 160, height: 80 }
-
-      const newTable = {
-        id: `temp_${Date.now()}`,
-        partnerId,
-        branchId: selectedBranchId,
-        floorId: activeFloorId,
-        tableNumber: `T${tables.filter(t => t.floorId === activeFloorId).length + 1}`,
-        capacity: payload.capacity || 4,
-        minCapacity: 1,
-        shape: payload.shape,
-        position: pos,
-        size,
-        rotation: 0,
-        status: "available",
-        location: "indoor",
-        isVip: false,
-        color: payload.color,
-        isNew: true
-      }
-      setTables([...tables, newTable])
-      setSelectedElementIds([newTable.id])
-      saveToHistory()
+      handleAddTable(payload.shape, payload.capacity)
+      // Adjust position of just added table
+      setTables(prev => {
+        const last = prev[prev.length - 1]
+        last.position = pos
+        return [...prev]
+      })
     } else if (payload.category === 'element') {
       const type = payload.type
-      const newElement = {
-        id: `elem_${Date.now()}`,
-        floorId: activeFloorId,
-        type,
-        x: pos.x,
-        y: pos.y,
-        width: payload.width || (type === 'wall' ? 200 : type === 'window' ? 60 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 300 : type === 'partition' ? 100 : 40),
-        height: payload.height || (type === 'wall' ? 10 : type === 'window' ? 10 : type === 'door' ? 40 : type === 'corner_wall' ? 60 : type === 'bar_counter' ? 60 : type === 'partition' ? 10 : 40),
-        rotation: 0,
-        color: payload.color || (type === 'plant' ? '#10b981' : '#4b5563')
+      const newElement: any = {
+        id: `elem_${Date.now()}`, floorId: activeFloorId, type,
+        x: pos.x, y: pos.y,
+        width: payload.width || (type === 'label' ? 120 : 40), height: payload.height || (type === 'label' ? 40 : 40),
+        rotation: 0, color: payload.color || '#4b5563',
+        ...(payload.text ? { text: payload.text } : {})
       }
       setElements([...elements, newElement])
       setSelectedElementIds([newElement.id])
@@ -336,105 +341,19 @@ export default function FloorPlanPage() {
     }
   }
 
-  const handleAddArea = () => {
-    if (!activeFloorId) return
-    setMode("draw_room")
-    setDrawingPoints([])
-    toast.info("Click on the canvas to draw polygon vertices. Click 'Finish Room' when done.")
-  }
-
-  const handleAddEventArea = () => {
-    if (!activeFloorId) return
-    setMode("draw_event")
-    setDrawingPoints([])
-    toast.info("Click on the canvas to draw polygon vertices for the Event Area. Click 'Finish Room' when done.")
-  }
-
-  const handleCanvasClick = (p: {x: number, y: number}) => {
-    if (mode === "draw_room" || mode === "draw_event") {
-      setDrawingPoints([...drawingPoints, p])
-    }
-  }
-
-  const handleFinishDrawing = () => {
-    if (drawingPoints.length < 3) {
-      toast.error("A room must have at least 3 points")
-      return
-    }
-    const currentFloor = floors.find(f => f._id === activeFloorId)
-    const newArea = {
-      id: `area_${Date.now()}`,
-      name: mode === "draw_event" ? `Event Area ${currentFloor.areas?.length + 1 || 1}` : `Room ${currentFloor.areas?.length + 1 || 1}`,
-      type: mode === "draw_event" ? "event" : "room",
-      points: drawingPoints,
-      color: mode === "draw_event" ? "rgba(255, 165, 0, 0.2)" : "rgba(198, 156, 155, 0.2)"
-    }
-    setFloors(floors.map(f => f._id === activeFloorId ? { ...f, areas: [...(f.areas || []), newArea] } : f))
-    setSelectedElementIds([newArea.id])
-    setMode("select")
-    setDrawingPoints([])
-    saveToHistory()
-  }
-
-  const handleUpdateTable = (id: string, updates: any, saveHistory = false) => {
-    setTables(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, ...updates } : t))
-    if (saveHistory) saveToHistory()
-  }
-
-  const handleUpdateElement = (id: string, updates: any, saveHistory = false) => {
-    setElements(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
-    if (saveHistory) saveToHistory()
-  }
-
-  const handleUpdateArea = (id: string, updates: any, saveHistory = false) => {
-    setFloors(prev => prev.map(f => {
-      if (f._id === activeFloorId) {
-        return { ...f, areas: (f.areas || []).map((a: any) => a.id === id ? { ...a, ...updates } : a) }
-      }
-      return f
-    }))
-    if (saveHistory) saveToHistory()
-  }
-
-  const handleDeleteTable = (id: string) => {
-    const table = tables.find(t => t._id === id || t.id === id)
-    if (!table) return
-
-    if (table.isNew) {
-      setTables(tables.filter(t => t.id !== id))
-      saveToHistory()
-    } else {
-      if (window.confirm("Delete this table?")) {
-        api.delete(`/restaurant/tables/${id}`).then(() => {
-          setTables(tables.filter(t => t._id !== id))
-          setSelectedElementIds([])
-          saveToHistory()
-        }).catch(() => toast.error("Failed to delete table"))
-      }
-    }
-  }
-
-  const handleDeleteElement = (id: string) => {
-    setElements(elements.filter(e => e.id !== id))
-    setSelectedElementIds([])
-    saveToHistory()
-  }
-
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Save tables
       const promises = tables.map(t => {
         if (t.isNew) {
           const { id, isNew, color, ...data } = t
-          return api.post('/restaurant/tables', data) // backend doesn't support color natively yet for tables, but let's send it anyway or just let it ignore.
+          return api.post('/restaurant/tables', data)
         } else {
           const { _id, ...data } = t
           return api.put(`/restaurant/tables/${_id}`, data)
         }
       })
       
-      // Save current floor areas and elements
       const currentFloor = floors.find(f => f._id === activeFloorId)
       if (currentFloor) {
         const floorElements = elements.filter(e => e.floorId === activeFloorId).map(({floorId, ...rest}) => rest)
@@ -443,7 +362,7 @@ export default function FloorPlanPage() {
 
       await Promise.all(promises)
       toast.success("Layout saved successfully")
-      loadData() // Reload to get real IDs for new tables
+      loadData()
     } catch {
       toast.error("Failed to save layout")
     } finally {
@@ -451,146 +370,88 @@ export default function FloorPlanPage() {
     }
   }
 
-  const activeTables = tables.filter(t => t.floorId === activeFloorId)
-  const activeElements = elements.filter(e => e.floorId === activeFloorId)
-  const activeFloor = floors.find(f => f._id === activeFloorId)
-
-  // Property Panel State
-  const selectedTable = selectedElementIds.length === 1 ? tables.find(t => (t._id === selectedElementIds[0] || t.id === selectedElementIds[0])) : null
-  const selectedElement = selectedElementIds.length === 1 ? elements.find(e => e.id === selectedElementIds[0]) : null
-  const selectedArea = selectedElementIds.length === 1 ? activeFloor?.areas?.find((a: any) => a.id === selectedElementIds[0]) : null
-
-  const activeColor = selectedTable?.color || selectedElement?.color || selectedArea?.color || "#e5e7eb"
-
-  const handleColorChange = (color: string) => {
-    if (selectedElementIds.length === 0) return
-    selectedElementIds.forEach(id => {
-      if (tables.some(t => t._id === id || t.id === id)) handleUpdateTable(id, { color })
-      else if (elements.some(e => e.id === id)) handleUpdateElement(id, { color })
-      else handleUpdateArea(id, { color })
-    })
-    saveToHistory()
-  }
-
-  const handleSelectElement = (id: string | null | string[], shiftKey: boolean = false) => {
-    if (!id) {
-      setSelectedElementIds([])
-    } else if (Array.isArray(id)) {
-      if (shiftKey) {
-        setSelectedElementIds(prev => Array.from(new Set([...prev, ...id])))
-      } else {
-        setSelectedElementIds(id)
-      }
-    } else {
-      if (shiftKey) {
-        setSelectedElementIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])
-      } else {
-        setSelectedElementIds([id])
-      }
-    }
-  }
+  const activeColor = "#e5e7eb"
 
   return (
-    <div className="h-screen bg-[#FAFAFA] flex font-sans overflow-hidden">
+    <div className="h-screen bg-white flex font-sans overflow-hidden">
+      {/* Keeping Dashboard Sidebar and Header collapsed or removed if user wants full screen, 
+          but usually we keep it for navigation */}
       <DashboardSidebar activePath="/dashboard/restaurant/floor-plan" />
-      <div className="flex-1 flex flex-col h-screen min-w-0">
-        <DashboardHeader />
+      <div className="flex-1 flex flex-col h-screen min-w-0 bg-[#F9FAFB]">
+        {/* Toolbar spanning full width above canvas */}
+        <FloorPlanToolbar
+          onZoomIn={() => setScale(s => Math.min(2, s + 0.1))}
+          onZoomOut={() => setScale(s => Math.max(0.5, s - 0.1))}
+          onFitScreen={() => { setScale(0.8); setPan({x: 100, y: 100}); }}
+          onSave={handleSave}
+          isSaving={isSaving}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
+          mode={mode}
+          setMode={setMode}
+          onCopy={handleCopy}
+          onPaste={handlePaste}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDeleteSelected}
+          gridEnabled={gridEnabled}
+          setGridEnabled={setGridEnabled}
+          snapEnabled={snapEnabled}
+          setSnapEnabled={setSnapEnabled}
+          measurementEnabled={measurementEnabled}
+          setMeasurementEnabled={setMeasurementEnabled}
+          previewMode={previewMode}
+          setPreviewMode={setPreviewMode}
+          floors={floors}
+          activeFloorId={activeFloorId}
+          setActiveFloorId={setActiveFloorId}
+          onAddFloor={handleAddFloor}
+        />
         
-        <main className="flex-1 overflow-hidden flex flex-col relative bg-[#F0F0F0]">
-          <div className="flex-1 flex flex-col h-full min-w-0">
-            {/* Top Bar - Floor Selection */}
-            <div className="bg-white border-b border-border/60 px-4 py-2 flex items-center justify-between shrink-0 z-10">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-bold text-foreground mr-2">Floor Plan</span>
-              {floors.map(floor => (
-                <div key={floor._id} className="flex items-center">
-                  <button
-                    onClick={() => setActiveFloorId(floor._id)}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                      activeFloorId === floor._id 
-                        ? 'bg-[#E5555E] text-white shadow-sm' 
-                        : 'bg-[#FAFAFA] border border-border/60 text-muted-foreground hover:bg-gray-50'
-                    }`}
-                  >
-                    {floor.name}
-                  </button>
-                  {activeFloorId === floor._id && (
-                    <button onClick={() => handleDeleteFloor(floor._id)} className="ml-1 p-1.5 text-muted-foreground hover:text-red-500 rounded-md">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {selectedBranchId && (
-                <>
-                  {mode === "draw_room" ? (
-                    <div className="flex gap-2 ml-2 border-l border-border/60 pl-4">
-                      <button onClick={handleFinishDrawing} className="px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg text-sm font-semibold shadow-sm">Finish Room</button>
-                      <button onClick={() => { setMode("select"); setDrawingPoints([]) }} className="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-semibold shadow-sm">Cancel</button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={handleAddFloor}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-gray-900 text-white hover:bg-black rounded-lg text-sm font-semibold transition-colors ml-2 shadow-sm"
-                    >
-                      <Plus className="h-4 w-4" /> Add Floor
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
+        <main className="flex-1 overflow-hidden flex relative">
           {!selectedBranchId ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Please select a branch from the header.</p>
+              <p className="text-gray-500">Please select a branch from the header.</p>
             </div>
           ) : isLoading ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           ) : !activeFloorId ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Add a floor to start designing your layout.</p>
+              <p className="text-gray-500">Add a floor to start designing your layout.</p>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col w-full min-h-0 overflow-hidden relative">
-              <FloorPlanToolbar
-                onAddTable={handleAddTable}
-                onAddArea={handleAddArea}
-                onAddEventArea={handleAddEventArea}
-                onZoomIn={() => setScale(s => Math.min(2, s + 0.1))}
-                onZoomOut={() => setScale(s => Math.max(0.5, s - 0.1))}
-                onResetZoom={() => { setScale(1); setPan({x: 0, y: 0}); }}
-                onSave={handleSave}
-                isSaving={isSaving}
-                onUndo={undo}
-                onRedo={redo}
-                canUndo={historyIndex > 0}
-                canRedo={historyIndex < history.length - 1}
-                mode={mode}
-                setMode={setMode}
+            <>
+              {/* Left Sidebar */}
+              <FloorPlanSidebar 
+                onAddTable={handleAddTable} 
+                onAddElement={handleAddElement}
+                activeColor={activeColor}
+                onColorChange={() => {}}
               />
               
-              <div className="flex-1 flex w-full overflow-hidden relative">
-                {activeFloorId && (
-                  <FloorPlanSidebar 
-                    onAddTable={handleAddTable} 
-                    onAddElement={handleAddElement}
-                    activeColor={activeColor}
-                    onColorChange={handleColorChange}
-                  />
-                )}
+              {/* Center Canvas */}
+              <div className="flex-1 overflow-hidden flex flex-col relative bg-[#F9FAFB]">
                 <FloorPlanCanvas
-                  floor={activeFloor}
-                  tables={activeTables}
-                  elements={activeElements}
+                  floor={floors.find(f => f._id === activeFloorId)}
+                  tables={tables.filter(t => t.floorId === activeFloorId)}
+                  elements={elements.filter(e => e.floorId === activeFloorId)}
                   selectedElementIds={selectedElementIds}
-                  onSelectElement={handleSelectElement}
-                  onUpdateTable={(id, updates) => handleUpdateTable(id, updates, false)}
-                  onUpdateArea={(id, updates) => handleUpdateArea(id, updates, false)}
-                  onUpdateElement={(id, updates) => handleUpdateElement(id, updates, false)}
-                  onCanvasClick={handleCanvasClick}
+                  onSelectElement={(id, shift) => {
+                    if (!id) setSelectedElementIds([])
+                    else if (Array.isArray(id)) setSelectedElementIds(shift ? [...new Set([...selectedElementIds, ...id])] : id)
+                    else setSelectedElementIds(shift ? (selectedElementIds.includes(id) ? selectedElementIds.filter(i => i !== id) : [...selectedElementIds, id]) : [id])
+                  }}
+                  onUpdateTable={(id, updates) => {
+                    setTables(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, ...updates } : t))
+                  }}
+                  onUpdateArea={() => {}}
+                  onUpdateElement={(id, updates) => {
+                    setElements(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+                  }}
+                  onCanvasClick={() => {}}
                   onDragEnd={() => saveToHistory()}
                   mode={mode}
                   drawingPoints={drawingPoints}
@@ -598,111 +459,53 @@ export default function FloorPlanPage() {
                   pan={pan}
                   onPanChange={setPan}
                   onDropItem={handleDropItem}
+                  gridEnabled={gridEnabled}
+                  snapEnabled={snapEnabled}
+                  onMouseMove={(p) => setMouseCoordinates(p)}
                 />
-                
-                {selectedTable && (
-                  <TablePropertiesPanel
-                    selectedTable={selectedTable}
-                    onUpdate={(updates) => handleUpdateTable(selectedTable._id || selectedTable.id, updates, true)}
-                    onDelete={() => handleDeleteTable(selectedTable._id || selectedTable.id)}
-                    onDeselect={() => setSelectedElementIds([])}
-                  />
-                )}
 
-                {selectedElement && (
-                  <div className="absolute top-4 right-4 w-80 bg-white border border-border/60 shadow-xl rounded-xl flex flex-col z-20">
-                    <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA] rounded-t-xl">
-                      <h3 className="font-bold text-foreground capitalize">{selectedElement.type.replace('_', ' ')} Properties</h3>
-                      <button onClick={() => setSelectedElementIds([])} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
-                    </div>
-                    <div className="p-4 space-y-4">
-                       <div className="grid grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Length</label>
-                           <input
-                             type="number"
-                             value={selectedElement.width}
-                             onChange={(e) => handleUpdateElement(selectedElement.id, { width: parseInt(e.target.value) || 20 }, true)}
-                             className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                             min="10"
-                           />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Thickness</label>
-                           <input
-                             type="number"
-                             value={selectedElement.height}
-                             onChange={(e) => handleUpdateElement(selectedElement.id, { height: parseInt(e.target.value) || 10 }, true)}
-                             className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                             min="2"
-                           />
-                         </div>
-                       </div>
-                       <ColorPalette color={selectedElement.color || "#4b5563"} onChange={(c) => handleUpdateElement(selectedElement.id, { color: c }, true)} />
-                       <button
-                        onClick={() => handleDeleteElement(selectedElement.id)}
-                        className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-semibold transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete Element
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {selectedArea && (
-                  <div className="absolute top-4 right-4 w-80 bg-white border border-border/60 shadow-xl rounded-xl flex flex-col z-20">
-                     <div className="p-4 border-b border-border/60 flex items-center justify-between bg-[#FAFAFA] rounded-t-xl">
-                        <h3 className="font-bold text-foreground">Area Properties</h3>
-                        <button onClick={() => setSelectedElementIds([])} className="text-muted-foreground hover:text-foreground text-sm font-medium">Close</button>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Name</label>
-                          <input
-                            type="text"
-                            value={selectedArea.name}
-                            onChange={(e) => handleUpdateArea(selectedArea.id, { name: e.target.value }, true)}
-                            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Type</label>
-                          <select
-                            value={selectedArea.type}
-                            onChange={(e) => handleUpdateArea(selectedArea.id, { type: e.target.value }, true)}
-                            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white"
-                          >
-                            <option value="room">Room</option>
-                            <option value="hall">Hall</option>
-                            <option value="terrace">Terrace</option>
-                            <option value="vip">VIP Area</option>
-                            <option value="bar">Bar</option>
-                          </select>
-                        </div>
-                        <div className="pt-2 border-t border-border/60">
-                           <ColorPalette color={selectedArea.color || "rgba(200,200,200,0.2)"} onChange={(c) => handleUpdateArea(selectedArea.id, { color: c }, true)} />
-                        </div>
-                         <button
-                          onClick={() => {
-                            if (window.confirm("Delete this area?")) {
-                              handleUpdateArea(selectedArea.id, { deleted: true }) // Actually remove it from array
-                              setFloors(floors.map(f => f._id === activeFloorId ? { ...f, areas: f.areas.filter((a: any) => a.id !== selectedArea.id) } : f))
-                              setSelectedElementIds([])
-                            }
-                          }}
-                          className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-semibold transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete Area
-                        </button>
-                      </div>
-                  </div>
-                )}
+                {/* Bottom Status Bar */}
+                <FloorPlanStatusBar
+                  scale={scale}
+                  pan={pan}
+                  onZoomIn={() => setScale(s => Math.min(2, s + 0.1))}
+                  onZoomOut={() => setScale(s => Math.max(0.5, s - 0.1))}
+                  onResetZoom={() => { setScale(1); setPan({x: 0, y: 0}); }}
+                  mouseCoordinates={mouseCoordinates}
+                  snapEnabled={snapEnabled}
+                />
               </div>
-            </div>
+
+              {/* Right Properties Panel */}
+              <PropertiesPanel
+                selectedElements={selectedElementIds}
+                tables={tables}
+                elements={elements}
+                floors={floors}
+                activeFloorId={activeFloorId}
+                onUpdateTable={(id, updates) => {
+                  setTables(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, ...updates } : t))
+                  saveToHistory()
+                }}
+                onUpdateElement={(id, updates) => {
+                  setElements(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+                  saveToHistory()
+                }}
+                onDeleteTable={(id) => {
+                  setTables(tables.filter(t => t._id !== id && t.id !== id))
+                  setSelectedElementIds([])
+                  saveToHistory()
+                }}
+                onDeleteElement={(id) => {
+                  setElements(elements.filter(e => e.id !== id))
+                  setSelectedElementIds([])
+                  saveToHistory()
+                }}
+                onDuplicate={handleDuplicate}
+                restaurantName="Haybooking Reference"
+              />
+            </>
           )}
-          </div>
         </main>
       </div>
     </div>

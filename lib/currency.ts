@@ -1,4 +1,5 @@
-export function formatPrice(price: number, currencyCode: string = "AMD"): string {
+export function formatPrice(price: number | undefined | null, currencyCode: string = "AMD"): string {
+  if (price == null) return "0";
   const code = currencyCode.toUpperCase();
   
   switch (code) {

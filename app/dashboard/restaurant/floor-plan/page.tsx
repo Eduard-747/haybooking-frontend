@@ -10,8 +10,9 @@ import { FloorPlanToolbar } from "@/components/restaurant/floor-plan-toolbar"
 import { FloorPlanSidebar } from "@/components/restaurant/floor-plan-sidebar"
 import { PropertiesPanel } from "@/components/restaurant/properties-panel"
 import { FloorPlanStatusBar } from "@/components/restaurant/floor-plan-status-bar"
+import { AiFloorPlanModal } from "@/components/restaurant/ai-floor-plan-modal"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, MapPin } from "lucide-react"
 import api from "@/lib/api"
 import { useTranslation } from "react-i18next"
 
@@ -40,6 +41,9 @@ export default function FloorPlanPage() {
   const [measurementEnabled, setMeasurementEnabled] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
   const [drawingPoints, setDrawingPoints] = useState<{x: number, y: number}[]>([])
+  
+  // Modals
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
   
   // History
   const [history, setHistory] = useState<{floors: any[], tables: any[], elements: any[]}[]>([])
@@ -378,6 +382,7 @@ export default function FloorPlanPage() {
           but usually we keep it for navigation */}
       <DashboardSidebar activePath="/dashboard/restaurant/floor-plan" />
       <div className="flex-1 flex flex-col h-screen min-w-0 bg-[#F9FAFB]">
+        <DashboardHeader />
         {/* Toolbar spanning full width above canvas */}
         <FloorPlanToolbar
           onZoomIn={() => setScale(s => Math.min(2, s + 0.1))}
@@ -407,12 +412,19 @@ export default function FloorPlanPage() {
           activeFloorId={activeFloorId}
           setActiveFloorId={setActiveFloorId}
           onAddFloor={handleAddFloor}
+          onOpenAiModal={() => setIsAiModalOpen(true)}
         />
         
         <main className="flex-1 overflow-hidden flex relative">
           {!selectedBranchId ? (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-500">Please select a branch from the header.</p>
+            <div className="flex-1 flex items-center justify-center bg-white m-6 lg:m-8 rounded-xl border border-border/40 shadow-sm">
+              <div className="p-12 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
+                  <MapPin className="w-10 h-10 text-[#C69C9B]" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
+                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its floor plan.</p>
+              </div>
             </div>
           ) : isLoading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -508,6 +520,20 @@ export default function FloorPlanPage() {
           )}
         </main>
       </div>
+
+      {selectedBranchId && partnerId && (
+        <AiFloorPlanModal 
+          isOpen={isAiModalOpen} 
+          onClose={() => setIsAiModalOpen(false)} 
+          branchId={selectedBranchId}
+          partnerId={partnerId}
+          onSuccess={(newFloor) => {
+            setFloors(prev => [...prev, newFloor])
+            setActiveFloorId(newFloor._id)
+            loadData() // Reload everything to get the tables
+          }}
+        />
+      )}
     </div>
   )
 }

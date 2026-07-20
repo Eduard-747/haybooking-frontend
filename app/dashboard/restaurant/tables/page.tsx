@@ -80,6 +80,16 @@ export default function TablesManagementPage() {
               </div>
             </div>
 
+            {!selectedBranchId ? (
+              <div className="bg-white rounded-xl border border-border/40 p-12 flex flex-col items-center justify-center text-center shadow-sm mt-6">
+                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
+                  <Search className="w-10 h-10 text-[#C69C9B]" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
+                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its tables.</p>
+              </div>
+            ) : (
+              <>
             {/* Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white p-4 rounded-xl border border-border/60 shadow-sm flex flex-col items-center text-center">
@@ -209,6 +219,8 @@ export default function TablesManagementPage() {
                   </tbody>
                 </table>
               </div>
+            )}
+            </>
             )}
 
           </div>

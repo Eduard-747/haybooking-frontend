@@ -1,190 +1,253 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { Search, ChevronDown, Plus, Image as ImageIcon, X, Trash2, Edit, Upload, MapPin } from "lucide-react"
-import { toast } from "sonner"
-import api from "@/lib/api"
-import Image from "next/image"
+import { 
+  Search, 
+  ChevronDown, 
+  Image as ImageIcon, 
+  Upload, 
+  FileText, 
+  File, 
+  FileSpreadsheet, 
+  Presentation, 
+  Target, 
+  Download,
+  Eye,
+  RefreshCw,
+  Trash2,
+  FileBox,
+  CloudUpload,
+  Loader2
+} from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
-import { formatPrice } from "@/lib/currency"
-import { useTranslation } from "react-i18next"
+import api from "@/lib/api"
+import { toast } from "sonner"
 
-interface MenuItem {
+interface MenuFile {
   _id: string
   name: string
-  description?: string
-  category: string
-  price: number
-  branchId?: string
-  isAvailable: boolean
-  image?: string
+  type: string
+  format: 'pdf' | 'image' | 'document' | 'spreadsheet' | 'presentation' | 'structured'
+  size: string
+  fileData?: string
+  createdAt: string
+}
+
+const formatConfig = {
+  pdf: { icon: FileText, color: 'text-red-500', bg: 'bg-red-50', badge: 'bg-red-50 text-red-600 border-red-100', iconBg: 'bg-red-500' },
+  image: { icon: ImageIcon, color: 'text-emerald-500', bg: 'bg-emerald-50', badge: 'bg-emerald-50 text-emerald-600 border-emerald-100', iconBg: 'bg-emerald-500' },
+  document: { icon: File, color: 'text-blue-500', bg: 'bg-blue-50', badge: 'bg-blue-50 text-blue-600 border-blue-100', iconBg: 'bg-blue-500' },
+  spreadsheet: { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50', badge: 'bg-green-50 text-green-600 border-green-100', iconBg: 'bg-green-600' },
+  presentation: { icon: Presentation, color: 'text-amber-500', bg: 'bg-amber-50', badge: 'bg-amber-50 text-amber-600 border-amber-100', iconBg: 'bg-amber-500' },
+  structured: { icon: Target, color: 'text-purple-500', bg: 'bg-purple-50', badge: 'bg-purple-50 text-purple-600 border-purple-100', iconBg: 'bg-purple-500' },
+}
+
+const uploadOptions = [
+  { id: 'pdf', title: 'PDF Menu', desc: 'Upload PDF menu file', format: 'pdf', accept: '.pdf' },
+  { id: 'image', title: 'Image Menu', desc: 'Upload image files (JPG, PNG)', format: 'image', accept: 'image/jpeg, image/png, image/webp' },
+  { id: 'document', title: 'Document Menu', desc: 'Upload document files (DOC, DOCX)', format: 'document', accept: '.doc,.docx,.txt,.rtf' },
+  { id: 'spreadsheet', title: 'Spreadsheet Menu', desc: 'Upload Excel or CSV files', format: 'spreadsheet', accept: '.xls,.xlsx,.csv' },
+  { id: 'presentation', title: 'Presentation Menu', desc: 'Upload PPT or PPTX files', format: 'presentation', accept: '.ppt,.pptx' },
+]
+
+function formatDate(iso: string, language: string = 'en') {
+  const localeStr = language === 'am' ? 'hy-AM' : language === 'ru' ? 'ru-RU' : 'en-US'
+  return new Date(iso).toLocaleDateString(localeStr, { month: "short", day: "numeric", year: "numeric", hour: '2-digit', minute: '2-digit' })
+}
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 Bytes'
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
+
+function determineFormatAndType(file: File): { format: string, type: string } {
+  const t = file.type
+  const n = file.name.toLowerCase()
+  
+  if (t === 'application/pdf' || n.endsWith('.pdf')) return { format: 'pdf', type: 'PDF' }
+  if (t.startsWith('image/')) return { format: 'image', type: 'Image' }
+  if (t.includes('spreadsheet') || t.includes('excel') || t === 'text/csv' || n.endsWith('.csv') || n.endsWith('.xlsx')) return { format: 'spreadsheet', type: 'Spreadsheet' }
+  if (t.includes('presentation') || t.includes('powerpoint') || n.endsWith('.pptx')) return { format: 'presentation', type: 'Presentation' }
+  
+  // Default fallback for word docs, txt, rtf etc
+  return { format: 'document', type: 'Document' }
 }
 
 export default function ManageMenuPage() {
-  const { partnerId, partner } = usePartner()
+  const { t, i18n } = useTranslation()
+  const { partnerId } = usePartner()
   const { selectedBranchId } = useBranchContext()
-  const { t } = useTranslation()
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [menus, setMenus] = useState<MenuFile[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [acceptFilter, setAcceptFilter] = useState<string | undefined>(undefined)
   
   // Filter & Sort State
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedType, setSelectedType] = useState("All")
   const [sortBy, setSortBy] = useState("last-modified")
-  
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1)
-  const rowsPerPage = 5
-  
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [imagePreview, setImagePreview] = useState<string>("")
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  
-  // Form state
-  const defaultForm = { name: "", description: "", category: "", price: "" as string | number, image: "", branchId: "", isAvailable: true }
-  const [formData, setFormData] = useState(defaultForm)
 
-  // Branches for assignment
-  const [branches, setBranches] = useState<{ _id: string; address: { city: string; line1: string } }[]>([])
+  const [isDragging, setIsDragging] = useState(false)
 
-  // Fetch menu items scoped to partner
-  const fetchMenuItems = async () => {
-    if (!partnerId) return
+  const fetchMenuFiles = async () => {
+    if (!partnerId || !selectedBranchId) return
     try {
       setIsLoading(true)
-      const response = await api.get(`/restaurant/menu?partnerId=${partnerId}`)
-      setMenuItems(response.data)
-    } catch (error) {
-      console.error("Failed to fetch services", error)
+      const res = await api.get(`/restaurant/menu-file?partnerId=${partnerId}&branchId=${selectedBranchId}`)
+      setMenus(res.data)
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to load menus")
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    if (partnerId) {
-      fetchMenuItems()
-      // Fetch branches for the selector
-      api.get(`/branches?partnerId=${partnerId}`)
-        .then(res => setBranches(res.data || []))
-        .catch(() => {})
+    if (partnerId && selectedBranchId) {
+      fetchMenuFiles()
+    } else {
+      setMenus([])
+      setIsLoading(false)
     }
-  }, [partnerId])
+  }, [partnerId, selectedBranchId])
 
-  // Categories extraction
-  const categories = useMemo(() => {
-    const cats = new Set(menuItems.map(s => s.category).filter(Boolean))
-    return ["All", ...Array.from(cats)]
-  }, [menuItems])
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
 
-  // Filtered & Sorted Menu Items
-  const processedMenuItems = useMemo(() => {
-    let result = [...menuItems]
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
 
-    if (selectedBranchId) {
-      result = result.filter(s => 
-        s.branchId === selectedBranchId || 
-        (s.branchId as any)?._id === selectedBranchId
-      )
+  const uploadFile = async (file: File) => {
+    if (!partnerId || !selectedBranchId) {
+      toast.error("Please select a branch first")
+      return
     }
+    
+    // Check size limit (e.g., 9MB for base64 limits)
+    if (file.size > 9 * 1024 * 1024) {
+      toast.error(`File ${file.name} is too large. Max size is 9MB.`)
+      return
+    }
+
+    try {
+      setIsUploading(true)
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = error => reject(error)
+      })
+
+      const { format, type } = determineFormatAndType(file)
+
+      await api.post('/restaurant/menu-file', {
+        partnerId,
+        branchId: selectedBranchId,
+        name: file.name,
+        type,
+        format,
+        size: formatBytes(file.size),
+        fileData: base64Data
+      })
+      
+      toast.success(`${file.name} uploaded successfully`)
+      fetchMenuFiles()
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err?.response?.data?.message || "Failed to upload file")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0]
+      await uploadFile(file)
+    }
+  }
+
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0]
+      await uploadFile(file)
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const triggerUpload = (accept?: string) => {
+    setAcceptFilter(accept)
+    setTimeout(() => {
+      fileInputRef.current?.click()
+    }, 0)
+  }
+
+  const menuTypes = useMemo(() => {
+    const types = new Set(menus.map(m => m.type))
+    return ["All", ...Array.from(types)]
+  }, [menus])
+
+  const filteredMenus = useMemo(() => {
+    let result = [...menus]
     
     if (searchQuery) {
-      result = result.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      result = result.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    }
+    if (selectedType !== "All") {
+      result = result.filter(m => m.type === selectedType)
     }
     
-    if (selectedCategory !== "All") {
-      result = result.filter(s => s.category === selectedCategory)
-    }
-    
-    if (sortBy === "price-asc") {
-      result.sort((a, b) => a.price - b.price)
-    } else if (sortBy === "price-desc") {
-      result.sort((a, b) => b.price - a.price)
+    // Sort logic
+    if (sortBy === "last-modified") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    } else if (sortBy === "name-asc") {
+      result.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === "size-desc") {
+      result.sort((a, b) => parseFloat(b.size) - parseFloat(a.size))
     }
     
     return result
-  }, [menuItems, searchQuery, selectedCategory, sortBy, selectedBranchId])
-
-  // Pagination
-  const totalPages = Math.ceil(processedMenuItems.length / rowsPerPage) || 1
-  const paginatedMenuItems = processedMenuItems.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-  }
-
-  const handleEdit = (item: MenuItem) => {
-    setEditingId(item._id)
-    setFormData({
-      name: item.name,
-      description: item.description || "",
-      category: item.category || "",
-      price: item.price,
-      image: item.image || "",
-      branchId: (item.branchId as any)?._id || item.branchId || "",
-      isAvailable: item.isAvailable,
-    })
-    setImagePreview(item.image || "")
-    setImageFile(null)
-    setIsModalOpen(true)
-  }
+  }, [menus, searchQuery, selectedType, sortBy])
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t("common.confirmDelete", "Are you sure?"))) return
+    if(!confirm("Are you sure you want to delete this menu?")) return
     try {
-      await api.delete(`/restaurant/menu/${id}`)
-      fetchMenuItems()
-    } catch (error) {
-      console.error("Failed to delete service", error)
+      await api.delete(`/restaurant/menu-file/${id}`)
+      setMenus(menus.filter(m => m._id !== id))
+      toast.success("Menu deleted")
+    } catch(err) {
+      toast.error("Failed to delete menu")
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    setIsSubmitting(true)
+  const handleView = async (menu: MenuFile) => {
+    if (!menu.fileData) return
     try {
-      // Convert image file to base64 string if a new file was chosen
-      let imageData = formData.image
-      if (imageFile) {
-        imageData = await new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = (ev) => resolve(ev.target?.result as string)
-          reader.readAsDataURL(imageFile)
-        })
-      }
-
-      const payload: any = { ...formData, price: Number(formData.price) || 0, image: imageData, partnerId: partnerId || undefined }
-      if (!payload.branchId) {
-        delete payload.branchId
-      }
-      
-      if (editingId) {
-        await api.put(`/restaurant/menu/${editingId}`, payload)
-      } else {
-        await api.post('/restaurant/menu', payload)
-      }
-      
-      setIsModalOpen(false)
-      setFormData(defaultForm)
-      setImagePreview("")
-      setImageFile(null)
-      setEditingId(null)
-      fetchMenuItems()
-    } catch (error) {
-      console.error("Failed to save service", error)
-    } finally {
-      setIsSubmitting(false)
+      // Create an object URL from the base64 data to bypass browser data URL navigation blocks
+      const res = await fetch(menu.fileData)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+    } catch (err) {
+      toast.error("Failed to open file")
     }
   }
 
@@ -192,279 +255,209 @@ export default function ManageMenuPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex font-sans">
       <DashboardSidebar activePath="/dashboard/restaurant/menu" />
 
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 relative">
         <DashboardHeader />
 
-        <main className="flex-1 p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto">
+        {isUploading && (
+          <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center">
+             <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4">
+               <Loader2 className="w-10 h-10 text-[#C69C9B] animate-spin" />
+               <p className="font-bold text-foreground">Uploading file...</p>
+             </div>
+          </div>
+        )}
+
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileInput} 
+          className="hidden" 
+          accept={acceptFilter}
+        />
+
+        <main className="flex-1 p-6 lg:p-8" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+          {isDragging && (
+            <div className="absolute inset-0 z-40 bg-[#C69C9B]/10 backdrop-blur-[2px] border-4 border-dashed border-[#C69C9B] rounded-2xl m-6 lg:m-8 flex flex-col items-center justify-center">
+              <CloudUpload className="w-20 h-20 text-[#C69C9B] animate-bounce mb-4" />
+              <h2 className="text-3xl font-bold text-[#C69C9B]">Drop files to upload your menu</h2>
+            </div>
+          )}
+
+          <div className="max-w-6xl mx-auto space-y-8 relative z-10">
             
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            {!selectedBranchId ? (
+              <div className="bg-white p-12 rounded-2xl border border-border/40 shadow-sm flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
+                  <FileBox className="w-10 h-10 text-[#C69C9B]" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
+                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and upload its menus.</p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-border/40 shadow-sm">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{t("nav.menu", "Menu")}</h1>
-                <p className="text-muted-foreground mt-1">Manage your restaurant menu items</p>
+                <h1 className="text-3xl font-bold text-foreground">Menu Management</h1>
+                <p className="text-muted-foreground mt-1.5 text-sm">Manage your menus in any format</p>
               </div>
-              <button 
-                onClick={() => {
-                  setEditingId(null)
-                  setFormData(defaultForm)
-                  setIsModalOpen(true)
-                }}
-                className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                {t("menuPage.addNewItem", "Add Menu Item")}
-              </button>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6 bg-white p-2 rounded-xl shadow-sm border border-border/40">
-              <div className="relative flex-1 max-w-sm">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Search className="w-4 h-4" />
-                </div>
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  placeholder={t("menuPage.searchItems", "Search menu items...")} 
-                  className="w-full h-10 pl-9 pr-4 bg-[#FAFAFA] border-none rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
-                />
-              </div>
-              
-              <div className="relative group">
-                <select 
-                  value={selectedCategory} 
-                  onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
-                  className="appearance-none h-10 px-4 pr-8 border border-border/60 rounded-lg text-sm font-medium hover:bg-[#FAFAFA] bg-transparent outline-none cursor-pointer"
+              <div className="flex flex-wrap items-center gap-3">
+                <button 
+                  onClick={() => triggerUpload()} 
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C69C9B] text-white text-sm font-semibold hover:bg-[#BCAAA4] transition-colors shadow-sm"
                 >
-                  {categories.map(cat => <option key={cat} value={cat}>{cat === "All" ? t("menuPage.allCategories", "All Categories") : cat}</option>)}
-                </select>
-                <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
-              </div>
-
-              <div className="sm:ml-auto flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">{t("servicesPage.sortBy")}</span>
-                <div className="relative">
-                  <select 
-                    value={sortBy} 
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none pl-2 pr-6 font-semibold bg-transparent outline-none cursor-pointer"
-                  >
-                    <option value="last-modified">{t("menuPage.lastModified", "Last Modified")}</option>
-                    <option value="price-asc">{t("menuPage.priceLowHigh", "Price: Low to High")}</option>
-                    <option value="price-desc">{t("menuPage.priceHighLow", "Price: High to Low")}</option>
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-foreground absolute right-0 top-1 pointer-events-none" />
-                </div>
+                  <Upload className="w-4 h-4" />
+                  Upload Menu
+                </button>
               </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-xl border border-border/60 shadow-sm overflow-hidden mb-8">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[800px]">
-                  <thead>
-                    <tr className="border-b border-border/60">
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("menuPage.itemName", "Item Name")}</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("menuPage.description", "Description")}</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">{t("menuPage.price", "Price")}</th>
-                      <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-muted-foreground uppercase text-right">{t("common.actions", "Actions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/40">
-                    {isLoading ? (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">{t("menuPage.loadingItems", "Loading menu items...")}</td>
-                      </tr>
-                    ) : paginatedMenuItems.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">{t("menuPage.noItemsFound", "No menu items found.")}</td>
-                      </tr>
-                    ) : (
-                      paginatedMenuItems.map((item) => (
-                        <tr key={item._id} className="hover:bg-[#FAFAFA]/50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-4">
-                              <div className="relative w-12 h-12 rounded-lg bg-[#FAFAFA] border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
-                                {item.image ? (
-                                  <Image src={item.image} alt={item.name} fill className="object-cover" />
-                                ) : (
-                                  <ImageIcon className="w-5 h-5 text-muted-foreground/40" />
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-bold text-sm text-foreground">{item.name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{t("menuPage.category", "Category")}: {item.category || t("menuPage.uncategorized", "Uncategorized")}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground"><span className="line-clamp-2">{item.description}</span></td>
-                          <td className="px-6 py-4 text-sm font-bold text-foreground">{formatPrice(item.price, partner?.currency)}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => handleEdit(item)} className="p-2 text-muted-foreground hover:text-[#C69C9B] transition-colors rounded-lg hover:bg-[#FDF6F6]">
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => handleDelete(item._id)} className="p-2 text-muted-foreground hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+            {/* Upload Options Grid */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-foreground px-1">Choose how you want to add your menu</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {uploadOptions.map((opt) => {
+                  const config = formatConfig[opt.format as keyof typeof formatConfig]
+                  const Icon = config.icon
+                  return (
+                    <button 
+                      key={opt.id}
+                      onClick={() => triggerUpload(opt.accept)}
+                      className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-md hover:border-[#C69C9B]/50 transition-all group text-center"
+                    >
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${config.bg}`}>
+                        <Icon className={`w-7 h-7 ${config.color}`} />
+                      </div>
+                      <h3 className="font-bold text-sm text-foreground mb-1">{opt.title}</h3>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </button>
+                  )
+                })}
               </div>
+            </div>
 
-              {/* Table Footer */}
-              {!isLoading && processedMenuItems.length > 0 && (
-                <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between bg-[#FAFAFA]/50">
-                  <span className="text-sm text-muted-foreground">
-                    {t("common.showing", "Showing")} {(currentPage - 1) * rowsPerPage + 1} {t("common.to", "-")} {Math.min(currentPage * rowsPerPage, processedMenuItems.length)} {t("common.of", "of")} {processedMenuItems.length} {t("common.results", "results")}
-                  </span>
-                  
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="w-8 h-8 flex items-center justify-center rounded border border-border bg-white text-muted-foreground hover:bg-[#FAFAFA] disabled:opacity-50"
-                      >
-                        <ChevronDown className="w-4 h-4 rotate-90" />
-                      </button>
-                      
-                      {Array.from({ length: totalPages }).map((_, i) => {
-                        const page = i + 1;
-                        const isActive = page === currentPage;
-                        return (
-                          <button 
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${
-                              isActive ? "bg-[#FDF6F6] text-[#E5555E] font-bold" : "hover:bg-[#FAFAFA] text-muted-foreground"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )
-                      })}
+            {/* List Section */}
+            <div className="bg-white rounded-2xl border border-border/40 shadow-sm overflow-hidden flex flex-col">
+              
+              {/* Filters Toolbar */}
+              <div className="p-4 sm:p-5 border-b border-border/40 bg-[#FAFAFA]/50 flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative flex-1 w-full max-w-md">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search menus..." 
+                    className="w-full h-10 pl-9 pr-4 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]/50 shadow-sm"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative">
+                    <select 
+                      value={selectedType} 
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="appearance-none h-10 px-4 pr-8 bg-white border border-border/60 rounded-xl text-sm font-medium hover:bg-muted/50 outline-none cursor-pointer shadow-sm"
+                    >
+                      {menuTypes.map(cat => <option key={cat} value={cat}>{cat === "All" ? "All Menu Types" : cat}</option>)}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
+                  </div>
 
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        className="w-8 h-8 flex items-center justify-center rounded border border-border bg-white text-muted-foreground hover:bg-[#FAFAFA] disabled:opacity-50"
-                      >
-                        <ChevronDown className="w-4 h-4 -rotate-90" />
-                      </button>
-                    </div>
+                  <div className="relative">
+                    <select 
+                      value={sortBy} 
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="appearance-none h-10 px-4 pr-8 bg-white border border-border/60 rounded-xl text-sm font-medium hover:bg-muted/50 outline-none cursor-pointer shadow-sm"
+                    >
+                      <option value="last-modified">Last Modified</option>
+                      <option value="name-asc">Name (A-Z)</option>
+                      <option value="size-desc">Size (Large-Small)</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Menus List */}
+              <div className="flex-1">
+                {isLoading ? (
+                  <div className="p-12 flex flex-col items-center justify-center text-center">
+                    <Loader2 className="w-8 h-8 text-[#C69C9B] animate-spin mb-4" />
+                    <p className="text-muted-foreground">Loading your menus...</p>
+                  </div>
+                ) : filteredMenus.length === 0 ? (
+                  <div className="p-12 flex flex-col items-center justify-center text-center">
+                    <div className="w-24 h-24 bg-muted/30 rounded-full flex items-center justify-center mb-6">
+                      <FileBox className="w-10 h-10 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">No menus found</h3>
+                    <p className="text-muted-foreground text-sm max-w-sm mb-6">You haven't uploaded any menus yet or no menus match your search criteria.</p>
+                    <button 
+                      onClick={() => triggerUpload()}
+                      className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload your first menu
+                    </button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/40">
+                    {filteredMenus.map((menu) => {
+                      const config = formatConfig[menu.format as keyof typeof formatConfig] || formatConfig.document
+                      const Icon = config.icon
+                      return (
+                        <div key={menu._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 hover:bg-[#FAFAFA] transition-colors gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-border/20 ${config.bg}`}>
+                              <Icon className={`w-6 h-6 ${config.color}`} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-3 mb-1">
+                                <button onClick={() => handleView(menu)} className="font-bold text-foreground hover:text-[#C69C9B] transition-colors text-left text-base">{menu.name}</button>
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${config.badge}`}>
+                                  {menu.type}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+                                <span>Uploaded on {formatDate(menu.createdAt || new Date().toISOString(), i18n.language)}</span>
+                                <span className="w-1 h-1 rounded-full bg-border/80"></span>
+                                <span>{menu.size}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-start sm:self-auto pl-16 sm:pl-0">
+                            {menu.fileData && (
+                              <>
+                                <button onClick={() => handleView(menu)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 text-xs font-semibold text-foreground hover:bg-muted/50 bg-white shadow-sm transition-colors">
+                                  <Eye className="w-3.5 h-3.5" /> View
+                                </button>
+                                <a href={menu.fileData} download={menu.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 text-xs font-semibold text-foreground hover:bg-muted/50 bg-white shadow-sm transition-colors">
+                                  <Download className="w-3.5 h-3.5" /> Download
+                                </a>
+                              </>
+                            )}
+                            <button onClick={() => handleDelete(menu._id)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 bg-white shadow-sm transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
             </div>
-
-
+            </>
+            )}
 
           </div>
         </main>
       </div>
-
-      {/* Add/Edit Service Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-            
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-lg font-bold">{editingId ? t("menuPage.editItem", "Edit Menu Item") : t("menuPage.addItem", "Add Menu Item")}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-muted rounded-full">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto">
-              <form id="service-form" onSubmit={handleSubmit} className="space-y-4">
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.itemName", "Item Name")}</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Classic Burger" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.description", "Description")}</label>
-                  <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] min-h-[80px]" placeholder="e.g. Beef patty with cheese, lettuce, and tomato" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.category", "Category")}</label>
-                    <input type="text" required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Mains" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.price", "Price")} ({partner?.currency || 'USD'})</label>
-                    <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="0.00" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
-                  </div>
-                </div>
-
-                {/* Branch Assignment */}
-                {branches.length > 0 && (
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.assignBranch", "Assign Branch (Optional)")}</label>
-                    <select 
-                      value={formData.branchId} 
-                      onChange={e => setFormData({...formData, branchId: e.target.value})}
-                      className="w-full h-10 px-4 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
-                    >
-                      <option value="">Global (All Branches)</option>
-                      {branches.map(b => (
-                        <option key={b._id} value={b._id}>{b.address.city} - {b.address.line1}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.itemImage", "Item Image")}</label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border/60 hover:border-[#C69C9B] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FDF6F6] gap-2"
-                  >
-                    {imagePreview ? (
-                      <div className="relative w-28 h-28 rounded-lg overflow-hidden border border-border/40">
-                        <Image src={imagePreview} alt="Preview" fill className="object-cover" />
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-[#C69C9B]/60" />
-                        <p className="text-sm font-medium text-muted-foreground">{t("menuPage.clickToUpload", "Click to upload")}</p>
-                        <p className="text-xs text-muted-foreground">{t("menuPage.fileFormats", "PNG, JPG up to 5MB")}</p>
-                      </>
-                    )}
-                    {imagePreview && (
-                      <button type="button" onClick={e => { e.stopPropagation(); setImagePreview(""); setImageFile(null); }} className="text-xs text-red-500 hover:underline mt-1">
-                        {t("menuPage.removeImage", "Remove Image")}
-                      </button>
-                    )}
-                  </div>
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                </div>
-
-              </form>
-            </div>
-
-            <div className="px-6 py-4 border-t border-border bg-[#FAFAFA]/50 flex justify-end gap-3 sticky bottom-0">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
-                {t("common.cancel")}
-              </button>
-              <button type="submit" form="service-form" disabled={isSubmitting} className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
-                {isSubmitting ? t("common.saving") : (editingId ? t("menuPage.updateItem", "Update Item") : t("menuPage.saveItem", "Save Item"))}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
     </div>
   )
 }

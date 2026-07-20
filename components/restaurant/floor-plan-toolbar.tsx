@@ -4,7 +4,7 @@ import {
   Undo, Redo, Copy, ClipboardPaste, CopyPlus, Trash2, 
   ZoomIn, ZoomOut, Maximize, Grid, Magnet, Ruler, Eye, 
   MousePointer2, Hand, SquarePen, BoxSelect, Plus, Type,
-  Search, Save, ChevronDown
+  Search, Save, ChevronDown, Sparkles
 } from "lucide-react"
 
 interface FloorPlanToolbarProps {
@@ -35,6 +35,7 @@ interface FloorPlanToolbarProps {
   activeFloorId?: string | null
   setActiveFloorId?: (id: string) => void
   onAddFloor?: () => void
+  onOpenAiModal?: () => void
 }
 
 const Sep = () => <div className="h-5 w-px bg-gray-200 mx-1 shrink-0" />
@@ -63,7 +64,7 @@ export function FloorPlanToolbar({
   onZoomIn, onZoomOut, onFitScreen,
   gridEnabled, setGridEnabled, snapEnabled, setSnapEnabled, measurementEnabled, setMeasurementEnabled,
   previewMode, setPreviewMode, onSave, isSaving,
-  floors = [], activeFloorId, setActiveFloorId, onAddFloor
+  floors = [], activeFloorId, setActiveFloorId, onAddFloor, onOpenAiModal
 }: FloorPlanToolbarProps) {
   return (
     <div className="bg-white border-b border-gray-200 px-4 h-12 flex items-center justify-between shrink-0 shadow-sm z-10 w-full">
@@ -133,6 +134,15 @@ export function FloorPlanToolbar({
 
       {/* Right section: Search & Save */}
       <div className="flex items-center gap-3 shrink-0">
+        <button
+          onClick={onOpenAiModal}
+          title="AI Generate Floor Plan"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shrink-0 shadow-sm"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span className="hidden sm:inline">AI Generate</span>
+        </button>
+
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input 

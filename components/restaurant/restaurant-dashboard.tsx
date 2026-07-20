@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { useTranslation } from "react-i18next"
-import { Users, Clock, CalendarCheck, CalendarX, CheckCircle, TrendingUp } from "lucide-react"
+import { Users, Clock, CalendarCheck, CalendarX, CheckCircle, TrendingUp, Plus } from "lucide-react"
 import api from "@/lib/api"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { usePartner } from "@/hooks/usePartner"
@@ -120,7 +120,7 @@ export function RestaurantDashboard() {
             <div className="grid gap-6 md:grid-cols-2">
                <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6">
                 <h3 className="font-bold text-lg mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <a href="/dashboard/restaurant/reservations" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
                     <Clock className="h-6 w-6 text-[#E5555E]" />
                     <span className="font-semibold text-sm">Manage Reservations</span>
@@ -128,6 +128,10 @@ export function RestaurantDashboard() {
                   <a href="/dashboard/restaurant/floor-plan" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
                     <Users className="h-6 w-6 text-[#E5555E]" />
                     <span className="font-semibold text-sm">Edit Floor Plan</span>
+                  </a>
+                  <a href="/dashboard/restaurant/reservations?add=true" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
+                    <Plus className="h-6 w-6 text-[#E5555E]" />
+                    <span className="font-semibold text-sm">Add Booking</span>
                   </a>
                 </div>
                </div>

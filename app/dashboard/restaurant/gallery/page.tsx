@@ -32,8 +32,8 @@ export default function RestaurantGalleryPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [selectedCategory, setSelectedCategory] = useState("Interior")
 
-  // Which branch are we editing? (Fallback to first branch if no branch selected globally)
-  const activeBranchId = selectedBranchId || branches[0]?._id
+  // Which branch are we editing?
+  const activeBranchId = selectedBranchId
   const activeBranch = branches.find(b => b._id === activeBranchId)
 
   const fetchBranch = async () => {
@@ -50,7 +50,11 @@ export default function RestaurantGalleryPage() {
   }
 
   useEffect(() => {
-    fetchBranch()
+    if (activeBranchId) {
+      fetchBranch()
+    } else {
+      setGallery([])
+    }
   }, [activeBranchId])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,24 +138,26 @@ export default function RestaurantGalleryPage() {
                 <p className="text-muted-foreground mt-1">Manage your restaurant photos for {activeBranch ? `${activeBranch.address.city} - ${activeBranch.address.line1}` : "all branches"}</p>
               </div>
               <div className="flex items-center gap-3">
-                {branches.length > 1 && !selectedBranchId && (
-                  <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-1.5 rounded-lg text-sm border border-amber-200">
-                    <MapPin className="w-4 h-4" /> Select a specific branch to manage its gallery
+                {branches.length > 0 && !selectedBranchId && (
+                  <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-1.5 rounded-lg text-sm border border-amber-200 shadow-sm">
+                    <MapPin className="w-4 h-4" /> Select a branch to upload photos
                   </div>
                 )}
-                <button 
-                  onClick={() => {
-                    if (!activeBranchId) {
-                      toast.error("Please create a branch first.")
-                      return
-                    }
-                    setIsModalOpen(true)
-                  }}
-                  className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  {t("galleryPage.addPhoto", "Add Photo")}
-                </button>
+                {selectedBranchId && (
+                  <button 
+                    onClick={() => {
+                      if (!activeBranchId) {
+                        toast.error("Please create a branch first.")
+                        return
+                      }
+                      setIsModalOpen(true)
+                    }}
+                    className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t("galleryPage.addPhoto", "Add Photo")}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -173,7 +179,15 @@ export default function RestaurantGalleryPage() {
             </div>
 
             {/* Grid */}
-            {isLoading ? (
+            {!selectedBranchId ? (
+              <div className="bg-white rounded-xl border border-border/40 p-12 flex flex-col items-center justify-center text-center shadow-sm">
+                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
+                  <MapPin className="w-10 h-10 text-[#C69C9B]" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
+                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its gallery.</p>
+              </div>
+            ) : isLoading ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 animate-spin text-[#C69C9B]" />
               </div>

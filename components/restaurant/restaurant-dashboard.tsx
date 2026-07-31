@@ -70,15 +70,15 @@ export function RestaurantDashboard() {
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-8">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Restaurant Dashboard</h1>
-              <p className="text-muted-foreground mt-2">Welcome back. Here&apos;s what&apos;s happening at your restaurant today.</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("restaurant.dashboard.title", "Restaurant Dashboard")}</h1>
+              <p className="text-muted-foreground mt-2">{t("restaurant.dashboard.subtitle", "Welcome back. Here's what's happening at your restaurant today.")}</p>
             </div>
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Stat Cards */}
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">Today&apos;s Bookings</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.todaysBookings", "Today's Bookings")}</h3>
                   <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
                     <CalendarCheck className="h-5 w-5 text-blue-500" />
                   </div>
@@ -88,7 +88,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">Currently Seated</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.currentlySeated", "Currently Seated")}</h3>
                   <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
                     <Users className="h-5 w-5 text-emerald-500" />
                   </div>
@@ -98,7 +98,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">Completed</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.completed", "Completed")}</h3>
                   <div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center">
                     <CheckCircle className="h-5 w-5 text-purple-500" />
                   </div>
@@ -108,7 +108,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">Capacity Utilized</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.capacityUtilized", "Capacity Utilized")}</h3>
                   <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center">
                     <TrendingUp className="h-5 w-5 text-amber-500" />
                   </div>
@@ -119,27 +119,27 @@ export function RestaurantDashboard() {
 
             <div className="grid gap-6 md:grid-cols-2">
                <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6">
-                <h3 className="font-bold text-lg mb-4">Quick Actions</h3>
+                <h3 className="font-bold text-lg mb-4">{t("restaurant.dashboard.quickActions", "Quick Actions")}</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <a href="/dashboard/restaurant/reservations" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
                     <Clock className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">Manage Reservations</span>
+                    <span className="font-semibold text-sm">{t("restaurant.dashboard.manageReservations", "Manage Reservations")}</span>
                   </a>
                   <a href="/dashboard/restaurant/floor-plan" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
                     <Users className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">Edit Floor Plan</span>
+                    <span className="font-semibold text-sm">{t("restaurant.dashboard.editFloorPlan", "Edit Floor Plan")}</span>
                   </a>
                   <a href="/dashboard/restaurant/reservations?add=true" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
                     <Plus className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">Add Booking</span>
+                    <span className="font-semibold text-sm">{t("restaurant.dashboard.addBooking", "Add Booking")}</span>
                   </a>
                 </div>
                </div>
                
                <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col items-center justify-center text-center">
                   <CalendarX className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="font-semibold text-foreground">No alerts for today</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Everything is running smoothly.</p>
+                  <h3 className="font-semibold text-foreground">{t("restaurant.dashboard.noAlerts", "No alerts for today")}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{t("restaurant.dashboard.allSmooth", "Everything is running smoothly.")}</p>
                </div>
             </div>
 

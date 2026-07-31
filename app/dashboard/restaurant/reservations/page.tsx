@@ -7,16 +7,26 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { usePartner } from "@/hooks/usePartner"
 import { toast } from "sonner"
-import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle, ArrowRightLeft, Plus } from "lucide-react"
+import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle, ArrowRightLeft, Plus, Layers, List, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import api from "@/lib/api"
 import { format } from "date-fns"
+import { useTranslation } from "react-i18next"
+import { FloorPlanCanvas } from "@/components/restaurant/floor-plan-canvas"
 
 export default function ReservationsManagementPage() {
+  const { t } = useTranslation()
   const { partnerId } = usePartner()
   const { selectedBranchId } = useBranchContext()
 
   const [reservations, setReservations] = useState<any[]>([])
   const [tables, setTables] = useState<any[]>([])
+  const [floors, setFloors] = useState<any[]>([])
+  const [elements, setElements] = useState<any[]>([])
+  const [modalActiveFloorId, setModalActiveFloorId] = useState<string | null>(null)
+  const [tableSelectMode, setTableSelectMode] = useState<"visual" | "list">("visual")
+  const [manualZoom, setManualZoom] = useState<number | null>(null)
+  const [manualPan, setManualPan] = useState<{ x: number; y: number } | null>(null)
+
   const [date, setDate] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
   const [reassignDialog, setReassignDialog] = useState<{isOpen: boolean, reservationId: string | null, newTableId: string, reason: string}>({ isOpen: false, reservationId: null, newTableId: "", reason: "" })
@@ -103,6 +113,88 @@ export default function ReservationsManagementPage() {
     }
   }, [selectedBranchId, partnerId, date])
 
+  const selectedTableObj = useMemo(() => {
+    return tables.find(tItem => tItem._id === addDialog.tableId || tItem.id === addDialog.tableId)
+  }, [tables, addDialog.tableId])
+
+  const uniqueFloors = useMemo(() => {
+    const map = new Map()
+    floors.forEach(f => {
+      if (f && f.name) {
+        const key = f.name.trim().toLowerCase()
+        if (!map.has(key)) {
+          map.set(key, f)
+        }
+      } else if (f && (f._id || f.id)) {
+        map.set(f._id || f.id, f)
+      }
+    })
+    return Array.from(map.values()) as any[]
+  }, [floors])
+
+  const currentActiveFloorId = modalActiveFloorId || uniqueFloors[0]?._id || uniqueFloors[0]?.id
+
+  const currentFloorTables = useMemo(() => {
+    return tables.filter(tItem => tItem.floorId === currentActiveFloorId)
+  }, [tables, currentActiveFloorId])
+
+  const currentFloorElements = useMemo(() => {
+    return elements.filter(eItem => eItem.floorId === currentActiveFloorId)
+  }, [elements, currentActiveFloorId])
+
+  const autoFitTransform = useMemo(() => {
+    if (currentFloorTables.length === 0 && currentFloorElements.length === 0) {
+      return { scale: 0.75, pan: { x: 50, y: 50 } }
+    }
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+
+    currentFloorTables.forEach(tItem => {
+      const x = tItem.position?.x ?? tItem.x ?? 100
+      const y = tItem.position?.y ?? tItem.y ?? 100
+      const w = tItem.dimensions?.width ?? tItem.width ?? 120
+      const h = tItem.dimensions?.height ?? tItem.height ?? 120
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x + w)
+      maxY = Math.max(maxY, y + h)
+    })
+
+    currentFloorElements.forEach(eItem => {
+      const x = eItem.position?.x ?? eItem.x ?? 100
+      const y = eItem.position?.y ?? eItem.y ?? 100
+      const w = eItem.width ?? 100
+      const h = eItem.height ?? 100
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x + w)
+      maxY = Math.max(maxY, y + h)
+    })
+
+    if (minX === Infinity || isNaN(minX)) {
+      return { scale: 0.75, pan: { x: 50, y: 50 } }
+    }
+
+    const containerW = 950
+    const containerH = 460
+    const padding = 60
+
+    const boundingW = Math.max(maxX - minX + padding * 2, 300)
+    const boundingH = Math.max(maxY - minY + padding * 2, 300)
+
+    const scaleX = containerW / boundingW
+    const scaleY = containerH / boundingH
+    const calcScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.35), 1.25)
+
+    const calcPanX = (containerW - (maxX + minX) * calcScale) / 2
+    const calcPanY = (containerH - (maxY + minY) * calcScale) / 2
+
+    return { scale: calcScale, pan: { x: calcPanX, y: calcPanY } }
+  }, [currentFloorTables, currentFloorElements])
+
+  const activeScale = manualZoom ?? autoFitTransform.scale
+  const activePan = manualPan ?? autoFitTransform.pan
+
   const loadData = async () => {
     setIsLoading(true)
     try {
@@ -110,13 +202,32 @@ export default function ReservationsManagementPage() {
       const branchQuery = selectedBranchId ? `&branchId=${selectedBranchId}` : ''
       const partnerQuery = partnerId ? `partnerId=${partnerId}` : ''
       
-      const [resData, tablesData] = await Promise.all([
+      const [resData, tablesData, floorsData] = await Promise.all([
         api.get(`/restaurant/reservations?${partnerQuery}${branchQuery}&date=${dateStr}`),
-        api.get(`/restaurant/tables?${partnerQuery}${branchQuery}`)
+        api.get(`/restaurant/tables?${partnerQuery}${branchQuery}`),
+        selectedBranchId ? api.get(`/restaurant/floors?branchId=${selectedBranchId}`) : Promise.resolve({ data: [] })
       ])
       
       setReservations(resData.data)
       setTables(tablesData.data)
+      const fetchedFloors = floorsData.data || []
+      setFloors(fetchedFloors)
+
+      const allElements: any[] = []
+      if (Array.isArray(fetchedFloors)) {
+        fetchedFloors.forEach((f: any) => {
+          if (f.elements) {
+            f.elements.forEach((e: any) => {
+              allElements.push({ ...e, floorId: f._id })
+            })
+          }
+        })
+      }
+      setElements(allElements)
+
+      if (fetchedFloors.length > 0 && !modalActiveFloorId) {
+        setModalActiveFloorId(fetchedFloors[0]._id)
+      }
     } catch (err) {
       toast.error("Failed to load reservations")
     } finally {
@@ -211,8 +322,8 @@ export default function ReservationsManagementPage() {
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Reservations</h1>
-                <p className="text-muted-foreground mt-1">Manage today&apos;s bookings and seated guests.</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("restaurant.reservations.title", "Reservations")}</h1>
+                <p className="text-muted-foreground mt-1">{t("restaurant.reservations.subtitle", "Manage today's bookings and seated guests.")}</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-3 bg-white px-4 py-2 border border-border/60 rounded-lg shadow-sm">
@@ -230,7 +341,7 @@ export default function ReservationsManagementPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-[#E5555E] hover:bg-[#D4444D] text-white rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
                   >
                     <Plus className="h-4 w-4" />
-                    Add Booking
+                    {t("restaurant.reservations.addBooking", "Add Booking")}
                   </button>
                 )}
               </div>
@@ -241,8 +352,8 @@ export default function ReservationsManagementPage() {
                 <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
                   <Calendar className="w-10 h-10 text-[#C69C9B]" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
-                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its reservations.</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
+                <p className="text-muted-foreground max-w-md">{t("restaurant.reservations.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its reservations.")}</p>
               </div>
             ) : (
               <>
@@ -252,19 +363,19 @@ export default function ReservationsManagementPage() {
               </div>
             ) : reservations.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-xl border border-border/60 border-dashed">
-                <p className="text-muted-foreground">No reservations found for this date.</p>
+                <p className="text-muted-foreground">{t("restaurant.reservations.noReservations", "No reservations found for this date.")}</p>
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-border/60 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-[#FAFAFA] border-b border-border/60 text-muted-foreground">
                     <tr>
-                      <th className="px-6 py-3 font-semibold">Time</th>
-                      <th className="px-6 py-3 font-semibold">Guest</th>
-                      <th className="px-6 py-3 font-semibold">Table</th>
-                      <th className="px-6 py-3 font-semibold">Party</th>
-                      <th className="px-6 py-3 font-semibold">Status</th>
-                      <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.time", "Time")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.guest", "Guest")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.table", "Table")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.party", "Party")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.status", "Status")}</th>
+                      <th className="px-6 py-3 font-semibold text-right">{t("restaurant.reservations.actions", "Actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -427,49 +538,211 @@ export default function ReservationsManagementPage() {
 
             {/* Add Booking Dialog */}
             {addDialog.isOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
-                  <div className="p-6 border-b border-border/40">
-                    <h3 className="text-xl font-bold text-foreground">Add New Booking</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Create a manual reservation.</p>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col max-h-[92vh] border border-border/40">
+                  <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-gray-50/50 to-white">
+                    <div>
+                      <h3 className="text-2xl font-extrabold text-foreground tracking-tight">{t("restaurant.reservations.addDialogTitle", "Add New Booking")}</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">{t("restaurant.reservations.addDialogSubtitle", "Create a manual reservation.")}</p>
+                    </div>
+                    {selectedTableObj && (
+                      <div className="hidden sm:flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 text-emerald-800 px-4 py-2 rounded-2xl shadow-xs">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Table {selectedTableObj.tableNumber}</span>
+                        <span className="text-xs text-emerald-600 font-medium">• {selectedTableObj.capacity} {t("restaurant.tables.seats", "seats")}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  <div className="p-6 space-y-8 flex-1 overflow-y-auto">
+                  <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                     
-                    {/* Step 1: Table & Party Size */}
-                    <div className="grid grid-cols-2 gap-4 bg-[#FAFAFA] p-5 rounded-2xl border border-border/60 shadow-sm">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground">1. Select Table *</label>
-                        <select 
-                          value={addDialog.tableId}
-                          onChange={(e) => setAddDialog(prev => ({...prev, tableId: e.target.value, startTime: "", endTime: ""}))}
-                          className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                        >
-                          <option value="" disabled>Select a table...</option>
-                          {tables.map(t => (
-                            <option key={t._id} value={t._id}>
-                              Table {t.tableNumber} (Capacity: {t.capacity})
-                            </option>
-                          ))}
-                        </select>
+                    {/* Step 1: Visual Floor Plan & Party Size */}
+                    <div className="space-y-4 bg-[#FAF9F6]/80 p-5 sm:p-6 rounded-3xl border border-border/60 shadow-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+                        <div className="flex items-center gap-2">
+                          <label className="text-base font-extrabold text-foreground">{t("restaurant.reservations.selectTable", "1. Select Table *")}</label>
+                          {selectedTableObj && (
+                            <span className="sm:hidden bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                              Table {selectedTableObj.tableNumber} ({selectedTableObj.capacity} seats)
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Mode Switcher & Party Size Input */}
+                        <div className="flex items-center gap-3">
+                          <div className="flex bg-gray-200/80 p-1 rounded-2xl text-xs font-medium">
+                            <button
+                              type="button"
+                              onClick={() => setTableSelectMode("visual")}
+                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition-all ${
+                                tableSelectMode === "visual" ? "bg-white text-gray-900 shadow-sm font-bold" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <Layers className="w-3.5 h-3.5" />
+                              {t("restaurant.floorPlan.visualPlan", "Visual Plan")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTableSelectMode("list")}
+                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition-all ${
+                                tableSelectMode === "list" ? "bg-white text-gray-900 shadow-sm font-bold" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <List className="w-3.5 h-3.5" />
+                              {t("restaurant.tables.dropdownList", "Dropdown List")}
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2 pl-3 border-l border-gray-300">
+                            <label className="text-xs font-bold text-foreground whitespace-nowrap">{t("restaurant.reservations.partySize", "Party Size *")}:</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={addDialog.partySize}
+                              onChange={(e) => setAddDialog(prev => ({ ...prev, partySize: parseInt(e.target.value) || 1 }))}
+                              className="w-16 h-8 px-2 rounded-xl border border-border/60 bg-white text-sm font-extrabold text-center focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] shadow-2xs"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground">Party Size *</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={addDialog.partySize}
-                          onChange={(e) => setAddDialog(prev => ({...prev, partySize: parseInt(e.target.value) || 1}))}
-                          className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                        />
-                      </div>
+
+                      {tableSelectMode === "visual" ? (
+                        <div className="space-y-4">
+                          {/* Clean Unique Floor Switcher (Only shown if restaurant has multiple floors) */}
+                          {uniqueFloors.length > 1 && (
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                              <span className="text-xs font-bold text-muted-foreground shrink-0 uppercase tracking-wider">{t("restaurant.floorPlan.selectFloor", "Floor")}:</span>
+                              {uniqueFloors.map((f: any) => {
+                                const fId = f._id || f.id
+                                const fTablesCount = tables.filter(tItem => tItem.floorId === fId).length
+                                return (
+                                  <button
+                                    key={fId}
+                                    type="button"
+                                    onClick={() => {
+                                      setModalActiveFloorId(fId)
+                                      setManualZoom(null)
+                                      setManualPan(null)
+                                    }}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                                      currentActiveFloorId === fId
+                                        ? "bg-gray-900 text-white shadow-md"
+                                        : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-2xs"
+                                    }`}
+                                  >
+                                    <span>{f.name}</span>
+                                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                                      currentActiveFloorId === fId ? "bg-gray-700 text-gray-100" : "bg-gray-100 text-gray-600"
+                                    }`}>
+                                      {fTablesCount} {t("restaurant.tables.tablesCountBadge", "tables")}
+                                    </span>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          {/* Visual Floor Canvas Container */}
+                          <div className="relative w-full h-[460px] sm:h-[500px] bg-[#FAF9F6] rounded-2xl border border-gray-200 overflow-hidden shadow-inner flex flex-col group">
+                            {/* Floating Controls */}
+                            <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-gray-200/80 shadow-md">
+                              <button
+                                type="button"
+                                title="Zoom In"
+                                onClick={() => setManualZoom((prev => (prev ?? autoFitTransform.scale) * 1.18))}
+                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+                              >
+                                <ZoomIn className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                title="Zoom Out"
+                                onClick={() => setManualZoom((prev => (prev ?? autoFitTransform.scale) * 0.85))}
+                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+                              >
+                                <ZoomOut className="w-4 h-4" />
+                              </button>
+                              <div className="h-4 w-px bg-gray-200 mx-0.5" />
+                              <button
+                                type="button"
+                                title="Fit Full Plan"
+                                onClick={() => {
+                                  setManualZoom(null)
+                                  setManualPan(null)
+                                }}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-gray-100 text-xs font-bold text-gray-700 transition-colors"
+                              >
+                                <Maximize2 className="w-3.5 h-3.5" />
+                                <span>Fit Plan</span>
+                              </button>
+                            </div>
+
+                            <FloorPlanCanvas
+                              floor={uniqueFloors.find(f => (f._id || f.id) === currentActiveFloorId) || uniqueFloors[0]}
+                              tables={currentFloorTables}
+                              elements={currentFloorElements}
+                              selectedElementIds={addDialog.tableId ? [addDialog.tableId] : []}
+                              onSelectElement={(id) => {
+                                if (!id) return
+                                const targetId = Array.isArray(id) ? id[0] : id
+                                const selTable = tables.find(tItem => tItem._id === targetId || tItem.id === targetId)
+                                if (selTable) {
+                                  setAddDialog(prev => ({
+                                    ...prev,
+                                    tableId: selTable._id || selTable.id,
+                                    partySize: selTable.capacity ? selTable.capacity : prev.partySize,
+                                    startTime: "",
+                                    endTime: ""
+                                  }))
+                                  toast.info(`Selected Table ${selTable.tableNumber} (${selTable.capacity} seats)`)
+                                }
+                              }}
+                              onUpdateTable={() => {}}
+                              onUpdateArea={() => {}}
+                              readOnly={true}
+                              mode="select"
+                              scale={activeScale}
+                              pan={activePan}
+                              gridEnabled={true}
+                              snapEnabled={false}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 px-1">
+                            <span className="flex items-center gap-1.5 font-medium">
+                              <span>👈</span> {t("restaurant.reservations.clickTableHint", "Click any table directly on the floor plan to select it")}
+                            </span>
+                            {addDialog.tableId && (
+                              <span className="font-extrabold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                ✓ Table {selectedTableObj?.tableNumber} {t("restaurant.reservations.selected", "Selected")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        /* Dropdown Selector Mode */
+                        <div className="space-y-2">
+                          <select 
+                            value={addDialog.tableId}
+                            onChange={(e) => setAddDialog(prev => ({...prev, tableId: e.target.value, startTime: "", endTime: ""}))}
+                            className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                          >
+                            <option value="" disabled>{t("restaurant.reservations.selectTablePlaceholder", "Select a table...")}</option>
+                            {tables.map(tItem => (
+                              <option key={tItem._id} value={tItem._id}>
+                                Table {tItem.tableNumber} (Capacity: {tItem.capacity} seats)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
 
                     {/* Step 2: Date & Time (Conditional) */}
                     {addDialog.tableId && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-semibold text-foreground">2. Select Date & Time *</label>
+                          <label className="text-sm font-semibold text-foreground">{t("restaurant.reservations.selectDateTime", "2. Select Date & Time *")}</label>
                         </div>
                         <div className="border border-border/60 rounded-2xl p-4 sm:p-6 bg-[#FAFAFA] shadow-sm">
                           <DateTimePicker
@@ -487,7 +760,7 @@ export default function ReservationsManagementPage() {
                           {addDialog.startTime && (
                             <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-border/40 animate-in fade-in duration-300">
                               <label className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                                <Clock className="h-4 w-4" /> Departure Time:
+                                <Clock className="h-4 w-4" /> {t("restaurant.reservations.departureTime", "Departure Time:")}
                               </label>
                               <input
                                 type="time"
@@ -504,7 +777,7 @@ export default function ReservationsManagementPage() {
                     {/* Step 3: Guest Details */}
                     {addDialog.startTime && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <label className="text-sm font-semibold text-foreground">3. Guest Details *</label>
+                        <label className="text-sm font-semibold text-foreground">{t("restaurant.reservations.guestDetails", "3. Guest Details *")}</label>
                         <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-border/60 shadow-sm space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -513,7 +786,7 @@ export default function ReservationsManagementPage() {
                                 value={addDialog.guestName}
                                 onChange={(e) => setAddDialog(prev => ({...prev, guestName: e.target.value}))}
                                 className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                                placeholder="Guest Name *"
+                                placeholder={t("restaurant.reservations.guestName", "Guest Name *")}
                               />
                             </div>
                             <div className="space-y-2">
@@ -522,7 +795,7 @@ export default function ReservationsManagementPage() {
                                 value={addDialog.guestPhone}
                                 onChange={(e) => setAddDialog(prev => ({...prev, guestPhone: e.target.value}))}
                                 className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                                placeholder="Phone Number"
+                                placeholder={t("restaurant.reservations.guestPhone", "Phone Number")}
                               />
                             </div>
                           </div>
@@ -534,9 +807,9 @@ export default function ReservationsManagementPage() {
                                 onChange={(e) => setAddDialog(prev => ({...prev, source: e.target.value}))}
                                 className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
                               >
-                                <option value="phone">Source: Phone</option>
-                                <option value="walk_in">Source: Walk-in</option>
-                                <option value="online">Source: Online</option>
+                                <option value="phone">{t("restaurant.reservations.sourcePhone", "Source: Phone")}</option>
+                                <option value="walk_in">{t("restaurant.reservations.sourceWalkIn", "Source: Walk-in")}</option>
+                                <option value="online">{t("restaurant.reservations.sourceOnline", "Source: Online")}</option>
                               </select>
                             </div>
                           </div>
@@ -545,7 +818,7 @@ export default function ReservationsManagementPage() {
                             <textarea
                               value={addDialog.notes}
                               onChange={(e) => setAddDialog(prev => ({...prev, notes: e.target.value}))}
-                              placeholder="Any special requests or allergies..."
+                              placeholder={t("restaurant.reservations.specialRequests", "Any special requests or allergies...")}
                               className="w-full h-24 p-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none"
                             />
                           </div>
@@ -560,7 +833,7 @@ export default function ReservationsManagementPage() {
                       className="px-6 py-2.5 rounded-xl text-sm font-semibold text-foreground bg-white border border-border/60 hover:bg-gray-50 transition-colors shadow-sm"
                       disabled={isAdding}
                     >
-                      Cancel
+                      {t("common.cancel", "Cancel")}
                     </button>
                     <button
                       onClick={handleAddBooking}
@@ -568,7 +841,7 @@ export default function ReservationsManagementPage() {
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#E5555E] hover:bg-[#D4444D] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                      Add Booking
+                      {t("restaurant.reservations.addBooking", "Add Booking")}
                     </button>
                   </div>
                 </div>

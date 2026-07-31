@@ -134,20 +134,25 @@ export default function RestaurantGalleryPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{t("nav.gallery", "Gallery")}</h1>
-                <p className="text-muted-foreground mt-1">Manage your restaurant photos for {activeBranch ? `${activeBranch.address.city} - ${activeBranch.address.line1}` : "all branches"}</p>
+                <h1 className="text-3xl font-bold text-foreground">{t("restaurant.gallery.title", "Gallery")}</h1>
+                <p className="text-muted-foreground mt-1">
+                  {activeBranch 
+                    ? t("restaurant.gallery.subtitleFor", { branch: `${activeBranch.address.city} - ${activeBranch.address.line1}`, defaultValue: `Manage your restaurant photos for ${activeBranch.address.city} - ${activeBranch.address.line1}` })
+                    : t("restaurant.gallery.subtitle", "Manage your restaurant photos")
+                  }
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 {branches.length > 0 && !selectedBranchId && (
                   <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-1.5 rounded-lg text-sm border border-amber-200 shadow-sm">
-                    <MapPin className="w-4 h-4" /> Select a branch to upload photos
+                    <MapPin className="w-4 h-4" /> {t("restaurant.gallery.selectBranchNotice", "Select a branch to upload photos")}
                   </div>
                 )}
                 {selectedBranchId && (
                   <button 
                     onClick={() => {
                       if (!activeBranchId) {
-                        toast.error("Please create a branch first.")
+                        toast.error(t("restaurant.gallery.createBranchFirst", "Please create a branch first."))
                         return
                       }
                       setIsModalOpen(true)
@@ -155,7 +160,7 @@ export default function RestaurantGalleryPage() {
                     className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    {t("galleryPage.addPhoto", "Add Photo")}
+                    {t("restaurant.gallery.addPhoto", "Add Photo")}
                   </button>
                 )}
               </div>
@@ -173,7 +178,7 @@ export default function RestaurantGalleryPage() {
                       : "bg-white text-muted-foreground border-2 border-transparent hover:bg-gray-100 shadow-sm"
                   }`}
                 >
-                  {cat}
+                  {t(`restaurant.gallery.${cat}`, cat)}
                 </button>
               ))}
             </div>
@@ -184,8 +189,8 @@ export default function RestaurantGalleryPage() {
                 <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
                   <MapPin className="w-10 h-10 text-[#C69C9B]" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
-                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its gallery.</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
+                <p className="text-muted-foreground max-w-md">{t("restaurant.gallery.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its gallery.")}</p>
               </div>
             ) : isLoading ? (
               <div className="flex items-center justify-center py-20">
@@ -227,7 +232,7 @@ export default function RestaurantGalleryPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
             
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-bold">{t("galleryPage.addPhoto", "Add Photo")}</h2>
+              <h2 className="text-lg font-bold">{t("restaurant.gallery.addPhoto", "Add Photo")}</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-muted rounded-full">
                 <X className="w-5 h-5" />
               </button>
@@ -237,21 +242,21 @@ export default function RestaurantGalleryPage() {
               <form id="upload-form" onSubmit={handleUploadSubmit} className="space-y-6">
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("menuPage.category", "Category")}</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("restaurant.gallery.category", "CATEGORY")}</label>
                   <select 
                     value={selectedCategory} 
                     onChange={e => setSelectedCategory(e.target.value)}
                     className="w-full h-10 px-4 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
                   >
-                    <option value="Interior">Interior</option>
-                    <option value="Exterior">Exterior</option>
-                    <option value="Food">Food</option>
-                    <option value="Events">Events</option>
+                    <option value="Interior">{t("restaurant.gallery.interior", "Interior")}</option>
+                    <option value="Exterior">{t("restaurant.gallery.exterior", "Exterior")}</option>
+                    <option value="Food">{t("restaurant.gallery.food", "Food")}</option>
+                    <option value="Events">{t("restaurant.gallery.events", "Events")}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("galleryPage.photo", "Photo")}</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("restaurant.gallery.photo", "PHOTO")}</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full border-2 border-dashed border-border/60 hover:border-[#C69C9B] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FDF6F6] gap-2 min-h-[160px]"
@@ -263,8 +268,8 @@ export default function RestaurantGalleryPage() {
                     ) : (
                       <>
                         <Upload className="h-8 w-8 text-[#C69C9B]/60" />
-                        <p className="text-sm font-medium text-muted-foreground">{t("galleryPage.clickToUpload", "Click to upload")}</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("restaurant.gallery.clickToUpload", "Click to upload")}</p>
+                        <p className="text-xs text-muted-foreground">{t("restaurant.gallery.fileLimitNote", "PNG, JPG up to 5MB")}</p>
                       </>
                     )}
                   </div>
@@ -276,10 +281,10 @@ export default function RestaurantGalleryPage() {
 
             <div className="px-6 py-4 border-t border-border bg-[#FAFAFA]/50 flex justify-end gap-3">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
-                {t("common.cancel", "Cancel")}
+                {t("restaurant.reservations.cancel", "Cancel")}
               </button>
               <button type="submit" form="upload-form" disabled={isSaving || !imageFile} className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
-                {isSaving ? t("common.saving", "Saving...") : t("galleryPage.upload", "Upload")}
+                {isSaving ? t("restaurant.gallery.uploading", "Uploading...") : t("restaurant.gallery.upload", "Upload")}
               </button>
             </div>
 

@@ -8,8 +8,10 @@ import { usePartner } from "@/hooks/usePartner"
 import { toast } from "sonner"
 import { Loader2, Settings2, Search, Edit, Trash2 } from "lucide-react"
 import api from "@/lib/api"
+import { useTranslation } from "react-i18next"
 
 export default function TablesManagementPage() {
+  const { t } = useTranslation()
   const { partnerId } = usePartner()
   const { selectedBranchId } = useBranchContext()
 
@@ -75,8 +77,8 @@ export default function TablesManagementPage() {
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Table Management</h1>
-                <p className="text-muted-foreground mt-1">Manage and update status for all tables across your restaurant.</p>
+                <h1 className="text-2xl font-bold text-foreground">{t("restaurant.tables.title", "Table Management")}</h1>
+                <p className="text-muted-foreground mt-1">{t("restaurant.tables.subtitle", "Manage and update status for all tables across your restaurant.")}</p>
               </div>
             </div>
 
@@ -85,8 +87,8 @@ export default function TablesManagementPage() {
                 <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
                   <Search className="w-10 h-10 text-[#C69C9B]" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
-                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its tables.</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
+                <p className="text-muted-foreground max-w-md">{t("restaurant.tables.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its tables.")}</p>
               </div>
             ) : (
               <>
@@ -94,19 +96,19 @@ export default function TablesManagementPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white p-4 rounded-xl border border-border/60 shadow-sm flex flex-col items-center text-center">
                 <span className="text-2xl font-bold text-foreground">{tables.length}</span>
-                <span className="text-sm font-medium text-muted-foreground mt-1">Total Tables</span>
+                <span className="text-sm font-medium text-muted-foreground mt-1">{t("restaurant.tables.totalTables", "Total Tables")}</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-border/60 shadow-sm flex flex-col items-center text-center">
                 <span className="text-2xl font-bold text-emerald-600">{tables.filter(t => t.status === 'available').length}</span>
-                <span className="text-sm font-medium text-muted-foreground mt-1">Available</span>
+                <span className="text-sm font-medium text-muted-foreground mt-1">{t("restaurant.tables.available", "Available")}</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-border/60 shadow-sm flex flex-col items-center text-center">
                 <span className="text-2xl font-bold text-blue-600">{tables.filter(t => t.status === 'occupied').length}</span>
-                <span className="text-sm font-medium text-muted-foreground mt-1">Occupied</span>
+                <span className="text-sm font-medium text-muted-foreground mt-1">{t("restaurant.tables.occupied", "Occupied")}</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-border/60 shadow-sm flex flex-col items-center text-center">
                 <span className="text-2xl font-bold text-amber-600">{tables.filter(t => t.status === 'reserved').length}</span>
-                <span className="text-sm font-medium text-muted-foreground mt-1">Reserved</span>
+                <span className="text-sm font-medium text-muted-foreground mt-1">{t("restaurant.tables.reserved", "Reserved")}</span>
               </div>
             </div>
 
@@ -116,7 +118,7 @@ export default function TablesManagementPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search table number or notes..."
+                  placeholder={t("restaurant.tables.searchPlaceholder", "Search table number or notes...")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-gray-50 focus:bg-white"
@@ -129,7 +131,7 @@ export default function TablesManagementPage() {
                   onChange={(e) => setFloorFilter(e.target.value)}
                   className="px-3 py-2 border border-border rounded-lg text-sm bg-white min-w-[140px]"
                 >
-                  <option value="all">All Floors</option>
+                  <option value="all">{t("restaurant.tables.allFloors", "All Floors")}</option>
                   {floors.map(f => (
                     <option key={f._id} value={f._id}>{f.name}</option>
                   ))}
@@ -140,13 +142,13 @@ export default function TablesManagementPage() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="px-3 py-2 border border-border rounded-lg text-sm bg-white min-w-[140px]"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="available">Available</option>
-                  <option value="reserved">Reserved</option>
-                  <option value="occupied">Occupied</option>
-                  <option value="cleaning">Cleaning</option>
-                  <option value="out_of_service">Out of Service</option>
-                  <option value="blocked">Blocked</option>
+                  <option value="all">{t("restaurant.tables.allStatuses", "All Statuses")}</option>
+                  <option value="available">{t("restaurant.tables.available", "Available")}</option>
+                  <option value="reserved">{t("restaurant.tables.reserved", "Reserved")}</option>
+                  <option value="occupied">{t("restaurant.tables.occupied", "Occupied")}</option>
+                  <option value="cleaning">{t("restaurant.tables.cleaning", "Cleaning")}</option>
+                  <option value="out_of_service">{t("restaurant.tables.outOfService", "Out of Service")}</option>
+                  <option value="blocked">{t("restaurant.tables.blocked", "Blocked")}</option>
                 </select>
               </div>
             </div>
@@ -165,52 +167,52 @@ export default function TablesManagementPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-[#FAFAFA] border-b border-border/60 text-muted-foreground">
                     <tr>
-                      <th className="px-6 py-3 font-semibold">Table</th>
-                      <th className="px-6 py-3 font-semibold">Floor</th>
-                      <th className="px-6 py-3 font-semibold">Capacity</th>
-                      <th className="px-6 py-3 font-semibold">Location</th>
-                      <th className="px-6 py-3 font-semibold">Status</th>
-                      <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.tables.tableHeader", "Table")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.tables.floorHeader", "Floor")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.tables.capacityHeader", "Capacity")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.tables.locationHeader", "Location")}</th>
+                      <th className="px-6 py-3 font-semibold">{t("restaurant.tables.statusHeader", "Status")}</th>
+                      <th className="px-6 py-3 font-semibold text-right">{t("restaurant.tables.actionsHeader", "Actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
-                    {filteredTables.map(t => {
-                      const floor = floors.find(f => f._id === t.floorId)
+                    {filteredTables.map(tItem => {
+                      const floor = floors.find(f => f._id === tItem.floorId)
                       return (
-                        <tr key={t._id} className="hover:bg-gray-50/50 transition-colors">
+                        <tr key={tItem._id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-foreground">{t.tableNumber}</span>
-                              {t.isVip && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">VIP</span>}
+                              <span className="font-bold text-foreground">{tItem.tableNumber}</span>
+                              {tItem.isVip && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">VIP</span>}
                             </div>
-                            {t.notes && <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">{t.notes}</p>}
+                            {tItem.notes && <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">{tItem.notes}</p>}
                           </td>
-                          <td className="px-6 py-4 text-muted-foreground font-medium">{floor?.name || "Unknown"}</td>
-                          <td className="px-6 py-4 text-muted-foreground font-medium">{t.minCapacity} - {t.capacity} seats</td>
-                          <td className="px-6 py-4 text-muted-foreground font-medium capitalize">{t.location}</td>
+                          <td className="px-6 py-4 text-muted-foreground font-medium">{floor?.name || "—"}</td>
+                          <td className="px-6 py-4 text-muted-foreground font-medium">{tItem.minCapacity} - {tItem.capacity} {t("restaurant.tables.seats", "seats")}</td>
+                          <td className="px-6 py-4 text-muted-foreground font-medium capitalize">{tItem.location === "indoor" ? t("restaurant.tables.indoor", "Indoor") : tItem.location === "outdoor" ? t("restaurant.tables.outdoor", "Outdoor") : tItem.location}</td>
                           <td className="px-6 py-4">
                             <select
-                              value={t.status}
-                              onChange={(e) => handleStatusChange(t._id, e.target.value)}
+                              value={tItem.status}
+                              onChange={(e) => handleStatusChange(tItem._id, e.target.value)}
                               className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase border-2 transition-colors cursor-pointer outline-none ${
-                                t.status === 'available' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                t.status === 'occupied' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                t.status === 'reserved' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                t.status === 'cleaning' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                tItem.status === 'available' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                tItem.status === 'occupied' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                tItem.status === 'reserved' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                tItem.status === 'cleaning' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                                 'bg-gray-100 text-gray-500 border-gray-200'
                               }`}
                             >
-                              <option value="available">Available</option>
-                              <option value="reserved">Reserved</option>
-                              <option value="occupied">Occupied</option>
-                              <option value="cleaning">Cleaning</option>
-                              <option value="out_of_service">Out of Service</option>
-                              <option value="blocked">Blocked</option>
+                              <option value="available">{t("restaurant.tables.available", "Available")}</option>
+                              <option value="reserved">{t("restaurant.tables.reserved", "Reserved")}</option>
+                              <option value="occupied">{t("restaurant.tables.occupied", "Occupied")}</option>
+                              <option value="cleaning">{t("restaurant.tables.cleaning", "Cleaning")}</option>
+                              <option value="out_of_service">{t("restaurant.tables.outOfService", "Out of Service")}</option>
+                              <option value="blocked">{t("restaurant.tables.blocked", "Blocked")}</option>
                             </select>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <a href="/dashboard/restaurant/floor-plan" className="inline-flex items-center gap-1 text-[#E5555E] hover:underline text-xs font-semibold">
-                              <Edit className="h-3 w-3" /> Edit in Floor Plan
+                              <Edit className="h-3 w-3" /> {t("restaurant.tables.editInFloorPlan", "Edit in Floor Plan")}
                             </a>
                           </td>
                         </tr>

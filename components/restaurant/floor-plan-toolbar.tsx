@@ -6,6 +6,7 @@ import {
   MousePointer2, Hand, SquarePen, BoxSelect, Plus, Type,
   Search, Save, ChevronDown, Sparkles
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface FloorPlanToolbarProps {
   onUndo?: () => void
@@ -66,6 +67,8 @@ export function FloorPlanToolbar({
   previewMode, setPreviewMode, onSave, isSaving,
   floors = [], activeFloorId, setActiveFloorId, onAddFloor, onOpenAiModal
 }: FloorPlanToolbarProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="bg-white border-b border-gray-200 px-4 h-12 flex items-center justify-between shrink-0 shadow-sm z-10 w-full">
 
@@ -74,7 +77,7 @@ export function FloorPlanToolbar({
         {/* Floor Selector */}
         <div className="relative group mr-2">
           <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm font-semibold transition-colors">
-            {activeFloorId && floors.length > 0 ? floors.find(f => f._id === activeFloorId)?.name || 'Select Floor' : 'Select Floor'}
+            {activeFloorId && floors.length > 0 ? floors.find(f => f._id === activeFloorId)?.name || t("restaurant.floorPlan.selectFloor", "Select Floor") : t("restaurant.floorPlan.selectFloor", "Select Floor")}
             <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
           </button>
           <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
@@ -92,7 +95,7 @@ export function FloorPlanToolbar({
               onClick={onAddFloor}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4 text-gray-500" /> Add Floor
+              <Plus className="w-4 h-4 text-gray-500" /> {t("restaurant.floorPlan.addFloor", "Add Floor")}
             </button>
           </div>
         </div>
@@ -100,21 +103,21 @@ export function FloorPlanToolbar({
         <Sep />
 
         {/* Edit Tools */}
-        <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)" />
-        <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title="Redo (Ctrl+Y)" />
-        <ToolBtn icon={Copy} onClick={onCopy} title="Copy (Ctrl+C)" />
-        <ToolBtn icon={ClipboardPaste} onClick={onPaste} title="Paste (Ctrl+V)" />
-        <ToolBtn icon={CopyPlus} onClick={onDuplicate} title="Duplicate (Ctrl+D)" />
-        <ToolBtn icon={Trash2} onClick={onDelete} title="Delete (Del)" />
+        <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title={`${t("restaurant.floorPlan.undo", "Undo")} (Ctrl+Z)`} />
+        <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title={`${t("restaurant.floorPlan.redo", "Redo")} (Ctrl+Y)`} />
+        <ToolBtn icon={Copy} onClick={onCopy} title={`${t("restaurant.floorPlan.copy", "Copy")} (Ctrl+C)`} />
+        <ToolBtn icon={ClipboardPaste} onClick={onPaste} title={`${t("restaurant.floorPlan.paste", "Paste")} (Ctrl+V)`} />
+        <ToolBtn icon={CopyPlus} onClick={onDuplicate} title={`${t("restaurant.floorPlan.duplicate", "Duplicate")} (Ctrl+D)`} />
+        <ToolBtn icon={Trash2} onClick={onDelete} title={`${t("restaurant.floorPlan.delete", "Delete")} (Del)`} />
 
         <Sep />
 
         {/* Mode Tools */}
-        <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} title="Selection Tool (V)" />
-        <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} title="Pan Tool (Space)" />
-        <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} title="Draw Wall" />
-        <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} title="Draw Room" />
-        <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} title="Add Label" />
+        <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} title={`${t("restaurant.floorPlan.selectTool", "Selection Tool")} (V)`} />
+        <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} title={`${t("restaurant.floorPlan.panTool", "Pan Tool")} (Space)`} />
+        <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} title={t("restaurant.floorPlan.drawWall", "Draw Wall")} />
+        <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} title={t("restaurant.floorPlan.drawRoom", "Draw Room")} />
+        <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} title={t("restaurant.floorPlan.addLabel", "Add Label")} />
 
         <Sep />
 
@@ -126,28 +129,29 @@ export function FloorPlanToolbar({
         <Sep />
 
         {/* Toggles */}
-        <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} title="Toggle Grid" />
-        <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} title="Toggle Snap" />
-        <ToolBtn icon={Ruler} onClick={() => setMeasurementEnabled?.(!measurementEnabled)} active={measurementEnabled} title="Toggle Measurements" />
-        <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} title="Preview Mode" />
+        <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} title={t("restaurant.floorPlan.toggleGrid", "Toggle Grid")} />
+        <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} title={t("restaurant.floorPlan.toggleSnap", "Toggle Snap")} />
+        <ToolBtn icon={Ruler} onClick={() => setMeasurementEnabled?.(!measurementEnabled)} active={measurementEnabled} title={t("restaurant.floorPlan.toggleMeasurements", "Toggle Measurements")} />
+        <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} title={t("restaurant.floorPlan.previewMode", "Preview Mode")} />
       </div>
 
       {/* Right section: Search & Save */}
       <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={onOpenAiModal}
-          title="AI Generate Floor Plan"
+          title="AI Generate Floor Plan ($0.99 per request)"
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shrink-0 shadow-sm"
         >
-          <Sparkles className="w-4 h-4" />
-          <span className="hidden sm:inline">AI Generate</span>
+          <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+          <span className="hidden sm:inline font-semibold">{t("restaurant.floorPlan.aiGenerate", "AI Generate")}</span>
+          <span className="bg-indigo-800/80 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded ml-0.5 border border-indigo-400/30">$0.99</span>
         </button>
 
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input 
             type="text" 
-            placeholder="Search tools..." 
+            placeholder={t("restaurant.floorPlan.searchTools", "Search tools...")} 
             className="w-40 pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
@@ -157,7 +161,7 @@ export function FloorPlanToolbar({
           className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 shadow-sm"
         >
           <Save className="w-4 h-4" />
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? t("restaurant.floorPlan.savingLayout", "Saving...") : t("restaurant.floorPlan.saveLayout", "Save")}
         </button>
       </div>
     </div>

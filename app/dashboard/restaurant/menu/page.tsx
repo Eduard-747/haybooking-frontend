@@ -47,11 +47,11 @@ const formatConfig = {
 }
 
 const uploadOptions = [
-  { id: 'pdf', title: 'PDF Menu', desc: 'Upload PDF menu file', format: 'pdf', accept: '.pdf' },
-  { id: 'image', title: 'Image Menu', desc: 'Upload image files (JPG, PNG)', format: 'image', accept: 'image/jpeg, image/png, image/webp' },
-  { id: 'document', title: 'Document Menu', desc: 'Upload document files (DOC, DOCX)', format: 'document', accept: '.doc,.docx,.txt,.rtf' },
-  { id: 'spreadsheet', title: 'Spreadsheet Menu', desc: 'Upload Excel or CSV files', format: 'spreadsheet', accept: '.xls,.xlsx,.csv' },
-  { id: 'presentation', title: 'Presentation Menu', desc: 'Upload PPT or PPTX files', format: 'presentation', accept: '.ppt,.pptx' },
+  { id: 'pdf', titleKey: 'restaurant.menu.pdfMenu', defaultTitle: 'PDF Menu', descKey: 'restaurant.menu.pdfDesc', defaultDesc: 'Upload PDF menu file', format: 'pdf', accept: '.pdf' },
+  { id: 'image', titleKey: 'restaurant.menu.imageMenu', defaultTitle: 'Image Menu', descKey: 'restaurant.menu.imageDesc', defaultDesc: 'Upload image files (JPG, PNG)', format: 'image', accept: 'image/jpeg, image/png, image/webp' },
+  { id: 'document', titleKey: 'restaurant.menu.docMenu', defaultTitle: 'Document Menu', descKey: 'restaurant.menu.docDesc', defaultDesc: 'Upload document files (DOC, DOCX)', format: 'document', accept: '.doc,.docx,.txt,.rtf' },
+  { id: 'spreadsheet', titleKey: 'restaurant.menu.sheetMenu', defaultTitle: 'Spreadsheet Menu', descKey: 'restaurant.menu.sheetDesc', defaultDesc: 'Upload Excel or CSV files', format: 'spreadsheet', accept: '.xls,.xlsx,.csv' },
+  { id: 'presentation', titleKey: 'restaurant.menu.pptMenu', defaultTitle: 'Presentation Menu', descKey: 'restaurant.menu.pptDesc', defaultDesc: 'Upload PPT or PPTX files', format: 'presentation', accept: '.ppt,.pptx' },
 ]
 
 function formatDate(iso: string, language: string = 'en') {
@@ -290,16 +290,16 @@ export default function ManageMenuPage() {
                 <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
                   <FileBox className="w-10 h-10 text-[#C69C9B]" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
-                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and upload its menus.</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
+                <p className="text-muted-foreground max-w-md">{t("restaurant.menu.selectBranchSubtitle", "Please select a specific branch from the top menu to view and upload its menus.")}</p>
               </div>
             ) : (
               <>
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-border/40 shadow-sm">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Menu Management</h1>
-                <p className="text-muted-foreground mt-1.5 text-sm">Manage your menus in any format</p>
+                <h1 className="text-3xl font-bold text-foreground">{t("restaurant.menu.title", "Menu Management")}</h1>
+                <p className="text-muted-foreground mt-1.5 text-sm">{t("restaurant.menu.subtitle", "Manage your menus in any format")}</p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <button 
@@ -307,14 +307,14 @@ export default function ManageMenuPage() {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C69C9B] text-white text-sm font-semibold hover:bg-[#BCAAA4] transition-colors shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
-                  Upload Menu
+                  {t("restaurant.menu.uploadMenu", "Upload Menu")}
                 </button>
               </div>
             </div>
 
             {/* Upload Options Grid */}
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-foreground px-1">Choose how you want to add your menu</h2>
+              <h2 className="text-lg font-bold text-foreground px-1">{t("restaurant.menu.chooseHow", "Choose how you want to add your menu")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {uploadOptions.map((opt) => {
                   const config = formatConfig[opt.format as keyof typeof formatConfig]
@@ -328,8 +328,8 @@ export default function ManageMenuPage() {
                       <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${config.bg}`}>
                         <Icon className={`w-7 h-7 ${config.color}`} />
                       </div>
-                      <h3 className="font-bold text-sm text-foreground mb-1">{opt.title}</h3>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                      <h3 className="font-bold text-sm text-foreground mb-1">{t(opt.titleKey, opt.defaultTitle)}</h3>
+                      <p className="text-xs text-muted-foreground">{t(opt.descKey, opt.defaultDesc)}</p>
                     </button>
                   )
                 })}
@@ -349,7 +349,7 @@ export default function ManageMenuPage() {
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search menus..." 
+                    placeholder={t("restaurant.menu.searchMenus", "Search menus...")} 
                     className="w-full h-10 pl-9 pr-4 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]/50 shadow-sm"
                   />
                 </div>
@@ -361,7 +361,7 @@ export default function ManageMenuPage() {
                       onChange={(e) => setSelectedType(e.target.value)}
                       className="appearance-none h-10 px-4 pr-8 bg-white border border-border/60 rounded-xl text-sm font-medium hover:bg-muted/50 outline-none cursor-pointer shadow-sm"
                     >
-                      {menuTypes.map(cat => <option key={cat} value={cat}>{cat === "All" ? "All Menu Types" : cat}</option>)}
+                      {menuTypes.map(cat => <option key={cat} value={cat}>{cat === "All" ? t("restaurant.menu.allTypes", "All Menu Types") : cat}</option>)}
                     </select>
                     <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
                   </div>
@@ -372,9 +372,9 @@ export default function ManageMenuPage() {
                       onChange={(e) => setSortBy(e.target.value)}
                       className="appearance-none h-10 px-4 pr-8 bg-white border border-border/60 rounded-xl text-sm font-medium hover:bg-muted/50 outline-none cursor-pointer shadow-sm"
                     >
-                      <option value="last-modified">Last Modified</option>
-                      <option value="name-asc">Name (A-Z)</option>
-                      <option value="size-desc">Size (Large-Small)</option>
+                      <option value="last-modified">{t("restaurant.menu.lastModified", "Last Modified")}</option>
+                      <option value="name-asc">{t("restaurant.menu.nameAsc", "Name (A-Z)")}</option>
+                      <option value="size-desc">{t("restaurant.menu.sizeDesc", "Size (Large-Small)")}</option>
                     </select>
                     <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-3 pointer-events-none" />
                   </div>
@@ -386,21 +386,21 @@ export default function ManageMenuPage() {
                 {isLoading ? (
                   <div className="p-12 flex flex-col items-center justify-center text-center">
                     <Loader2 className="w-8 h-8 text-[#C69C9B] animate-spin mb-4" />
-                    <p className="text-muted-foreground">Loading your menus...</p>
+                    <p className="text-muted-foreground">{t("common.loading", "Loading...")}</p>
                   </div>
                 ) : filteredMenus.length === 0 ? (
                   <div className="p-12 flex flex-col items-center justify-center text-center">
                     <div className="w-24 h-24 bg-muted/30 rounded-full flex items-center justify-center mb-6">
                       <FileBox className="w-10 h-10 text-muted-foreground/50" />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground mb-2">No menus found</h3>
-                    <p className="text-muted-foreground text-sm max-w-sm mb-6">You haven't uploaded any menus yet or no menus match your search criteria.</p>
+                    <h3 className="text-lg font-bold text-foreground mb-2">{t("restaurant.menu.noMenusFound", "No menus found")}</h3>
+                    <p className="text-muted-foreground text-sm max-w-sm mb-6">{t("restaurant.menu.noMenusDesc", "You haven't uploaded any menus yet or no menus match your search criteria.")}</p>
                     <button 
                       onClick={() => triggerUpload()}
                       className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2"
                     >
                       <Upload className="w-4 h-4" />
-                      Upload your first menu
+                      {t("restaurant.menu.uploadFirst", "Upload your first menu")}
                     </button>
                   </div>
                 ) : (

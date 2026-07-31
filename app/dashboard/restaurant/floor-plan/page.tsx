@@ -422,8 +422,8 @@ export default function FloorPlanPage() {
                 <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
                   <MapPin className="w-10 h-10 text-[#C69C9B]" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Select a Branch</h2>
-                <p className="text-muted-foreground max-w-md">Please select a specific branch from the top menu to view and manage its floor plan.</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
+                <p className="text-muted-foreground max-w-md">{t("restaurant.floorPlan.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its floor plan.")}</p>
               </div>
             </div>
           ) : isLoading ? (
@@ -432,7 +432,7 @@ export default function FloorPlanPage() {
             </div>
           ) : !activeFloorId ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-500">Add a floor to start designing your layout.</p>
+              <p className="text-gray-500">{t("restaurant.floorPlan.addFloorPrompt", "Add a floor to start designing your layout.")}</p>
             </div>
           ) : (
             <>

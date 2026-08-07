@@ -40,8 +40,8 @@ export function RestaurantCustomerApp({
         rating={4.9}
         reviewCount={124}
         address={branches.find((b: any) => b._id === selectedBranch)?.address?.city || branches[0]?.address?.city || "Restaurant"}
-        status="Open Now"
-        estimatedWait="Immediate Seating"
+        status={t("book.openNow", "Open Now")}
+        estimatedWait={t("book.immediateSeating", "Immediate Seating")}
         viewMode={"list"}
         onViewChange={() => {}}
       />
@@ -79,7 +79,7 @@ export function RestaurantCustomerApp({
             }`}
           >
             <Calendar className="h-4 w-4" />
-            Reserve Table
+            {t("restaurant.reserve_table", "Reserve Table")}
           </button>
           <button
             onClick={() => setActiveTab("menu")}
@@ -90,7 +90,7 @@ export function RestaurantCustomerApp({
             }`}
           >
             <UtensilsCrossed className="h-4 w-4" />
-            Our Menu
+            {t("restaurant.our_menu", "Our Menu")}
           </button>
           <button
             onClick={() => setActiveTab("overview")}
@@ -101,7 +101,7 @@ export function RestaurantCustomerApp({
             }`}
           >
             <Info className="h-4 w-4" />
-            Overview
+            {t("restaurant.overview", "Overview")}
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
@@ -112,7 +112,7 @@ export function RestaurantCustomerApp({
             }`}
           >
             <Star className="h-4 w-4" />
-            Reviews (124)
+            {t("restaurant.reviews_count", "Reviews (124)", { count: 124 })}
           </button>
         </div>
 
@@ -153,8 +153,8 @@ export function RestaurantCustomerApp({
             <div className="space-y-8 animate-in fade-in duration-500 max-w-3xl mx-auto">
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-gray-50 rounded-2xl border border-dashed border-border/60">
                 <Star className="h-12 w-12 mb-4 opacity-50" />
-                <h3 className="text-lg font-bold text-foreground">Reviews Coming Soon</h3>
-                <p className="text-sm">We are working on integrating verified customer reviews.</p>
+                <h3 className="text-lg font-bold text-foreground">{t("restaurant.reviews_coming_soon", "Reviews Coming Soon")}</h3>
+                <p className="text-sm">{t("restaurant.reviews_working_on", "We are working on integrating verified customer reviews.")}</p>
               </div>
             </div>
           )}

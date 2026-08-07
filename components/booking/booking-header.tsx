@@ -30,7 +30,7 @@ export function BookingHeader() {
           </div>
           <input 
             type="text" 
-            placeholder="Search for services or locations..." 
+            placeholder={t("common.searchPlaceholder", "Search for services or locations...")} 
             className="w-full h-10 pl-10 pr-4 bg-[#FAFAFA] border-none rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[#E5555E]/50"
           />
         </div>

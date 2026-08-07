@@ -30,8 +30,8 @@ export function BranchSelector({ branches, onSelect }: BranchSelectorProps) {
     <div className="w-full max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
       
       <div className="text-center space-y-2 mb-8">
-        <h2 className="text-2xl font-bold text-foreground">Select a Location</h2>
-        <p className="text-muted-foreground">Please select a branch to view availability and make a reservation.</p>
+        <h2 className="text-2xl font-bold text-foreground">{t("book.selectLocation", "Select a Location")}</h2>
+        <p className="text-muted-foreground">{t("book.selectBranchDesc", "Please select a branch to view availability and make a reservation.")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -48,7 +48,7 @@ export function BranchSelector({ branches, onSelect }: BranchSelectorProps) {
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground text-lg group-hover:text-[#E5555E] transition-colors">{branch.address?.city || "Branch"}</h3>
+                  <h3 className="font-bold text-foreground text-lg group-hover:text-[#E5555E] transition-colors">{branch.address?.city || t("book.mainBranch", "Branch")}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{branch.address?.line1}</p>
                   {branch.phoneNumbers && branch.phoneNumbers.length > 0 && (
                     <p className="text-xs text-muted-foreground mt-1.5 font-medium">{branch.phoneNumbers[0]}</p>
@@ -70,7 +70,7 @@ export function BranchSelector({ branches, onSelect }: BranchSelectorProps) {
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-[#FAFAFA] text-muted-foreground">
               <MapPin className="h-8 w-8 mb-3 opacity-20" />
-              <p>No map coordinates available</p>
+              <p>{t("book.noLocationData", "No map coordinates available")}</p>
             </div>
           )}
         </div>

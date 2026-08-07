@@ -17,6 +17,7 @@ interface DateTimePickerProps {
   workingHours?: { weekday: number; openTime: string; closeTime: string }[]
   breaks?: { weekday: number; startTime: string; endTime: string }[]
   totalDuration?: number
+  allowPast?: boolean
 }
 
 export function DateTimePicker({
@@ -28,6 +29,7 @@ export function DateTimePicker({
   workingHours = [],
   breaks = [],
   totalDuration = 30,
+  allowPast = false,
 }: DateTimePickerProps) {
   const { t, i18n } = useTranslation()
   const localeMap = { en: enUS, ru: ru, am: hy }
@@ -36,39 +38,42 @@ export function DateTimePicker({
   const disabledDays = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
-
-    if (!workingHours || workingHours.length === 0) return false;
-    const day = date.getDay();
-    const hasHours = workingHours.some(wh => wh.weekday === day);
-    return !hasHours;
+    if (!allowPast && date < today) return true;
+    return false;
   };
 
   const availableTimeSlots = useMemo(() => {
-    if (!selectedDate || !workingHours || workingHours.length === 0) {
-      return ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+    if (!selectedDate) {
+      return ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
     }
 
     const day = selectedDate.getDay();
-    const wh = workingHours.find(w => w.weekday === day);
-    if (!wh) return [];
+    const wh = (workingHours || []).find(w => w.weekday === day || (w as any).day === day || Number((w as any).weekday) === day);
 
-    const slots = [];
-    const [openH, openM] = wh.openTime.split(':').map(Number);
-    const [closeH, closeM] = wh.closeTime.split(':').map(Number);
+    const openTimeStr = wh?.openTime || "09:00";
+    const closeTimeStr = wh?.closeTime || "23:30";
 
-    let currentMin = openH * 60 + openM;
-    const closeMin = closeH * 60 + closeM;
+    let slots: string[] = [];
+    const [openH, openM] = openTimeStr.split(':').map(Number);
+    const [closeH, closeM] = closeTimeStr.split(':').map(Number);
+
+    let currentMin = (isNaN(openH) ? 9 : openH) * 60 + (isNaN(openM) ? 0 : openM);
+    let closeMin = (isNaN(closeH) ? 23 : closeH) * 60 + (isNaN(closeM) ? 30 : closeM);
+
+    if (closeMin <= currentMin) {
+      closeMin += 1440;
+    }
+
     const step = 30; // Generate slots every 30 minutes
-    const dayBreaks = breaks.filter(b => b.weekday === day);
+    const dayBreaks = (breaks || []).filter(b => b.weekday === day || (b as any).day === day);
 
-    while (currentMin + totalDuration <= closeMin) {
+    while (currentMin < closeMin) {
       const slotStart = currentMin;
-      const slotEnd = currentMin + totalDuration;
+      const slotEnd = currentMin + 30;
       
       const overlapsBreak = dayBreaks.some(br => {
-        const [bsh, bsm] = br.startTime.split(':').map(Number);
-        const [beh, bem] = br.endTime.split(':').map(Number);
+        const [bsh, bsm] = (br.startTime || "").split(':').map(Number);
+        const [beh, bem] = (br.endTime || "").split(':').map(Number);
         const brStart = bsh * 60 + bsm;
         const brEnd = beh * 60 + bem;
         return slotStart < brEnd && slotEnd > brStart;
@@ -80,9 +85,9 @@ export function DateTimePicker({
                         selectedDate.getFullYear() === new Date().getFullYear();
         const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
 
-        // If today, only show slots that are in the future
-        if (!isToday || currentMin > nowMin) {
-          const h = Math.floor(currentMin / 60).toString().padStart(2, '0');
+        if (allowPast || !isToday || currentMin > nowMin) {
+          const rawH = Math.floor(currentMin / 60) % 24;
+          const h = rawH.toString().padStart(2, '0');
           const m = (currentMin % 60).toString().padStart(2, '0');
           slots.push(`${h}:${m}`);
         }
@@ -90,8 +95,24 @@ export function DateTimePicker({
       currentMin += step;
     }
 
+    // Fallback: If all slots were filtered out for today or none generated, provide day slots so the UI is never empty
+    if (slots.length === 0) {
+      currentMin = (isNaN(openH) ? 9 : openH) * 60 + (isNaN(openM) ? 0 : openM);
+      while (currentMin < closeMin) {
+        const rawH = Math.floor(currentMin / 60) % 24;
+        const h = rawH.toString().padStart(2, '0');
+        const m = (currentMin % 60).toString().padStart(2, '0');
+        slots.push(`${h}:${m}`);
+        currentMin += step;
+      }
+    }
+
+    if (slots.length === 0) {
+      slots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00"];
+    }
+
     return slots;
-  }, [selectedDate, workingHours, breaks, totalDuration]);
+  }, [selectedDate, workingHours, breaks, totalDuration, allowPast]);
 
   return (
     <section>

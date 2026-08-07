@@ -66,11 +66,15 @@ export function BusinessHero({
         <div className="flex items-center gap-8">
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("book.status", "Status")}</p>
-            <p className="text-sm font-semibold text-foreground">{status}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {status === "Open Now" ? t("book.openNow", "Open Now") : status}
+            </p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("book.wait", "Estimated Wait")}</p>
-            <p className="text-sm font-semibold text-foreground">{estimatedWait}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {estimatedWait === "Immediate Seating" ? t("book.immediateSeating", "Immediate Seating") : estimatedWait === "5 - 10 Minutes" ? t("book.waitDesc", "5 - 10 Minutes") : estimatedWait}
+            </p>
           </div>
         </div>
 

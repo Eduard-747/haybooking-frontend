@@ -9,19 +9,19 @@ export function OverviewTab({ partner, branches }: { partner: any, branches: any
   return (
     <div className="space-y-10 animate-in fade-in duration-500 max-w-4xl mx-auto">
       <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-foreground mb-4">{t("book.yourInfo", "About Us")}</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4">{t("book.aboutUs", "About Us")}</h2>
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {partner.publicDescription || "Welcome to our restaurant! We are dedicated to providing excellent culinary experiences and ensuring you have the best time possible."}
+          {partner.publicDescription || t("restaurant.about_default", "Welcome to our restaurant! We are dedicated to providing excellent culinary experiences and ensuring you have the best time possible.")}
         </p>
 
         {/* Amenities Section */}
         <div className="mt-6 pt-6 border-t border-border/40">
-           <h3 className="text-sm font-bold text-foreground mb-3">Amenities & Features</h3>
+           <h3 className="text-sm font-bold text-foreground mb-3">{t("restaurant.amenities", "Amenities & Features")}</h3>
            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Wi-Fi</span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Parking</span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Outdoor Seating</span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">VIP Rooms</span>
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{t("restaurant.wifi", "Wi-Fi")}</span>
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{t("restaurant.parking", "Parking")}</span>
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{t("restaurant.outdoor_seating", "Outdoor Seating")}</span>
+              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">{t("restaurant.vip_rooms", "VIP Rooms")}</span>
            </div>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function OverviewTab({ partner, branches }: { partner: any, branches: any
               </div>
             </div>
           ))}
-          {branches.length === 0 && <p className="text-muted-foreground">No locations available.</p>}
+          {branches.length === 0 && <p className="text-muted-foreground">{t("book.noLocations", "No locations available.")}</p>}
         </div>
       </div>
     </div>

@@ -100,11 +100,64 @@ export default function ReservationsManagementPage() {
     return slots
   }, [addDialogReservations, addDialog.tableId])
 
+  const maxAvailableMinutes = useMemo(() => {
+    if (!addDialog.startTime || !addDialog.tableId) return 240
+    const [sh, sm] = addDialog.startTime.split(':').map(Number)
+    const startMin = sh * 60 + sm
+
+    let nextStartMin = 1440 // 24:00 default
+
+    addDialogReservations.forEach(r => {
+      const rTableId = r.tableId?._id || r.tableId
+      if (rTableId !== addDialog.tableId) return
+      if (r.status === 'cancelled' || r.status === 'rejected') return
+
+      const [rSh, rSm] = (r.startTime || "").split(':').map(Number)
+      const rStartMin = rSh * 60 + rSm
+
+      if (rStartMin > startMin && rStartMin < nextStartMin) {
+        nextStartMin = rStartMin
+      }
+    })
+
+    return Math.max(0, nextStartMin - startMin)
+  }, [addDialog.startTime, addDialog.tableId, addDialogReservations])
+
   const handleTimeSelect = (time: string) => {
     const [h, m] = time.split(':').map(Number)
-    const endH = (h + 2).toString().padStart(2, '0')
-    const endM = m.toString().padStart(2, '0')
+    const startMin = h * 60 + m
+
+    let nextStartMin = 1440
+    addDialogReservations.forEach(r => {
+      const rTableId = r.tableId?._id || r.tableId
+      if (rTableId !== addDialog.tableId) return
+      if (r.status === 'cancelled' || r.status === 'rejected') return
+
+      const [rSh, rSm] = (r.startTime || "").split(':').map(Number)
+      const rStartMin = rSh * 60 + rSm
+
+      if (rStartMin > startMin && rStartMin < nextStartMin) {
+        nextStartMin = rStartMin
+      }
+    })
+
+    const availMins = Math.max(0, nextStartMin - startMin)
+    const durMins = Math.min(60, availMins > 0 ? availMins : 60)
+
+    const endTotalMin = startMin + durMins
+    const endH = Math.floor((endTotalMin / 60) % 24).toString().padStart(2, '0')
+    const endM = (endTotalMin % 60).toString().padStart(2, '0')
+
     setAddDialog(prev => ({ ...prev, startTime: time, endTime: `${endH}:${endM}` }))
+  }
+
+  const handleDurationPreset = (durHours: number) => {
+    if (!addDialog.startTime) return
+    const [h, m] = addDialog.startTime.split(':').map(Number)
+    const totalMinutes = h * 60 + m + Math.round(durHours * 60)
+    const endH = Math.floor((totalMinutes / 60) % 24).toString().padStart(2, '0')
+    const endM = (totalMinutes % 60).toString().padStart(2, '0')
+    setAddDialog(prev => ({ ...prev, endTime: `${endH}:${endM}` }))
   }
 
   useEffect(() => {
@@ -380,8 +433,12 @@ export default function ReservationsManagementPage() {
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {reservations.map(res => {
-                      const guestName = res.guestName || (res.userId ? `${res.userId.name} ${res.userId.surname}` : "Guest")
-                      const guestPhone = res.guestPhone || res.userId?.phoneNumber
+                      const userObj = res.userId || res.customerId
+                      const uFirstName = userObj?.firstName || userObj?.name || ""
+                      const uLastName = userObj?.lastName || userObj?.surname || ""
+                      const combinedName = `${uFirstName} ${uLastName}`.trim()
+                      const guestName = res.guestName || (combinedName.length > 0 ? combinedName : "") || res.guestPhone || t("restaurant.reservations.guest", "Guest")
+                      const guestPhone = res.guestPhone || userObj?.phoneNumber
                       const tableName = res.tableId?.tableNumber || "Unknown"
                       
                       return (
@@ -389,7 +446,7 @@ export default function ReservationsManagementPage() {
                           <td className="px-6 py-4">
                             <div className="flex flex-col gap-1">
                               <span className="font-bold text-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-muted-foreground" /> {res.startTime}</span>
-                              <span className="text-xs text-muted-foreground">until {res.endTime}</span>
+                              <span className="text-xs text-muted-foreground">{t("restaurant.until", "until")} {res.endTime}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -408,11 +465,11 @@ export default function ReservationsManagementPage() {
                             {res.source === "walk_in" && <span className="ml-2 bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded">Walk-in</span>}
                           </td>
                           <td className="px-6 py-4 font-bold text-foreground">
-                            {res.partySize} {res.partySize === 1 ? 'person' : 'people'}
+                            {res.partySize} {res.partySize === 1 ? t("restaurant.person", "person") : t("restaurant.people", "people")}
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${statusColors[res.status] || "bg-gray-100 border-gray-200 text-gray-600"}`}>
-                              {res.status.replace("_", " ")}
+                              {String(t(`restaurant.status_${res.status}`, res.status.replace("_", " ")))}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
@@ -423,13 +480,13 @@ export default function ReservationsManagementPage() {
                                     onClick={() => handleStatusChange(res._id, 'confirmed')}
                                     className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-colors"
                                   >
-                                    Approve
+                                    {t("restaurant.approve", "Approve")}
                                   </button>
                                   <button 
                                     onClick={() => handleStatusChange(res._id, 'rejected')}
                                     className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold transition-colors"
                                   >
-                                    Reject
+                                    {t("restaurant.reject", "Reject")}
                                   </button>
                                 </>
                               )}
@@ -438,7 +495,7 @@ export default function ReservationsManagementPage() {
                                   onClick={() => handleStatusChange(res._id, 'seated')}
                                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold transition-colors"
                                 >
-                                  Seat Guest
+                                  {t("restaurant.seat_guest", "Seat Guest")}
                                 </button>
                               )}
                               {res.status === 'seated' && (
@@ -446,7 +503,7 @@ export default function ReservationsManagementPage() {
                                   onClick={() => handleStatusChange(res._id, 'completed')}
                                   className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold transition-colors"
                                 >
-                                  <CheckCircle className="h-3.5 w-3.5" /> Complete
+                                  <CheckCircle className="h-3.5 w-3.5" /> {t("restaurant.complete", "Complete")}
                                 </button>
                               )}
                               {(res.status === 'confirmed' || res.status === 'seated') && (
@@ -754,20 +811,51 @@ export default function ReservationsManagementPage() {
                             workingHours={branchDetails?.workingHours || []}
                             breaks={branchDetails?.breaks || []}
                             totalDuration={30}
+                            allowPast={true}
                           />
                           
                           {/* Manual End Time adjust */}
                           {addDialog.startTime && (
-                            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-border/40 animate-in fade-in duration-300">
-                              <label className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                                <Clock className="h-4 w-4" /> {t("restaurant.reservations.departureTime", "Departure Time:")}
-                              </label>
-                              <input
-                                type="time"
-                                value={addDialog.endTime}
-                                onChange={(e) => setAddDialog(prev => ({...prev, endTime: e.target.value}))}
-                                className="w-32 h-10 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
-                              />
+                            <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border/40 animate-in fade-in duration-300">
+                              <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">{t("restaurant.duration", "Duration:")}</span>
+                                {[1, 1.5, 2, 2.5, 3, 4].map(dur => {
+                                  const durMins = Math.round(dur * 60);
+                                  const isDisabled = durMins > maxAvailableMinutes;
+                                  return (
+                                    <button
+                                      key={dur}
+                                      type="button"
+                                      disabled={isDisabled}
+                                      onClick={() => handleDurationPreset(dur)}
+                                      title={isDisabled ? `Unavailable (${maxAvailableMinutes / 60})` : undefined}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs ${
+                                        isDisabled
+                                          ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 line-through opacity-50"
+                                          : "bg-white border border-border/60 text-foreground hover:bg-[#E5555E] hover:text-white"
+                                      }`}
+                                    >
+                                      {t("restaurant.hours_short", "{{count}}h", { count: dur })}
+                                    </button>
+                                  )
+                                })}
+                                {maxAvailableMinutes < 240 && maxAvailableMinutes > 0 && (
+                                  <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 ml-1 whitespace-nowrap">
+                                    {t("restaurant.max_duration_badge", "Max {{hours}}h", { hours: maxAvailableMinutes / 60 })}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <label className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
+                                  <Clock className="h-4 w-4" /> {t("restaurant.reservations.departureTime", "Departure Time:")}
+                                </label>
+                                <input
+                                  type="time"
+                                  value={addDialog.endTime}
+                                  onChange={(e) => setAddDialog(prev => ({...prev, endTime: e.target.value}))}
+                                  className="w-32 h-10 px-3 rounded-xl border border-border/60 bg-white text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                                />
+                              </div>
                             </div>
                           )}
                         </div>

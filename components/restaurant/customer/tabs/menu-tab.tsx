@@ -38,8 +38,8 @@ export function MenuTab({ partnerId, branchId }: { partnerId: string, branchId: 
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-gray-50 rounded-2xl border border-dashed border-border/60">
         <UtensilsCrossed className="h-12 w-12 mb-4 opacity-50" />
-        <h3 className="text-lg font-bold text-foreground">Menu Coming Soon</h3>
-        <p className="text-sm">This restaurant hasn&apos;t uploaded their digital menu yet.</p>
+        <h3 className="text-lg font-bold text-foreground">{t("restaurant.menu_coming_soon", "Menu Coming Soon")}</h3>
+        <p className="text-sm">{t("restaurant.no_menu_desc", "This restaurant hasn't uploaded their digital menu yet.")}</p>
       </div>
     )
   }
@@ -60,7 +60,7 @@ export function MenuTab({ partnerId, branchId }: { partnerId: string, branchId: 
                 : 'bg-white border border-border/60 text-muted-foreground hover:bg-gray-50'
             }`}
           >
-            {cat}
+            {cat === "All" ? t("common.all", "All") : cat}
           </button>
         ))}
       </div>
@@ -78,11 +78,11 @@ export function MenuTab({ partnerId, branchId }: { partnerId: string, branchId: 
               )}
               {item.isAvailable === false && (
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                  <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Sold Out</span>
+                  <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">{t("restaurant.sold_out", "Sold Out")}</span>
                 </div>
               )}
               <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-foreground font-bold px-3 py-1 rounded-full shadow-sm text-sm">
-                {item.price.toLocaleString()} AMD
+                {item.price.toLocaleString()} {t("common.amd", "AMD")}
               </div>
             </div>
             <div className="p-5 flex-1 flex flex-col">

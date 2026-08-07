@@ -261,34 +261,70 @@ export function BookingTab({
     })
   }, [reservations, selectedTableId])
 
+  const selectedBranchObj = useMemo(() => {
+    return (branches || []).find((b: any) => b._id === selectedBranch) || branches?.[0];
+  }, [branches, selectedBranch]);
+
   const availableTimeSlots = useMemo(() => {
-    const slots: { time: string; label: string; isBooked: boolean; conflictInfo?: string }[] = []
-    for (let hour = 10; hour <= 22; hour++) {
-      for (let min = 0; min < 60; min += 30) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
-        const timeMin = hour * 60 + min
+    const day = selectedDate ? selectedDate.getDay() : 0;
+    const wh = (selectedBranchObj?.workingHours || []).find((w: any) => w.weekday === day || w.day === day || Number(w.weekday) === day);
+
+    const openTimeStr = wh?.openTime || "09:00";
+    const closeTimeStr = wh?.closeTime || "23:30";
+
+    const [openH, openM] = openTimeStr.split(':').map(Number);
+    const [closeH, closeM] = closeTimeStr.split(':').map(Number);
+
+    let currentMin = (isNaN(openH) ? 9 : openH) * 60 + (isNaN(openM) ? 0 : openM);
+    let closeMin = (isNaN(closeH) ? 23 : closeH) * 60 + (isNaN(closeM) ? 30 : closeM);
+
+    if (closeMin <= currentMin) {
+      closeMin += 1440;
+    }
+
+    const dayBreaks = (selectedBranchObj?.breaks || []).filter((b: any) => b.weekday === day || b.day === day);
+    const slots: { time: string; label: string; isBooked: boolean; conflictInfo?: string }[] = [];
+
+    while (currentMin < closeMin) {
+      const slotStart = currentMin;
+
+      const overlapsBreak = dayBreaks.some((br: any) => {
+        const [bsh, bsm] = (br.startTime || "").split(':').map(Number);
+        const [beh, bem] = (br.endTime || "").split(':').map(Number);
+        const brStart = bsh * 60 + bsm;
+        const brEnd = beh * 60 + bem;
+        return slotStart < brEnd && (slotStart + 30) > brStart;
+      });
+
+      if (!overlapsBreak) {
+        const rawHour = Math.floor(currentMin / 60) % 24;
+        const min = currentMin % 60;
+        const timeStr = `${rawHour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 
         const conflict = tableReservations.find(r => {
-          let rStart = parseMinutes(r.startTime)
-          let rEnd = parseMinutes(r.endTime)
-          if (rEnd <= rStart) rEnd += 1440
-          return timeMin >= rStart && timeMin < rEnd
-        })
+          let rStart = parseMinutes(r.startTime);
+          let rEnd = parseMinutes(r.endTime);
+          if (rEnd <= rStart) rEnd += 1440;
+          return currentMin >= rStart && currentMin < rEnd;
+        });
 
-        const h12 = hour % 12 === 0 ? 12 : hour % 12
-        const ampm = hour >= 12 ? 'PM' : 'AM'
-        const label = `${h12}:${min.toString().padStart(2, '0')} ${ampm}`
+        const h12 = rawHour % 12 === 0 ? 12 : rawHour % 12;
+        const ampm = rawHour >= 12 ? 'PM' : 'AM';
+        const label = `${h12}:${min.toString().padStart(2, '0')} ${ampm}`;
 
         slots.push({
           time: timeStr,
           label,
           isBooked: !!conflict,
           conflictInfo: conflict ? `${conflict.startTime} - ${conflict.endTime}` : undefined
-        })
+        });
       }
+
+      currentMin += 30;
     }
-    return slots
-  }, [tableReservations])
+
+    return slots;
+  }, [selectedDate, selectedBranchObj, tableReservations]);
 
   const handleTableClick = (id: string | string[] | null, shiftKey?: boolean) => {
     const finalId = Array.isArray(id) ? id[0] : id;
@@ -307,14 +343,47 @@ export function BookingTab({
       setSelectedTime(defaultArr)
     }
     if (setSelectedEndTime && (!selectedEndTime || selectedEndTime <= defaultArr)) {
-      setSelectedEndTime(addHoursToTime(defaultArr, 2))
+      setSelectedEndTime(addHoursToTime(defaultArr, 1))
     }
   }
+
+  const maxAvailableMinutes = useMemo(() => {
+    if (!selectedTime || !selectedTableId) return 240
+    const startMin = parseMinutes(selectedTime)
+    let nextStartMin = 1440
+
+    reservations.forEach(r => {
+      if (r.tableId?._id !== selectedTableId && r.tableId !== selectedTableId) return
+      if (r.status === 'cancelled' || r.status === 'rejected') return
+
+      const rStartMin = parseMinutes(r.startTime)
+      if (rStartMin > startMin && rStartMin < nextStartMin) {
+        nextStartMin = rStartMin
+      }
+    })
+
+    return Math.max(0, nextStartMin - startMin)
+  }, [selectedTime, selectedTableId, reservations])
 
   const handleArrivalChange = (newArr: string) => {
     setSelectedTime(newArr)
     if (setSelectedEndTime) {
-      setSelectedEndTime(addHoursToTime(newArr, 2))
+      const startMin = parseMinutes(newArr)
+      let nextStartMin = 1440
+      reservations.forEach(r => {
+        if (r.tableId?._id !== selectedTableId && r.tableId !== selectedTableId) return
+        if (r.status === 'cancelled' || r.status === 'rejected') return
+        const rStartMin = parseMinutes(r.startTime)
+        if (rStartMin > startMin && rStartMin < nextStartMin) {
+          nextStartMin = rStartMin
+        }
+      })
+      const availMins = Math.max(0, nextStartMin - startMin)
+      const durMins = Math.min(60, availMins > 0 ? availMins : 60)
+      const totalMin = startMin + durMins
+      const endH = Math.floor((totalMin / 60) % 24).toString().padStart(2, '0')
+      const endM = (totalMin % 60).toString().padStart(2, '0')
+      setSelectedEndTime(`${endH}:${endM}`)
     }
     setModalError("")
   }
@@ -330,12 +399,12 @@ export function BookingTab({
     e.preventDefault()
     setModalError("")
     if (!selectedTime || (setSelectedEndTime && !selectedEndTime)) {
-      setModalError("Please select both arrival and departure times.")
+      setModalError(t("restaurant.err_select_times", "Please select both arrival and departure times."))
       return
     }
     
     if (selectedTable && partySize > selectedTable.capacity) {
-      setModalError(`This table has a maximum capacity of ${selectedTable.capacity} guests.`)
+      setModalError(t("restaurant.err_max_capacity", "This table has a maximum capacity of {{capacity}} guests.", { capacity: selectedTable.capacity }))
       return
     }
 
@@ -348,7 +417,7 @@ export function BookingTab({
     }
 
     if (endMin <= startMin) {
-      setModalError("Departure time must be after arrival time.")
+      setModalError(t("restaurant.err_departure_after_arrival", "Departure time must be after arrival time."))
       return
     }
 
@@ -364,7 +433,7 @@ export function BookingTab({
     })
 
     if (hasConflict) {
-      setModalError("This table is already booked during the selected time range. Please choose another time or table.")
+      setModalError(t("restaurant.err_table_booked", "This table is already booked during the selected time range. Please choose another time or table."))
       return
     }
 
@@ -376,7 +445,7 @@ export function BookingTab({
     <div className="space-y-10 animate-in fade-in duration-500 max-w-5xl mx-auto pb-32">
       
       <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm flex flex-col items-center">
-        <h2 className="text-xl font-bold text-foreground mb-4">Select Date</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4">{t("restaurant.select_date", "Select Date")}</h2>
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -398,17 +467,17 @@ export function BookingTab({
 
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-foreground">Select a Table</h2>
+          <h2 className="text-xl font-bold text-foreground">{t("restaurant.select_table", "Select a Table")}</h2>
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold bg-white px-3 py-1.5 rounded-full border border-border/60 shadow-sm">
-            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-[#10b981]" /> Available</div>
+            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-[#10b981]" /> {t("restaurant.available", "Available")}</div>
           </div>
         </div>
         
         {floors.length === 0 ? (
           <div className="h-[300px] flex flex-col items-center justify-center bg-gray-50 border border-border/60 rounded-2xl border-dashed">
             <span className="text-4xl mb-3">🛠️</span>
-            <h3 className="font-bold text-foreground">No Floor Plan Available</h3>
-            <p className="text-muted-foreground text-sm max-w-sm text-center mt-1">This restaurant hasn&apos;t set up their floor plan yet.</p>
+            <h3 className="font-bold text-foreground">{t("restaurant.no_floor_plan", "No Floor Plan Available")}</h3>
+            <p className="text-muted-foreground text-sm max-w-sm text-center mt-1">{t("restaurant.no_floor_plan_desc", "This restaurant hasn't set up their floor plan yet.")}</p>
           </div>
         ) : (
           <>
@@ -445,7 +514,7 @@ export function BookingTab({
                 <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-gray-200/80 shadow-md">
                   <button
                     type="button"
-                    title="Zoom In"
+                    title={t("restaurant.zoom_in", "Zoom In")}
                     onClick={() => setManualZoom((prev => (prev ?? autoFitTransform.scale) * 1.18))}
                     className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
                   >
@@ -453,7 +522,7 @@ export function BookingTab({
                   </button>
                   <button
                     type="button"
-                    title="Zoom Out"
+                    title={t("restaurant.zoom_out", "Zoom Out")}
                     onClick={() => setManualZoom((prev => (prev ?? autoFitTransform.scale) * 0.85))}
                     className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
                   >
@@ -462,7 +531,7 @@ export function BookingTab({
                   <div className="h-4 w-px bg-gray-200 mx-0.5" />
                   <button
                     type="button"
-                    title="Fit Full Plan"
+                    title={t("restaurant.fit_plan", "Fit Plan")}
                     onClick={() => {
                       setManualZoom(null)
                       setManualPan(null)
@@ -470,7 +539,7 @@ export function BookingTab({
                     className="flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-gray-100 text-xs font-bold text-gray-700 transition-colors"
                   >
                     <Maximize2 className="w-3.5 h-3.5" />
-                    <span>Fit Plan</span>
+                    <span>{t("restaurant.fit_plan", "Fit Plan")}</span>
                   </button>
                 </div>
 
@@ -509,14 +578,14 @@ export function BookingTab({
 
               <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
                 <span className="bg-[#E5555E] text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
-                  Table {selectedTable.tableNumber}
+                  {t("restaurant.table_num", "Table {{number}}", { number: selectedTable.tableNumber })}
                 </span>
                 <span className="bg-rose-100/80 border border-rose-200/60 text-[#E5555E] text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
-                  Up to {selectedTable.capacity} guests
+                  {t("restaurant.up_to_guests", "Up to {{capacity}} guests", { capacity: selectedTable.capacity })}
                 </span>
               </div>
 
-              <h3 className="text-base sm:text-lg font-extrabold text-gray-900 tracking-tight">Reserve Table {selectedTable.tableNumber}</h3>
+              <h3 className="text-base sm:text-lg font-extrabold text-gray-900 tracking-tight">{t("restaurant.reserve_table_num", "Reserve Table {{number}}", { number: selectedTable.tableNumber })}</h3>
               <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 font-medium">
                 <CalendarIcon className="w-3.5 h-3.5 text-[#E5555E]" />
                 {format(selectedDate, "EEEE, MMMM d, yyyy")}
@@ -536,14 +605,14 @@ export function BookingTab({
               <div className="bg-white p-3.5 sm:p-4.5 rounded-2xl border border-border/60 shadow-2xs space-y-2.5">
                 <div className="flex items-center justify-between flex-wrap gap-1">
                   <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Clock className="h-3.5 w-3.5 text-[#E5555E]" /> Available Hours Today
+                    <Clock className="h-3.5 w-3.5 text-[#E5555E]" /> {t("restaurant.available_hours_today", "Available Hours Today")}
                   </label>
                   <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-bold">
                     <span className="flex items-center gap-1 text-emerald-700">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Available
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> {t("restaurant.available", "Available")}
                     </span>
                     <span className="flex items-center gap-1 text-gray-400">
-                      <span className="w-2 h-2 rounded-full bg-gray-300" /> Booked
+                      <span className="w-2 h-2 rounded-full bg-gray-300" /> {t("restaurant.booked", "Booked")}
                     </span>
                   </div>
                 </div>
@@ -568,10 +637,10 @@ export function BookingTab({
                       >
                         <span className="text-[11px] leading-tight font-extrabold">{slot.label}</span>
                         {slot.isBooked ? (
-                          <span className="text-[8.5px] font-semibold no-underline text-gray-400">Booked</span>
+                          <span className="text-[8.5px] font-semibold no-underline text-gray-400">{t("restaurant.booked", "Booked")}</span>
                         ) : (
                           <span className={`text-[8.5px] font-semibold ${isSelected ? "text-white/90" : "text-emerald-600"}`}>
-                            {isSelected ? "Selected" : "Free"}
+                            {isSelected ? t("restaurant.selected_status", "Selected") : t("restaurant.free_status", "Free")}
                           </span>
                         )}
                       </button>
@@ -582,7 +651,7 @@ export function BookingTab({
                 {/* Existing Bookings Banner if table has bookings on this date */}
                 {tableReservations.length > 0 && (
                   <div className="pt-2 border-t border-border/40 text-[10px] sm:text-[11px] text-amber-800 bg-amber-50/90 p-2 sm:p-2.5 rounded-xl border border-amber-200/90 flex items-center gap-1.5">
-                    <span className="shrink-0 font-extrabold">ℹ️ Booked:</span>
+                    <span className="shrink-0 font-extrabold">ℹ️ {t("restaurant.booked_banner", "Booked:")}</span>
                     <div className="flex flex-wrap gap-1">
                       {tableReservations.map((r, i) => (
                         <span key={i} className="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded-md font-extrabold text-[9.5px]">
@@ -599,7 +668,7 @@ export function BookingTab({
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div className="space-y-1">
                     <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1 uppercase tracking-wider">
-                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> Arrival Time
+                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> {t("restaurant.arrival_time", "Arrival Time")}
                     </label>
                     <input 
                       type="time" 
@@ -611,7 +680,7 @@ export function BookingTab({
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1 uppercase tracking-wider">
-                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> Departure Time
+                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> {t("restaurant.departure_time", "Departure Time")}
                     </label>
                     <input 
                       type="time" 
@@ -625,18 +694,33 @@ export function BookingTab({
 
                 {/* Duration Presets */}
                 <div className="pt-2 flex items-center gap-1.5 border-t border-border/40">
-                  <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">Duration:</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">{t("restaurant.duration", "Duration:")}</span>
                   <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
-                    {[1.5, 2, 2.5, 3].map(dur => (
-                      <button
-                        key={dur}
-                        type="button"
-                        onClick={() => handleDurationClick(dur)}
-                        className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-bold bg-gray-100 text-gray-700 hover:bg-[#E5555E] hover:text-white transition-all shadow-2xs"
-                      >
-                        {dur}h
-                      </button>
-                    ))}
+                    {[1, 1.5, 2, 2.5, 3, 4].map(dur => {
+                      const durMins = Math.round(dur * 60);
+                      const isDisabled = durMins > maxAvailableMinutes;
+                      return (
+                        <button
+                          key={dur}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => handleDurationClick(dur)}
+                          title={isDisabled ? `Unavailable (${maxAvailableMinutes / 60})` : undefined}
+                          className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all shadow-2xs ${
+                            isDisabled 
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 line-through opacity-50"
+                              : "bg-gray-100 text-gray-700 hover:bg-[#E5555E] hover:text-white"
+                          }`}
+                        >
+                          {t("restaurant.hours_short", "{{count}}h", { count: dur })}
+                        </button>
+                      )
+                    })}
+                    {maxAvailableMinutes < 240 && maxAvailableMinutes > 0 && (
+                      <span className="text-[10px] sm:text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 ml-1 whitespace-nowrap">
+                        {t("restaurant.max_duration_badge", "Max {{hours}}h", { hours: maxAvailableMinutes / 60 })}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -645,10 +729,10 @@ export function BookingTab({
               <div className="bg-white p-3.5 sm:p-4.5 rounded-2xl border border-border/60 shadow-2xs space-y-2.5">
                 <div className="flex items-center justify-between flex-wrap gap-1">
                   <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Users className="h-3.5 w-3.5 text-[#E5555E]" /> Party Size
+                    <Users className="h-3.5 w-3.5 text-[#E5555E]" /> {t("restaurant.party_size", "Party Size")}
                   </label>
                   <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-                    Capacity: <strong className="text-gray-900">{selectedTable.capacity} guests</strong>
+                    {t("restaurant.capacity_guests", "Capacity: {{capacity}} guests", { capacity: selectedTable.capacity })}
                   </span>
                 </div>
 
@@ -670,11 +754,11 @@ export function BookingTab({
                   <div className="text-xs font-semibold">
                     {partySize > selectedTable.capacity ? (
                       <span className="inline-flex items-center text-red-600 font-bold bg-red-50 px-2 py-1 rounded-lg border border-red-200 text-[10px] sm:text-[11px] whitespace-nowrap">
-                        ⚠️ Exceeds capacity
+                        {t("restaurant.exceeds_capacity", "⚠️ Exceeds capacity")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center text-emerald-700 font-bold bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-200 text-[10px] sm:text-[11px] whitespace-nowrap">
-                        ✓ Fits table
+                        {t("restaurant.fits_table", "✓ Fits table")}
                       </span>
                     )}
                   </div>
@@ -683,11 +767,11 @@ export function BookingTab({
 
               {/* Additional Notes */}
               <div className="space-y-1">
-                <label className="text-[11px] sm:text-xs font-bold text-gray-700 uppercase tracking-wider">Additional Notes</label>
+                <label className="text-[11px] sm:text-xs font-bold text-gray-700 uppercase tracking-wider">{t("restaurant.additional_notes", "Additional Notes")}</label>
                 <textarea 
                   value={reservationNotes || ""}
                   onChange={(e) => setReservationNotes && setReservationNotes(e.target.value)}
-                  placeholder="Any special requests, seating preferences, or allergies?"
+                  placeholder={t("restaurant.notes_placeholder", "Any special requests, seating preferences, or allergies?")}
                   className="w-full h-16 sm:h-20 p-2.5 sm:p-3 rounded-2xl border border-border/60 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none shadow-2xs"
                 />
               </div>
@@ -698,10 +782,10 @@ export function BookingTab({
                   type="submit"
                   className="w-full py-3 sm:py-3.5 bg-[#E5555E] text-white rounded-2xl font-extrabold text-sm sm:text-base hover:bg-[#D4444D] transition-all active:scale-[0.98] shadow-md flex justify-center items-center gap-2"
                 >
-                  <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" /> Request Reservation
+                  <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" /> {t("restaurant.request_reservation", "Request Reservation")}
                 </button>
                 <p className="text-[10px] sm:text-[11px] text-center text-muted-foreground font-medium">
-                  Your request will be sent to the restaurant for instant approval.
+                  {t("restaurant.request_disclaimer", "Your request will be sent to the restaurant for instant approval.")}
                 </p>
               </div>
             </form>

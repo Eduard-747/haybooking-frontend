@@ -32,6 +32,7 @@ interface PartnerData {
   _id: string
   businessName: string
   businessType: string
+  category?: string
   image?: string
   publicDescription?: string
   verified?: boolean
@@ -485,18 +486,17 @@ export default function PublicBookingPage() {
            <div className="bg-emerald-50 rounded-full p-4 mb-6">
              <CheckSquare className="h-12 w-12 text-emerald-500" />
            </div>
-           <h1 className="text-3xl font-bold text-foreground mb-3 text-center">Reservation Submitted!</h1>
+           <h1 className="text-3xl font-bold text-foreground mb-3 text-center">{t("restaurant.reservation_submitted", "Reservation Submitted!")}</h1>
            <p className="text-muted-foreground text-center max-w-md mb-8">
-             Your request has been sent successfully. You will receive a confirmation once the business approves your booking.
+             {t("restaurant.reservation_submitted_desc", "Your request has been sent successfully. You will receive a confirmation once the business approves your booking.")}
            </p>
            <button 
              onClick={() => window.location.reload()}
              className="px-6 py-3 bg-[#E5555E] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
            >
-             Make Another Booking
+             {t("restaurant.make_another_booking", "Make Another Booking")}
            </button>
         </main>
-        <BookingFooter />
       </div>
     )
   }
@@ -578,7 +578,7 @@ export default function PublicBookingPage() {
                       }`}
                     >
                       <Calendar className="h-4 w-4" />
-                      {isRestaurant ? t("role.bookTable", "Book Table") : t("role.customerDesc", "Book Appointment")}
+                      {isRestaurant ? t("restaurant.reserve_table", "Book Table") : t("role.customerDesc", "Book Appointment")}
                     </button>
                     <button
                       onClick={() => setActiveTab("about")}
@@ -603,7 +603,7 @@ export default function PublicBookingPage() {
                           }`}
                         >
                           <Info className="h-4 w-4" />
-                          Menu
+                          {t("restaurant.our_menu", "Menu")}
                         </button>
                         <button
                           onClick={() => setActiveTab("gallery")}
@@ -614,7 +614,7 @@ export default function PublicBookingPage() {
                           }`}
                         >
                           <Info className="h-4 w-4" />
-                          Gallery
+                          {t("nav.gallery", "Gallery")}
                         </button>
                       </>
                     )}
@@ -628,7 +628,7 @@ export default function PublicBookingPage() {
                       }} 
                       className="text-sm font-medium text-[#E5555E] hover:underline"
                     >
-                      Change Location
+                      {t("book.changeLocation", "Change Location")}
                     </button>
                   )}
                 </div>

@@ -42,7 +42,7 @@ export function SpecialistSelection({
                 className={cn(
                   "relative w-20 h-20 rounded-full overflow-hidden transition-all duration-200",
                   isSelected
-                    ? "ring-2 ring-[#E5555E] ring-offset-2 scale-105"
+                    ? "ring-2 ring-[#FF4444] ring-offset-2 scale-105"
                     : "ring-1 ring-border/50 group-hover:ring-border group-hover:scale-105"
                 )}
               >
@@ -58,7 +58,7 @@ export function SpecialistSelection({
               <div className="text-center">
                 <p className={cn(
                   "text-sm font-semibold transition-colors",
-                  isSelected ? "text-[#E5555E]" : "text-foreground"
+                  isSelected ? "text-[#FF4444]" : "text-foreground"
                 )}>
                   {specialist.name}
                 </p>

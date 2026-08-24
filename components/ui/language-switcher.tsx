@@ -30,8 +30,8 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20">
-          <Globe className="h-4 w-4 text-muted-foreground" />
+        <button className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#FF4444] rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 shrink-0">
+          <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           <span className="text-foreground">{currentLang.label}</span>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
@@ -45,7 +45,7 @@ export function LanguageSwitcher() {
               onClick={() => handleLanguageChange(lang.code)}
               className={`flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition-colors focus:bg-[#FAFAFA] ${
                 isActive 
-                  ? "bg-[#FDF6F6] text-[#C69C9B] font-bold focus:bg-[#FDF6F6]" 
+                  ? "bg-[#FEF2F2] text-[#FF4444] font-bold focus:bg-[#FEF2F2]" 
                   : "text-foreground"
               }`}
             >

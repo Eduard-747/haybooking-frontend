@@ -73,7 +73,7 @@ export default function BranchesPage() {
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
   const countryRef = useRef<HTMLDivElement>(null)
-  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+374")
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -295,7 +295,7 @@ export default function BranchesPage() {
                 <h1 className="text-2xl font-bold text-foreground">{t("branchesPage.branches", "Branches")}</h1>
                 <p className="text-sm text-muted-foreground mt-1">{branches.length} {t("branchesPage.locations", "locations")}</p>
               </div>
-              <button onClick={openAdd} className="flex items-center justify-center sm:justify-start gap-2 px-5 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+              <button onClick={openAdd} className="flex items-center justify-center sm:justify-start gap-2 px-5 py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors whitespace-nowrap">
                 <Plus className="h-4 w-4 shrink-0" /> {t("branchesPage.addBranch", "Add Branch")}
               </button>
             </div>
@@ -305,7 +305,7 @@ export default function BranchesPage() {
               <div className="bg-white rounded-2xl border border-border/60 shadow-sm overflow-hidden mb-6">
                 <div className="px-6 py-4 border-b border-border/40">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[#C69C9B]" /> {t("branchesPage.allLocations", "All Locations")}
+                    <MapPin className="h-4 w-4 text-[#FF4444]" /> {t("branchesPage.allLocations", "All Locations")}
                   </h3>
                 </div>
                 <div className="h-[300px] relative z-0">
@@ -316,14 +316,14 @@ export default function BranchesPage() {
 
             {(isLoading || partnerLoading) ? (
               <div className="flex items-center justify-center py-24">
-                <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
               </div>
             ) : branches.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-border/40 text-center">
-                <MapPin className="h-12 w-12 text-[#C69C9B]/40 mb-3" />
+                <MapPin className="h-12 w-12 text-[#FF4444]/40 mb-3" />
                 <h2 className="font-bold text-foreground mb-1">{t("branchesPage.noBranchesYet", "No branches yet")}</h2>
                 <p className="text-sm text-muted-foreground mb-6">{t("branchesPage.addFirstBranchDesc", "Add your first branch to start accepting bookings.")}</p>
-                <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#C69C9B] text-white text-sm font-bold rounded-xl">
+                <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 bg-[#FF4444] text-white text-sm font-bold rounded-xl">
                   <Plus className="h-4 w-4" /> {t("branchesPage.addFirstBranch", "Add First Branch")}
                 </button>
               </div>
@@ -333,8 +333,8 @@ export default function BranchesPage() {
                   <div key={b._id} className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-[#FDF6F6] flex items-center justify-center shrink-0">
-                          <MapPin className="h-5 w-5 text-[#C69C9B]" />
+                        <div className="h-10 w-10 rounded-xl bg-[#FEF2F2] flex items-center justify-center shrink-0">
+                          <MapPin className="h-5 w-5 text-[#FF4444]" />
                         </div>
                         <div>
                           <h3 className="font-bold text-foreground">{b.address.city}</h3>
@@ -407,7 +407,7 @@ export default function BranchesPage() {
                     onChange={e => { setCountrySearch(e.target.value); setShowCountryDropdown(true); setForm(p => ({...p, country: e.target.value})) }}
                     onFocus={() => setShowCountryDropdown(true)}
                     placeholder={t("branchesPage.selectCountry", "Select country...")}
-                    className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                    className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
                   />
                   {showCountryDropdown && filteredCountries.length > 0 && (
                     <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -416,7 +416,7 @@ export default function BranchesPage() {
                           key={c}
                           type="button"
                           onClick={() => { setForm(p => ({...p, country: c})); setCountrySearch(c); setShowCountryDropdown(false) }}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-[#FDF6F6] transition-colors"
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-[#FEF2F2] transition-colors"
                         >
                           {c}
                         </button>
@@ -427,7 +427,7 @@ export default function BranchesPage() {
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.city", "City")}</label>
                   <input required value={form.city} onChange={e => setForm(p => ({...p, city: e.target.value}))}
-                    placeholder={t("branchesPage.cityPlaceholder", "Yerevan")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                    placeholder={t("branchesPage.cityPlaceholder", "Yerevan")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" />
                 </div>
               </div>
               <div>
@@ -435,19 +435,19 @@ export default function BranchesPage() {
                 <input required value={form.line1} onChange={e => setForm(p => ({...p, line1: e.target.value}))}
                   disabled={!form.country || !form.city}
                   title={(!form.country || !form.city) ? "Please select Country and City first" : ""}
-                  placeholder={t("branchesPage.streetPlaceholder", "123 Main Street")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B] disabled:opacity-50 disabled:cursor-not-allowed" />
+                  placeholder={t("branchesPage.streetPlaceholder", "123 Main Street")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444] disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
               <div className="w-1/2 pr-1.5">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">{t("branchesPage.zipCode", "Zip Code")}</label>
                 <input value={form.zipCode} onChange={e => setForm(p => ({...p, zipCode: e.target.value}))}
-                  placeholder={t("branchesPage.zipPlaceholder", "0001")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                  placeholder={t("branchesPage.zipPlaceholder", "0001")} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" />
               </div>
               
               <div>
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center justify-between">
                   {t("branchesPage.phone", "Phone Numbers")}
                   {form.phoneNumbers.length < 4 && (
-                    <button type="button" onClick={() => setForm(p => ({...p, phoneNumbers: [...p.phoneNumbers, ""]}))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline normal-case">
+                    <button type="button" onClick={() => setForm(p => ({...p, phoneNumbers: [...p.phoneNumbers, ""]}))} className="text-xs font-semibold text-[#FF4444] flex items-center gap-1 hover:underline normal-case">
                       <Plus className="h-3 w-3" /> {t("common.add", "Add")}
                     </button>
                   )}
@@ -459,7 +459,7 @@ export default function BranchesPage() {
                         const newPhones = [...form.phoneNumbers];
                         newPhones[idx] = e.target.value;
                         setForm(p => ({...p, phoneNumbers: newPhones}));
-                      }} placeholder={phonePlaceholder} className="flex-1 px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                      }} placeholder={phonePlaceholder} className="flex-1 px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" />
                       {form.phoneNumbers.length > 1 && (
                         <button type="button" onClick={() => {
                           const newPhones = form.phoneNumbers.filter((_, i) => i !== idx);
@@ -476,9 +476,9 @@ export default function BranchesPage() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                     {t("branchesPage.pinLocation", "📍 Pin Location on Map")}
-                    {isGeocoding && <span className="ml-2 text-xs text-[#E5555E] font-medium normal-case inline-flex items-center"><Loader2 className="h-3 w-3 animate-spin mr-1"/> Locating...</span>}
+                    {isGeocoding && <span className="ml-2 text-xs text-[#FF4444] font-medium normal-case inline-flex items-center"><Loader2 className="h-3 w-3 animate-spin mr-1"/> Locating...</span>}
                   </label>
-                  <button type="button" onClick={handleForwardGeocode} disabled={isGeocoding} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline disabled:opacity-50">
+                  <button type="button" onClick={handleForwardGeocode} disabled={isGeocoding} className="text-xs font-semibold text-[#FF4444] flex items-center gap-1 hover:underline disabled:opacity-50">
                     <Search className="h-3 w-3" /> {t("branchesPage.findOnMap", "Find on Map")}
                   </button>
                 </div>
@@ -504,7 +504,7 @@ export default function BranchesPage() {
                 <div className="flex gap-2 flex-wrap">
                   {WEEKDAYS.map((d, i) => (
                     <button type="button" key={i} onClick={() => toggleWorkday(i)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${form.workdays.includes(i) ? "bg-[#C69C9B] text-white border-[#C69C9B]" : "bg-[#FAFAFA] text-muted-foreground border-border/60"}`}>
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${form.workdays.includes(i) ? "bg-[#FF4444] text-white border-[#FF4444]" : "bg-[#FAFAFA] text-muted-foreground border-border/60"}`}>
                       {t(`calendar.${d.toLowerCase()}`, d)}
                     </button>
                   ))}
@@ -523,7 +523,7 @@ export default function BranchesPage() {
               <div className="pt-4 border-t border-border/40">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">{t("branchesPage.breakPeriods", "Break Periods")}</label>
-                  <button type="button" onClick={() => setForm(p => ({ ...p, breaks: [...p.breaks, { weekday: -1, startTime: "13:00", endTime: "14:00" }] }))} className="text-xs font-semibold text-[#E5555E] flex items-center gap-1 hover:underline">
+                  <button type="button" onClick={() => setForm(p => ({ ...p, breaks: [...p.breaks, { weekday: -1, startTime: "13:00", endTime: "14:00" }] }))} className="text-xs font-semibold text-[#FF4444] flex items-center gap-1 hover:underline">
                     <Plus className="h-3 w-3" /> {t("branchesPage.addBreak", "Add Break")}
                   </button>
                 </div>
@@ -534,7 +534,7 @@ export default function BranchesPage() {
                       newBreaks[idx].weekday = parseInt(val);
                       setForm(p => ({ ...p, breaks: newBreaks }));
                     }}>
-                      <SelectTrigger className="flex-1 h-[38px] bg-[#FAFAFA] border-border/60 focus:ring-[#C69C9B]">
+                      <SelectTrigger className="flex-1 h-[38px] bg-[#FAFAFA] border-border/60 focus:ring-[#FF4444]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -572,7 +572,7 @@ export default function BranchesPage() {
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-border/60 text-sm font-semibold rounded-xl hover:bg-[#FAFAFA] transition-colors">{t("common.cancel", "Cancel")}</button>
-                <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors">
+                <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors">
                   {saving ? t("common.saving", "Saving...") : editId ? t("common.update", "Update") : t("common.create", "Create")}
                 </button>
               </div>

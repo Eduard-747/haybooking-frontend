@@ -31,15 +31,44 @@ const BranchContext = createContext<BranchContextType | undefined>(undefined)
 export function BranchProvider({ children }: { children: React.ReactNode }) {
   const { partnerId } = usePartner()
   const [branches, setBranches] = useState<Branch[]>([])
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
+  const [selectedBranchId, setSelectedBranchIdState] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selectedBranchId") || null
+    }
+    return null
+  })
   const [isLoading, setIsLoading] = useState(true)
+
+  const setSelectedBranchId = (id: string | null) => {
+    setSelectedBranchIdState(id)
+    if (typeof window !== "undefined") {
+      if (id) {
+        localStorage.setItem("selectedBranchId", id)
+      } else {
+        localStorage.removeItem("selectedBranchId")
+      }
+    }
+  }
 
   const refreshBranches = async () => {
     if (!partnerId) return
     setIsLoading(true)
     try {
       const res = await api.get(`/branches?partnerId=${partnerId}`)
-      setBranches(res.data || [])
+      const fetchedBranches: Branch[] = res.data || []
+      setBranches(fetchedBranches)
+
+      if (fetchedBranches.length > 0) {
+        const savedId = typeof window !== "undefined" ? localStorage.getItem("selectedBranchId") : null
+        const isValidSavedId = savedId && fetchedBranches.some((b: Branch) => b._id === savedId)
+
+        if (isValidSavedId) {
+          setSelectedBranchIdState(savedId)
+        } else {
+          // Auto-select the first branch if no branch or invalid branch saved in localStorage
+          setSelectedBranchId(fetchedBranches[0]._id)
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch branches", err)
     } finally {

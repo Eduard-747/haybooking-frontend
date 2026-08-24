@@ -159,13 +159,13 @@ export default function CalendarPage() {
               <div className="flex items-center gap-1 bg-[#FAFAFA] rounded-lg p-1 border border-border/40">
                 <button
                   onClick={() => setViewMode("Week")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Week" ? "bg-[#C69C9B] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
+                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Week" ? "bg-[#FF4444] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
                 >
                   {t("calendar.week", "Week")}
                 </button>
                 <button
                   onClick={() => setViewMode("Day")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Day" ? "bg-[#C69C9B] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
+                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Day" ? "bg-[#FF4444] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
                 >
                   {t("calendar.day", "Day")}
                 </button>
@@ -175,7 +175,7 @@ export default function CalendarPage() {
             {/* Calendar Grid & Day View */}
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
               </div>
             ) : viewMode === "Week" ? (
               <div className="flex-1 overflow-auto">
@@ -194,7 +194,7 @@ export default function CalendarPage() {
                         className="border-b border-l border-border/40 bg-[#FAFAFA] py-3 text-center hover:bg-gray-50 transition-colors w-full flex flex-col items-center justify-center cursor-pointer"
                       >
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t(`calendar.${DAYS[day.getDay()].toLowerCase()}`)}</p>
-                        <p className={`text-base font-bold mt-0.5 ${isToday ? "w-8 h-8 bg-[#C69C9B] text-white rounded-full flex items-center justify-center mx-auto" : "text-foreground"}`}>
+                        <p className={`text-base font-bold mt-0.5 ${isToday ? "w-8 h-8 bg-[#FF4444] text-white rounded-full flex items-center justify-center mx-auto" : "text-foreground"}`}>
                           {day.getDate()}
                         </p>
                       </button>
@@ -310,7 +310,7 @@ export default function CalendarPage() {
             <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-5 h-full">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-foreground">{t("dashboard.bookingRequests", "Booking Requests")}</h3>
-                <span className="bg-[#FDF6F6] text-[#E5555E] text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-[#FEF2F2] text-[#FF4444] text-xs font-bold px-2 py-0.5 rounded-full">
                   {pendingBookings.length}
                 </span>
               </div>
@@ -336,7 +336,7 @@ export default function CalendarPage() {
                         {b.specialistId?.name && (
                           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">{t("common.with")} {b.specialistId.name}</p>
                         )}
-                        <p className="text-xs text-[#C69C9B] font-medium mt-1">{time}</p>
+                        <p className="text-xs text-[#FF4444] font-medium mt-1">{time}</p>
                         {!isEnded && (
                           <div className="flex gap-2 mt-3">
                             <button

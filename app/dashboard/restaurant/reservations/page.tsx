@@ -7,7 +7,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import { usePartner } from "@/hooks/usePartner"
 import { toast } from "sonner"
-import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle, ArrowRightLeft, Plus, Layers, List, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
+import { Loader2, Calendar, Clock, User, Phone, CheckCircle, XCircle, ArrowRightLeft, Plus, Layers, List, ZoomIn, ZoomOut, Maximize2, X } from "lucide-react"
 import api from "@/lib/api"
 import { format } from "date-fns"
 import { useTranslation } from "react-i18next"
@@ -370,20 +370,20 @@ export default function ReservationsManagementPage() {
       <div className="flex-1 flex flex-col h-screen min-w-0">
         <DashboardHeader />
         
-        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-6">
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{t("restaurant.reservations.title", "Reservations")}</h1>
-                <p className="text-muted-foreground mt-1">{t("restaurant.reservations.subtitle", "Manage today's bookings and seated guests.")}</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{t("restaurant.reservations.title", "Reservations")}</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("restaurant.reservations.subtitle", "Manage today's bookings and seated guests.")}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-3 bg-white px-4 py-2 border border-border/60 rounded-lg shadow-sm">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+                <div className="flex items-center justify-between sm:justify-start gap-2.5 bg-white px-3.5 py-2 border border-border/60 rounded-xl shadow-2xs w-full xs:w-auto">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                   <input 
                     type="date" 
-                    className="border-none bg-transparent outline-none text-sm font-semibold text-foreground cursor-pointer"
+                    className="border-none bg-transparent outline-none text-xs sm:text-sm font-bold text-foreground cursor-pointer w-full"
                     value={format(date, "yyyy-MM-dd")}
                     onChange={(e) => setDate(new Date(e.target.value))}
                   />
@@ -391,7 +391,7 @@ export default function ReservationsManagementPage() {
                 {selectedBranchId && (
                   <button
                     onClick={() => setAddDialog(prev => ({ ...prev, isOpen: true }))}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#E5555E] hover:bg-[#D4444D] text-white rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF4444] hover:bg-[#D4444D] text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 whitespace-nowrap active:scale-95 w-full xs:w-auto"
                   >
                     <Plus className="h-4 w-4" />
                     {t("restaurant.reservations.addBooking", "Add Booking")}
@@ -402,8 +402,8 @@ export default function ReservationsManagementPage() {
 
             {!selectedBranchId ? (
               <div className="bg-white rounded-xl border border-border/40 p-12 flex flex-col items-center justify-center text-center shadow-sm mt-6">
-                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
-                  <Calendar className="w-10 h-10 text-[#C69C9B]" />
+                <div className="w-20 h-20 bg-[#FEF2F2] rounded-full flex items-center justify-center mb-6">
+                  <Calendar className="w-10 h-10 text-[#FF4444]" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
                 <p className="text-muted-foreground max-w-md">{t("restaurant.reservations.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its reservations.")}</p>
@@ -412,15 +412,15 @@ export default function ReservationsManagementPage() {
               <>
             {isLoading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
               </div>
             ) : reservations.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-xl border border-border/60 border-dashed">
                 <p className="text-muted-foreground">{t("restaurant.reservations.noReservations", "No reservations found for this date.")}</p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-border/60 shadow-sm overflow-hidden">
-                <table className="w-full text-left text-sm">
+              <div className="bg-white rounded-2xl border border-border/60 shadow-xs overflow-x-auto w-full">
+                <table className="w-full min-w-[660px] text-left text-sm">
                   <thead className="bg-[#FAFAFA] border-b border-border/60 text-muted-foreground">
                     <tr>
                       <th className="px-6 py-3 font-semibold">{t("restaurant.reservations.time", "Time")}</th>
@@ -433,12 +433,16 @@ export default function ReservationsManagementPage() {
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {reservations.map(res => {
-                      const userObj = res.userId || res.customerId
+                      const userObj = (typeof res.userId === 'object' ? res.userId : null) || (typeof res.customerId === 'object' ? res.customerId : null)
                       const uFirstName = userObj?.firstName || userObj?.name || ""
                       const uLastName = userObj?.lastName || userObj?.surname || ""
                       const combinedName = `${uFirstName} ${uLastName}`.trim()
-                      const guestName = res.guestName || (combinedName.length > 0 ? combinedName : "") || res.guestPhone || t("restaurant.reservations.guest", "Guest")
-                      const guestPhone = res.guestPhone || userObj?.phoneNumber
+                      
+                      const guestName = (res.guestName && res.guestName !== "Guest" && res.guestName !== "A client")
+                        ? res.guestName
+                        : (combinedName || res.guestPhone || userObj?.phoneNumber || userObj?.phone || t("restaurant.reservations.guest", "Guest"))
+                      
+                      const guestPhone = res.guestPhone || userObj?.phoneNumber || userObj?.phone || ""
                       const tableName = res.tableId?.tableNumber || "Unknown"
                       
                       return (
@@ -551,7 +555,7 @@ export default function ReservationsManagementPage() {
                       <select 
                         value={reassignDialog.newTableId}
                         onChange={(e) => setReassignDialog(prev => ({...prev, newTableId: e.target.value}))}
-                        className="w-full h-10 px-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                        className="w-full h-10 px-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                       >
                         <option value="" disabled>Select a table</option>
                         {tables.map(t => (
@@ -566,7 +570,7 @@ export default function ReservationsManagementPage() {
                         value={reassignDialog.reason}
                         onChange={(e) => setReassignDialog(prev => ({...prev, reason: e.target.value}))}
                         placeholder="e.g. Previous table had a leak, accommodating a larger group..."
-                        className="w-full h-24 p-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none"
+                        className="w-full h-24 p-3 rounded-lg border border-border/60 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] resize-none"
                       />
                       <p className="text-xs text-muted-foreground">This reason will be sent to the customer.</p>
                     </div>
@@ -583,7 +587,7 @@ export default function ReservationsManagementPage() {
                     <button
                       onClick={handleReassign}
                       disabled={isReassigning || !reassignDialog.newTableId || !reassignDialog.reason.trim()}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#E5555E] hover:bg-[#D4444D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#FF4444] hover:bg-[#D4444D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isReassigning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />}
                       Reassign
@@ -595,44 +599,53 @@ export default function ReservationsManagementPage() {
 
             {/* Add Booking Dialog */}
             {addDialog.isOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col max-h-[92vh] border border-border/40">
-                  <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-gray-50/50 to-white">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col max-h-[96vh] sm:max-h-[92vh] border border-border/40">
+                  <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-gray-50/50 to-white shrink-0">
                     <div>
-                      <h3 className="text-2xl font-extrabold text-foreground tracking-tight">{t("restaurant.reservations.addDialogTitle", "Add New Booking")}</h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">{t("restaurant.reservations.addDialogSubtitle", "Create a manual reservation.")}</p>
+                      <h3 className="text-lg sm:text-2xl font-extrabold text-foreground tracking-tight">{t("restaurant.reservations.addDialogTitle", "Add New Booking")}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("restaurant.reservations.addDialogSubtitle", "Create a manual reservation.")}</p>
                     </div>
-                    {selectedTableObj && (
-                      <div className="hidden sm:flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 text-emerald-800 px-4 py-2 rounded-2xl shadow-xs">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Table {selectedTableObj.tableNumber}</span>
-                        <span className="text-xs text-emerald-600 font-medium">• {selectedTableObj.capacity} {t("restaurant.tables.seats", "seats")}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {selectedTableObj && (
+                        <div className="hidden sm:flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 text-emerald-800 px-4 py-2 rounded-2xl shadow-xs">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Table {selectedTableObj.tableNumber}</span>
+                          <span className="text-xs text-emerald-600 font-medium">• {selectedTableObj.capacity} {t("restaurant.tables.seats", "seats")}</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setAddDialog(prev => ({ ...prev, isOpen: false }))}
+                        className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+                        title="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+                  <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 flex-1 overflow-y-auto">
                     
                     {/* Step 1: Visual Floor Plan & Party Size */}
-                    <div className="space-y-4 bg-[#FAF9F6]/80 p-5 sm:p-6 rounded-3xl border border-border/60 shadow-sm">
+                    <div className="space-y-4 bg-[#FAF9F6]/80 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/60 shadow-xs">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
                         <div className="flex items-center gap-2">
-                          <label className="text-base font-extrabold text-foreground">{t("restaurant.reservations.selectTable", "1. Select Table *")}</label>
+                          <label className="text-sm sm:text-base font-extrabold text-foreground">{t("restaurant.reservations.selectTable", "1. Select Table *")}</label>
                           {selectedTableObj && (
-                            <span className="sm:hidden bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                            <span className="sm:hidden bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full border border-emerald-200">
                               Table {selectedTableObj.tableNumber} ({selectedTableObj.capacity} seats)
                             </span>
                           )}
                         </div>
 
                         {/* Mode Switcher & Party Size Input */}
-                        <div className="flex items-center gap-3">
-                          <div className="flex bg-gray-200/80 p-1 rounded-2xl text-xs font-medium">
+                        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+                          <div className="flex bg-gray-200/80 p-1 rounded-xl text-xs font-medium w-full xs:w-auto">
                             <button
                               type="button"
                               onClick={() => setTableSelectMode("visual")}
-                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition-all ${
-                                tableSelectMode === "visual" ? "bg-white text-gray-900 shadow-sm font-bold" : "text-gray-600 hover:text-gray-900"
+                              className={`flex-1 xs:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                                tableSelectMode === "visual" ? "bg-white text-gray-900 shadow-2xs font-bold" : "text-gray-600 hover:text-gray-900"
                               }`}
                             >
                               <Layers className="w-3.5 h-3.5" />
@@ -641,8 +654,8 @@ export default function ReservationsManagementPage() {
                             <button
                               type="button"
                               onClick={() => setTableSelectMode("list")}
-                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition-all ${
-                                tableSelectMode === "list" ? "bg-white text-gray-900 shadow-sm font-bold" : "text-gray-600 hover:text-gray-900"
+                              className={`flex-1 xs:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                                tableSelectMode === "list" ? "bg-white text-gray-900 shadow-2xs font-bold" : "text-gray-600 hover:text-gray-900"
                               }`}
                             >
                               <List className="w-3.5 h-3.5" />
@@ -650,14 +663,14 @@ export default function ReservationsManagementPage() {
                             </button>
                           </div>
 
-                          <div className="flex items-center gap-2 pl-3 border-l border-gray-300">
+                          <div className="flex items-center justify-between xs:justify-start gap-2 pt-2 xs:pt-0 xs:pl-3 xs:border-l border-gray-300">
                             <label className="text-xs font-bold text-foreground whitespace-nowrap">{t("restaurant.reservations.partySize", "Party Size *")}:</label>
                             <input
                               type="number"
                               min="1"
                               value={addDialog.partySize}
                               onChange={(e) => setAddDialog(prev => ({ ...prev, partySize: parseInt(e.target.value) || 1 }))}
-                              className="w-16 h-8 px-2 rounded-xl border border-border/60 bg-white text-sm font-extrabold text-center focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] shadow-2xs"
+                              className="w-16 h-8 px-2 rounded-xl border border-border/60 bg-white text-sm font-extrabold text-center focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] shadow-2xs"
                             />
                           </div>
                         </div>
@@ -700,7 +713,7 @@ export default function ReservationsManagementPage() {
                           )}
 
                           {/* Visual Floor Canvas Container */}
-                          <div className="relative w-full h-[460px] sm:h-[500px] bg-[#FAF9F6] rounded-2xl border border-gray-200 overflow-hidden shadow-inner flex flex-col group">
+                          <div className="relative w-full h-[280px] xs:h-[340px] sm:h-[460px] md:h-[500px] bg-[#FAF9F6] rounded-2xl border border-gray-200 overflow-hidden shadow-inner flex flex-col group">
                             {/* Floating Controls */}
                             <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-gray-200/80 shadow-md">
                               <button
@@ -782,7 +795,7 @@ export default function ReservationsManagementPage() {
                           <select 
                             value={addDialog.tableId}
                             onChange={(e) => setAddDialog(prev => ({...prev, tableId: e.target.value, startTime: "", endTime: ""}))}
-                            className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                            className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                           >
                             <option value="" disabled>{t("restaurant.reservations.selectTablePlaceholder", "Select a table...")}</option>
                             {tables.map(tItem => (
@@ -832,7 +845,7 @@ export default function ReservationsManagementPage() {
                                       className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs ${
                                         isDisabled
                                           ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 line-through opacity-50"
-                                          : "bg-white border border-border/60 text-foreground hover:bg-[#E5555E] hover:text-white"
+                                          : "bg-white border border-border/60 text-foreground hover:bg-[#FF4444] hover:text-white"
                                       }`}
                                     >
                                       {t("restaurant.hours_short", "{{count}}h", { count: dur })}
@@ -853,7 +866,7 @@ export default function ReservationsManagementPage() {
                                   type="time"
                                   value={addDialog.endTime}
                                   onChange={(e) => setAddDialog(prev => ({...prev, endTime: e.target.value}))}
-                                  className="w-32 h-10 px-3 rounded-xl border border-border/60 bg-white text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                                  className="w-32 h-10 px-3 rounded-xl border border-border/60 bg-white text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                                 />
                               </div>
                             </div>
@@ -867,13 +880,13 @@ export default function ReservationsManagementPage() {
                       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <label className="text-sm font-semibold text-foreground">{t("restaurant.reservations.guestDetails", "3. Guest Details *")}</label>
                         <div className="bg-[#FAFAFA] p-5 rounded-2xl border border-border/60 shadow-sm space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-2">
                               <input
                                 type="text"
                                 value={addDialog.guestName}
                                 onChange={(e) => setAddDialog(prev => ({...prev, guestName: e.target.value}))}
-                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                                 placeholder={t("restaurant.reservations.guestName", "Guest Name *")}
                               />
                             </div>
@@ -882,18 +895,18 @@ export default function ReservationsManagementPage() {
                                 type="text"
                                 value={addDialog.guestPhone}
                                 onChange={(e) => setAddDialog(prev => ({...prev, guestPhone: e.target.value}))}
-                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                                 placeholder={t("restaurant.reservations.guestPhone", "Phone Number")}
                               />
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2 col-span-2">
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-2">
                               <select
                                 value={addDialog.source}
                                 onChange={(e) => setAddDialog(prev => ({...prev, source: e.target.value}))}
-                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                                className="w-full h-11 px-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                               >
                                 <option value="phone">{t("restaurant.reservations.sourcePhone", "Source: Phone")}</option>
                                 <option value="walk_in">{t("restaurant.reservations.sourceWalkIn", "Source: Walk-in")}</option>
@@ -907,7 +920,7 @@ export default function ReservationsManagementPage() {
                               value={addDialog.notes}
                               onChange={(e) => setAddDialog(prev => ({...prev, notes: e.target.value}))}
                               placeholder={t("restaurant.reservations.specialRequests", "Any special requests or allergies...")}
-                              className="w-full h-24 p-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none"
+                              className="w-full h-24 p-3 rounded-xl border border-border/60 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] resize-none"
                             />
                           </div>
                         </div>
@@ -915,10 +928,10 @@ export default function ReservationsManagementPage() {
                     )}
                   </div>
 
-                  <div className="p-6 border-t border-border/40 flex justify-end gap-3 bg-[#FAFAFA]/50">
+                  <div className="p-4 sm:p-6 border-t border-border/40 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 bg-[#FAFAFA]/50 shrink-0">
                     <button
                       onClick={() => setAddDialog(prev => ({ ...prev, isOpen: false }))}
-                      className="px-6 py-2.5 rounded-xl text-sm font-semibold text-foreground bg-white border border-border/60 hover:bg-gray-50 transition-colors shadow-sm"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground bg-white border border-border/60 hover:bg-gray-50 transition-colors shadow-2xs"
                       disabled={isAdding}
                     >
                       {t("common.cancel", "Cancel")}
@@ -926,7 +939,7 @@ export default function ReservationsManagementPage() {
                     <button
                       onClick={handleAddBooking}
                       disabled={isAdding || !addDialog.guestName || !addDialog.tableId || !addDialog.startTime}
-                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#E5555E] hover:bg-[#D4444D] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#FF4444] hover:bg-[#D4444D] transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                       {t("restaurant.reservations.addBooking", "Add Booking")}

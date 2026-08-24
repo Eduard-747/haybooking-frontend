@@ -72,19 +72,40 @@ export function NotificationsPopover() {
   const getTranslatedTitle = (title: string) => {
     switch (title) {
       case "New Booking Received": return t("dashboard.newBookingReceived", "New Booking Received");
+      case "Reservation Submitted": return t("dashboard.reservationSubmitted", "Reservation Submitted");
       case "Booking Cancelled": return t("dashboard.bookingCancelled", "Booking Cancelled");
       default: return t(title, title);
     }
   }
 
   const getTranslatedMessage = (msg: string) => {
+    if (!msg) return ""
+
     if (msg === "A client has requested a new appointment.") {
       return t("dashboard.clientRequestedNew", "A client has requested a new appointment.");
+    }
+    if (msg === "Your reservation has been submitted to the restaurant and is pending confirmation.") {
+      return t("dashboard.reservationPendingConfirmation", "Your reservation has been submitted to the restaurant and is pending confirmation.");
     }
     if (msg.includes("has cancelled their appointment.")) {
       const name = msg.split(" ")[0];
       return t("dashboard.userCancelledAppointment", "{{name}} has cancelled their appointment.", { name });
     }
+    if (msg.startsWith("A new reservation request has been submitted for")) {
+      const rawDateStr = msg.replace("A new reservation request has been submitted for", "").trim().replace(/\.$/, "");
+      let formattedDate = rawDateStr;
+      try {
+        const d = new Date(rawDateStr);
+        if (!isNaN(d.getTime())) {
+          formattedDate = d.toLocaleDateString(
+            i18n.language === 'am' || i18n.language === 'hy' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US',
+            { year: 'numeric', month: 'short', day: 'numeric' }
+          );
+        }
+      } catch {}
+      return t("dashboard.newReservationSubmittedFor", "A new reservation request has been submitted for {{date}}.", { date: formattedDate });
+    }
+
     return t(msg, msg);
   }
 
@@ -94,7 +115,7 @@ export function NotificationsPopover() {
         <button className="text-muted-foreground hover:text-foreground transition-colors relative outline-none">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 text-[10px] font-bold bg-[#E5555E] text-white rounded-full flex items-center justify-center border-2 border-white">
+            <span className="absolute -top-1 -right-1 w-4 h-4 text-[10px] font-bold bg-[#FF4444] text-white rounded-full flex items-center justify-center border-2 border-white">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -106,7 +127,7 @@ export function NotificationsPopover() {
           {unreadCount > 0 && (
             <button 
               onClick={markAllAsRead}
-              className="text-xs text-[#C69C9B] hover:text-foreground font-medium transition-colors"
+              className="text-xs text-[#FF4444] hover:text-foreground font-medium transition-colors"
             >
               {t("dashboard.markAllRead", "Mark all read")}
             </button>
@@ -125,13 +146,13 @@ export function NotificationsPopover() {
               {notifications.map((n) => (
                 <div 
                   key={n._id}
-                  className={`p-4 border-b border-border/40 last:border-0 transition-colors cursor-pointer hover:bg-muted/30 ${!n.read ? 'bg-[#C69C9B]/5' : ''}`}
+                  className={`p-4 border-b border-border/40 last:border-0 transition-colors cursor-pointer hover:bg-muted/30 ${!n.read ? 'bg-[#FF4444]/5' : ''}`}
                   onClick={() => !n.read && markAsRead(n._id)}
                 >
                   <div className="flex gap-3">
                     <div className="mt-0.5">
                       {!n.read ? (
-                        <span className="h-2 w-2 rounded-full bg-[#C69C9B] block mt-1.5" />
+                        <span className="h-2 w-2 rounded-full bg-[#FF4444] block mt-1.5" />
                       ) : (
                         <Check className="h-3.5 w-3.5 text-muted-foreground/40 mt-0.5" />
                       )}

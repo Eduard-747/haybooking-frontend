@@ -12,7 +12,7 @@ import { PropertiesPanel } from "@/components/restaurant/properties-panel"
 import { FloorPlanStatusBar } from "@/components/restaurant/floor-plan-status-bar"
 import { AiFloorPlanModal } from "@/components/restaurant/ai-floor-plan-modal"
 import { toast } from "sonner"
-import { Loader2, MapPin } from "lucide-react"
+import { Loader2, MapPin, PanelLeftOpen, PanelRightOpen, X } from "lucide-react"
 import api from "@/lib/api"
 import { useTranslation } from "react-i18next"
 
@@ -28,6 +28,10 @@ export default function FloorPlanPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Mobile Drawer State
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isMobilePropertiesOpen, setIsMobilePropertiesOpen] = useState(false)
   
   const [scale, setScale] = useState(1)
   const [pan, setPan] = useState<{x: number, y: number}>({ x: 0, y: 0 })
@@ -419,8 +423,8 @@ export default function FloorPlanPage() {
           {!selectedBranchId ? (
             <div className="flex-1 flex items-center justify-center bg-white m-6 lg:m-8 rounded-xl border border-border/40 shadow-sm">
               <div className="p-12 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
-                  <MapPin className="w-10 h-10 text-[#C69C9B]" />
+                <div className="w-20 h-20 bg-[#FEF2F2] rounded-full flex items-center justify-center mb-6">
+                  <MapPin className="w-10 h-10 text-[#FF4444]" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
                 <p className="text-muted-foreground max-w-md">{t("restaurant.floorPlan.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its floor plan.")}</p>
@@ -436,16 +440,72 @@ export default function FloorPlanPage() {
             </div>
           ) : (
             <>
-              {/* Left Sidebar */}
-              <FloorPlanSidebar 
-                onAddTable={handleAddTable} 
-                onAddElement={handleAddElement}
-                activeColor={activeColor}
-                onColorChange={() => {}}
-              />
-              
+              {/* Left Sidebar Overlay / Desktop Fixed */}
+              <div className={`
+                fixed lg:relative inset-y-0 left-0 z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0
+                ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+              `}>
+                {isMobileSidebarOpen && (
+                  <button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="lg:hidden absolute top-3 right-3 z-50 p-1.5 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                <FloorPlanSidebar 
+                  onAddTable={(shape, capacity, presetColor) => {
+                    handleAddTable(shape, capacity, presetColor)
+                    setIsMobileSidebarOpen(false)
+                  }} 
+                  onAddElement={(type) => {
+                    handleAddElement(type)
+                    setIsMobileSidebarOpen(false)
+                  }}
+                  activeColor={activeColor}
+                  onColorChange={() => {}}
+                />
+              </div>
+
+              {/* Mobile backdrop overlay */}
+              {(isMobileSidebarOpen || isMobilePropertiesOpen) && (
+                <div 
+                  className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-30" 
+                  onClick={() => {
+                    setIsMobileSidebarOpen(false)
+                    setIsMobilePropertiesOpen(false)
+                  }} 
+                />
+              )}
+
               {/* Center Canvas */}
-              <div className="flex-1 overflow-hidden flex flex-col relative bg-[#F9FAFB]">
+              <div className="flex-1 overflow-hidden flex flex-col relative bg-[#F9FAFB] w-full min-w-0">
+                {/* Floating Mobile Drawer Toggles */}
+                <div className="lg:hidden absolute top-3 left-3 z-20 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileSidebarOpen(!isMobileSidebarOpen)
+                      setIsMobilePropertiesOpen(false)
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md backdrop-blur-md border border-slate-700 active:scale-95 transition-all"
+                  >
+                    <PanelLeftOpen className="w-3.5 h-3.5 text-[#FF385C]" />
+                    <span>{t("restaurant.floorPlan.assets", "Assets")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobilePropertiesOpen(!isMobilePropertiesOpen)
+                      setIsMobileSidebarOpen(false)
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md backdrop-blur-md border border-slate-700 active:scale-95 transition-all"
+                  >
+                    <PanelRightOpen className="w-3.5 h-3.5 text-[#FF385C]" />
+                    <span>{t("restaurant.floorPlan.properties", "Properties")}</span>
+                  </button>
+                </div>
+
                 <FloorPlanCanvas
                   floor={floors.find(f => f._id === activeFloorId)}
                   tables={tables.filter(t => t.floorId === activeFloorId)}
@@ -488,34 +548,47 @@ export default function FloorPlanPage() {
                 />
               </div>
 
-              {/* Right Properties Panel */}
-              <PropertiesPanel
-                selectedElements={selectedElementIds}
-                tables={tables}
-                elements={elements}
-                floors={floors}
-                activeFloorId={activeFloorId}
-                onUpdateTable={(id, updates) => {
-                  setTables(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, ...updates } : t))
-                  saveToHistory()
-                }}
-                onUpdateElement={(id, updates) => {
-                  setElements(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
-                  saveToHistory()
-                }}
-                onDeleteTable={(id) => {
-                  setTables(tables.filter(t => t._id !== id && t.id !== id))
-                  setSelectedElementIds([])
-                  saveToHistory()
-                }}
-                onDeleteElement={(id) => {
-                  setElements(elements.filter(e => e.id !== id))
-                  setSelectedElementIds([])
-                  saveToHistory()
-                }}
-                onDuplicate={handleDuplicate}
-                restaurantName="Haybooking Reference"
-              />
+              {/* Right Properties Panel Overlay / Desktop Fixed */}
+              <div className={`
+                fixed lg:relative inset-y-0 right-0 z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0
+                ${isMobilePropertiesOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
+              `}>
+                {isMobilePropertiesOpen && (
+                  <button
+                    onClick={() => setIsMobilePropertiesOpen(false)}
+                    className="lg:hidden absolute top-3 left-3 z-50 p-1.5 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                <PropertiesPanel
+                  selectedElements={selectedElementIds}
+                  tables={tables}
+                  elements={elements}
+                  floors={floors}
+                  activeFloorId={activeFloorId}
+                  onUpdateTable={(id, updates) => {
+                    setTables(prev => prev.map(t => (t._id === id || t.id === id) ? { ...t, ...updates } : t))
+                    saveToHistory()
+                  }}
+                  onUpdateElement={(id, updates) => {
+                    setElements(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+                    saveToHistory()
+                  }}
+                  onDeleteTable={(id) => {
+                    setTables(tables.filter(t => t._id !== id && t.id !== id))
+                    setSelectedElementIds([])
+                    saveToHistory()
+                  }}
+                  onDeleteElement={(id) => {
+                    setElements(elements.filter(e => e.id !== id))
+                    setSelectedElementIds([])
+                    saveToHistory()
+                  }}
+                  onDuplicate={handleDuplicate}
+                  restaurantName="Haybooking Reference"
+                />
+              </div>
             </>
           )}
         </main>

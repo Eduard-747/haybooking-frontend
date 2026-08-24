@@ -157,7 +157,7 @@ export default function RestaurantGalleryPage() {
                       }
                       setIsModalOpen(true)
                     }}
-                    className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+                    className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     {t("restaurant.gallery.addPhoto", "Add Photo")}
@@ -174,7 +174,7 @@ export default function RestaurantGalleryPage() {
                   onClick={() => setFilter(cat)}
                   className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
                     filter === cat 
-                      ? "bg-[#FDF6F6] text-[#E5555E] border-2 border-[#E5555E]" 
+                      ? "bg-[#FEF2F2] text-[#FF4444] border-2 border-[#FF4444]" 
                       : "bg-white text-muted-foreground border-2 border-transparent hover:bg-gray-100 shadow-sm"
                   }`}
                 >
@@ -186,15 +186,15 @@ export default function RestaurantGalleryPage() {
             {/* Grid */}
             {!selectedBranchId ? (
               <div className="bg-white rounded-xl border border-border/40 p-12 flex flex-col items-center justify-center text-center shadow-sm">
-                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
-                  <MapPin className="w-10 h-10 text-[#C69C9B]" />
+                <div className="w-20 h-20 bg-[#FEF2F2] rounded-full flex items-center justify-center mb-6">
+                  <MapPin className="w-10 h-10 text-[#FF4444]" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
                 <p className="text-muted-foreground max-w-md">{t("restaurant.gallery.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its gallery.")}</p>
               </div>
             ) : isLoading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#FF4444]" />
               </div>
             ) : filteredGallery.length === 0 ? (
               <div className="bg-white rounded-xl border border-border/60 p-12 flex flex-col items-center justify-center text-center shadow-sm">
@@ -246,7 +246,7 @@ export default function RestaurantGalleryPage() {
                   <select 
                     value={selectedCategory} 
                     onChange={e => setSelectedCategory(e.target.value)}
-                    className="w-full h-10 px-4 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                    className="w-full h-10 px-4 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
                   >
                     <option value="Interior">{t("restaurant.gallery.interior", "Interior")}</option>
                     <option value="Exterior">{t("restaurant.gallery.exterior", "Exterior")}</option>
@@ -259,7 +259,7 @@ export default function RestaurantGalleryPage() {
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("restaurant.gallery.photo", "PHOTO")}</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border/60 hover:border-[#C69C9B] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FDF6F6] gap-2 min-h-[160px]"
+                    className="w-full border-2 border-dashed border-border/60 hover:border-[#FF4444] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FEF2F2] gap-2 min-h-[160px]"
                   >
                     {imagePreview ? (
                       <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border/40">
@@ -267,7 +267,7 @@ export default function RestaurantGalleryPage() {
                       </div>
                     ) : (
                       <>
-                        <Upload className="h-8 w-8 text-[#C69C9B]/60" />
+                        <Upload className="h-8 w-8 text-[#FF4444]/60" />
                         <p className="text-sm font-medium text-muted-foreground">{t("restaurant.gallery.clickToUpload", "Click to upload")}</p>
                         <p className="text-xs text-muted-foreground">{t("restaurant.gallery.fileLimitNote", "PNG, JPG up to 5MB")}</p>
                       </>
@@ -283,7 +283,7 @@ export default function RestaurantGalleryPage() {
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
                 {t("restaurant.reservations.cancel", "Cancel")}
               </button>
-              <button type="submit" form="upload-form" disabled={isSaving || !imageFile} className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
+              <button type="submit" form="upload-form" disabled={isSaving || !imageFile} className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
                 {isSaving ? t("restaurant.gallery.uploading", "Uploading...") : t("restaurant.gallery.upload", "Upload")}
               </button>
             </div>

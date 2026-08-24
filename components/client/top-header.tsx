@@ -46,7 +46,7 @@ export function ClientTopHeader() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
           placeholder={t("common.search", "Search...")} 
-          className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-3 sm:pr-4 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
+          className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-3 sm:pr-4 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#FF4444]/50"
         />
       </div>
 
@@ -64,14 +64,14 @@ export function ClientTopHeader() {
         </button>
         
         <Avatar 
-          className="h-9 w-9 border border-border cursor-pointer bg-[#FDF6F6] hover:ring-2 hover:ring-[#C69C9B]/50 transition-all"
+          className="h-9 w-9 border border-border cursor-pointer bg-[#FEF2F2] hover:ring-2 hover:ring-[#FF4444]/50 transition-all"
           onClick={() => router.push('/client/settings')}
         >
-          <AvatarFallback className="bg-[#FDF6F6]">
-            {user?.name ? user.name.substring(0, 2).toUpperCase() : <User className="h-4 w-4 text-[#C69C9B]" />}
+          <AvatarFallback className="bg-[#FEF2F2]">
+            {user?.name ? user.name.substring(0, 2).toUpperCase() : <User className="h-4 w-4 text-[#FF4444]" />}
           </AvatarFallback>
           {user && (user.image || user.name) && (
-            <AvatarImage src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent((user.name || '') + ' ' + (user.surname || ''))}&background=FDF6F6&color=C69C9B&size=100`} />
+            <AvatarImage src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent((user.name || '') + ' ' + (user.surname || ''))}&background=FEF2F2&color=FF4444&size=100`} />
           )}
         </Avatar>
       </div>

@@ -45,7 +45,7 @@ function SidebarContent() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-[#FDF6F6] text-[#E5555E] border-l-2 border-[#E5555E] -ml-[2px] pl-[14px]"
+                  ? "bg-[#FEF2F2] text-[#FF4444] font-semibold border-l-2 border-[#FF4444] -ml-[2px] pl-[14px]"
                   : "text-muted-foreground hover:bg-[#FAFAFA] hover:text-foreground"
               )}
             >
@@ -74,7 +74,7 @@ function SidebarContent() {
         <Link 
           href="/auth?tab=signup"
           onClick={() => setIsOpen(false)}
-          className="block w-full text-center px-4 py-2 bg-white border border-border rounded-lg text-xs font-semibold text-[#C69C9B] hover:bg-[#FDF6F6] transition-colors"
+          className="block w-full text-center px-4 py-2 bg-white border border-border rounded-lg text-xs font-semibold text-[#FF4444] hover:bg-[#FEF2F2] transition-colors"
         >
           {t("landing.becomePartner", "Become a Partner")}
         </Link>

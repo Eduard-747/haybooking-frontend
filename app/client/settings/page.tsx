@@ -37,8 +37,8 @@ export default function SettingsPage() {
   const [otpCode, setOtpCode] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
 
-  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
-  const [countryCode, setCountryCode] = useState("+1")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+374")
+  const [countryCode, setCountryCode] = useState("+374")
 
   useEffect(() => {
     setCountryCode(detectedCountryCode)
@@ -198,8 +198,8 @@ export default function SettingsPage() {
               {form.image ? (
                 <img src={form.image} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#FDF6F6] flex items-center justify-center">
-                  <User className="h-6 w-6 text-[#C69C9B]" />
+                <div className="w-full h-full bg-[#FEF2F2] flex items-center justify-center">
+                  <User className="h-6 w-6 text-[#FF4444]" />
                 </div>
               )}
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                 value={form.name}
                 onChange={e => setForm({...form, name: e.target.value})}
                 placeholder="Jane"
-                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
               />
             </div>
             <div className="space-y-1.5">
@@ -231,19 +231,19 @@ export default function SettingsPage() {
                 value={form.surname}
                 onChange={e => setForm({...form, surname: e.target.value})}
                 placeholder="Doe"
-                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("common.phone", "Phone Number")}</label>
               <div className="flex gap-2">
                 <Select value={countryCode} onValueChange={setCountryCode}>
-                  <SelectTrigger className="w-[110px] shrink-0 h-10 border-border/60 bg-[#FAFAFA] focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]">
+                  <SelectTrigger className="w-[110px] shrink-0 h-10 border-border/60 bg-[#FAFAFA] focus:ring-[#FF4444]/20 focus:border-[#FF4444]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {countryCodesList.map((cc) => (
-                      <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                      <SelectItem key={cc.code} value={cc.code}>
                         {cc.flag} {cc.code}
                       </SelectItem>
                     ))}
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                   value={form.phone}
                   onChange={e => setForm({...form, phone: e.target.value})}
                   placeholder={getPhonePlaceholder(countryCode, countryCodesList)}
-                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
                 />
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                 value={form.email}
                 onChange={e => setForm({...form, email: e.target.value})}
                 placeholder="jane.doe@example.com"
-                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
               />
             </div>
           </div>
@@ -274,8 +274,8 @@ export default function SettingsPage() {
         {/* Change Password */}
         <div className="bg-white rounded-xl border border-border/60 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-full bg-[#FDF6F6] flex items-center justify-center">
-              <Shield className="h-5 w-5 text-[#C69C9B]" />
+            <div className="h-9 w-9 rounded-full bg-[#FEF2F2] flex items-center justify-center">
+              <Shield className="h-5 w-5 text-[#FF4444]" />
             </div>
             <div>
               <h2 className="font-bold text-foreground">{t("clientSettings.passwordTitle", "Password")}</h2>
@@ -291,7 +291,7 @@ export default function SettingsPage() {
                 value={form.currentPassword}
                 onChange={e => setForm({...form, currentPassword: e.target.value})}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                   value={form.newPassword}
                   onChange={e => setForm({...form, newPassword: e.target.value})}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                   value={form.confirmPassword}
                   onChange={e => setForm({...form, confirmPassword: e.target.value})}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]"
+                  className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]"
                 />
               </div>
             </div>
@@ -322,8 +322,8 @@ export default function SettingsPage() {
         {/* Notification Preferences */}
         <div className="bg-white rounded-xl border border-border/60 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-full bg-[#FDF6F6] flex items-center justify-center">
-              <Bell className="h-5 w-5 text-[#C69C9B]" />
+            <div className="h-9 w-9 rounded-full bg-[#FEF2F2] flex items-center justify-center">
+              <Bell className="h-5 w-5 text-[#FF4444]" />
             </div>
             <div>
               <h2 className="font-bold text-foreground">{t("clientSettings.notificationsTitle", "Notifications")}</h2>
@@ -344,7 +344,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setNotifications(prev => ({ ...prev, [key]: !prev[key] }))}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${notifications[key] ? "bg-[#C69C9B]" : "bg-border"}`}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${notifications[key] ? "bg-[#FF4444]" : "bg-border"}`}
                 >
                   <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${notifications[key] ? "translate-x-5" : ""}`} />
                 </button>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#E5555E] hover:bg-[#D4444D] text-white text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#FF4444] hover:bg-[#D4444D] text-white text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isSaving ? t("common.saving", "Saving...") : t("clientSettings.saveChanges", "Save Changes")}
@@ -390,14 +390,14 @@ export default function SettingsPage() {
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
                   placeholder="e.g. 1234"
-                  className="w-full px-4 py-2 text-center text-xl tracking-[0.5em] font-mono bg-[#FAFAFA] border border-border/60 rounded-lg focus:outline-none focus:border-[#C69C9B]"
+                  className="w-full px-4 py-2 text-center text-xl tracking-[0.5em] font-mono bg-[#FAFAFA] border border-border/60 rounded-lg focus:outline-none focus:border-[#FF4444]"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleVerifyPhoneAndSave}
                 disabled={isVerifying || otpCode.length < 4}
-                className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50"
+                className="w-full mt-2 flex items-center justify-center gap-2 px-6 py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50"
               >
                 {isVerifying ? t("clientSettings.verifying", "Verifying...") : t("clientSettings.verifyAndSave", "Verify & Save Profile")}
               </button>

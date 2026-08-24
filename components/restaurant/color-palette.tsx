@@ -6,7 +6,7 @@ interface ColorPaletteProps {
 }
 
 const PRESET_COLORS = [
-  "#e5555e", "#3b82f6", "#10b981", "#fbbf24", "#6b7280",
+  "#FF4444", "#3b82f6", "#10b981", "#fbbf24", "#6b7280",
   "#9f1239", "#1d4ed8", "#a16207", "#374151", "#d1d5db"
 ]
 

@@ -261,7 +261,7 @@ export default function ManageMenuPage() {
         {isUploading && (
           <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center">
              <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4">
-               <Loader2 className="w-10 h-10 text-[#C69C9B] animate-spin" />
+               <Loader2 className="w-10 h-10 text-[#FF4444] animate-spin" />
                <p className="font-bold text-foreground">Uploading file...</p>
              </div>
           </div>
@@ -277,9 +277,9 @@ export default function ManageMenuPage() {
 
         <main className="flex-1 p-6 lg:p-8" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
           {isDragging && (
-            <div className="absolute inset-0 z-40 bg-[#C69C9B]/10 backdrop-blur-[2px] border-4 border-dashed border-[#C69C9B] rounded-2xl m-6 lg:m-8 flex flex-col items-center justify-center">
-              <CloudUpload className="w-20 h-20 text-[#C69C9B] animate-bounce mb-4" />
-              <h2 className="text-3xl font-bold text-[#C69C9B]">Drop files to upload your menu</h2>
+            <div className="absolute inset-0 z-40 bg-[#FF4444]/10 backdrop-blur-[2px] border-4 border-dashed border-[#FF4444] rounded-2xl m-6 lg:m-8 flex flex-col items-center justify-center">
+              <CloudUpload className="w-20 h-20 text-[#FF4444] animate-bounce mb-4" />
+              <h2 className="text-3xl font-bold text-[#FF4444]">Drop files to upload your menu</h2>
             </div>
           )}
 
@@ -287,8 +287,8 @@ export default function ManageMenuPage() {
             
             {!selectedBranchId ? (
               <div className="bg-white p-12 rounded-2xl border border-border/40 shadow-sm flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
-                  <FileBox className="w-10 h-10 text-[#C69C9B]" />
+                <div className="w-20 h-20 bg-[#FEF2F2] rounded-full flex items-center justify-center mb-6">
+                  <FileBox className="w-10 h-10 text-[#FF4444]" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
                 <p className="text-muted-foreground max-w-md">{t("restaurant.menu.selectBranchSubtitle", "Please select a specific branch from the top menu to view and upload its menus.")}</p>
@@ -304,7 +304,7 @@ export default function ManageMenuPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <button 
                   onClick={() => triggerUpload()} 
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C69C9B] text-white text-sm font-semibold hover:bg-[#BCAAA4] transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF4444] text-white text-sm font-semibold hover:bg-[#BCAAA4] transition-colors shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
                   {t("restaurant.menu.uploadMenu", "Upload Menu")}
@@ -323,7 +323,7 @@ export default function ManageMenuPage() {
                     <button 
                       key={opt.id}
                       onClick={() => triggerUpload(opt.accept)}
-                      className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-md hover:border-[#C69C9B]/50 transition-all group text-center"
+                      className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-md hover:border-[#FF4444]/50 transition-all group text-center"
                     >
                       <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${config.bg}`}>
                         <Icon className={`w-7 h-7 ${config.color}`} />
@@ -350,7 +350,7 @@ export default function ManageMenuPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t("restaurant.menu.searchMenus", "Search menus...")} 
-                    className="w-full h-10 pl-9 pr-4 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C9B]/20 focus:border-[#C69C9B]/50 shadow-sm"
+                    className="w-full h-10 pl-9 pr-4 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]/50 shadow-sm"
                   />
                 </div>
                 
@@ -385,7 +385,7 @@ export default function ManageMenuPage() {
               <div className="flex-1">
                 {isLoading ? (
                   <div className="p-12 flex flex-col items-center justify-center text-center">
-                    <Loader2 className="w-8 h-8 text-[#C69C9B] animate-spin mb-4" />
+                    <Loader2 className="w-8 h-8 text-[#FF4444] animate-spin mb-4" />
                     <p className="text-muted-foreground">{t("common.loading", "Loading...")}</p>
                   </div>
                 ) : filteredMenus.length === 0 ? (
@@ -397,7 +397,7 @@ export default function ManageMenuPage() {
                     <p className="text-muted-foreground text-sm max-w-sm mb-6">{t("restaurant.menu.noMenusDesc", "You haven't uploaded any menus yet or no menus match your search criteria.")}</p>
                     <button 
                       onClick={() => triggerUpload()}
-                      className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2"
+                      className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center gap-2"
                     >
                       <Upload className="w-4 h-4" />
                       {t("restaurant.menu.uploadFirst", "Upload your first menu")}
@@ -416,7 +416,7 @@ export default function ManageMenuPage() {
                             </div>
                             <div>
                               <div className="flex items-center gap-3 mb-1">
-                                <button onClick={() => handleView(menu)} className="font-bold text-foreground hover:text-[#C69C9B] transition-colors text-left text-base">{menu.name}</button>
+                                <button onClick={() => handleView(menu)} className="font-bold text-foreground hover:text-[#FF4444] transition-colors text-left text-base">{menu.name}</button>
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${config.badge}`}>
                                   {menu.type}
                                 </span>

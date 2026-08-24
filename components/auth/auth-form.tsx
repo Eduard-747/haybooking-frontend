@@ -22,18 +22,16 @@ import {
   Phone,
   Lock,
   Building2,
-  ChevronRight,
-  CalendarCheck,
   Eye,
   EyeOff,
+  ArrowRight,
 } from "lucide-react"
 import Link from "next/link"
 import { SmsVerification } from "./sms-verification"
 import { useTranslation } from "react-i18next"
-
-import { Logo } from "@/components/ui/logo"
 import { useCountryCode } from "@/lib/hooks/use-country-code"
 import { getPhonePlaceholder } from "@/lib/countries"
+
 interface AuthFormProps {
   activeTab: "signin" | "signup" | "forgot" | "reset-verify"
   onTabChange: (tab: "signin" | "signup" | "forgot" | "reset-verify") => void
@@ -56,20 +54,20 @@ const businessTypes = [
   { value: "other", labelKey: "landing.catOther" },
 ]
 
-
 export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFormProps) {
   const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
   const [signupMethod, setSignupMethod] = useState<"phone" | "email">("email")
   const [signinMethod, setSigninMethod] = useState<"phone" | "email">("email")
-  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
+  const [forgotMethod, setForgotMethod] = useState<"phone" | "email">("email")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+374")
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    countryCode: "+1",
+    countryCode: "+374",
     password: "",
     confirmPassword: "",
     code: "",
@@ -81,15 +79,14 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Sync detected country code with formData when it's resolved from API
   useEffect(() => {
     setFormData((prev) => ({ ...prev, countryCode: detectedCountryCode }))
   }, [detectedCountryCode])
 
-  const { login } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { login } = useAuth()
+  const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || undefined
+  const redirectTo = searchParams.get("redirect") || undefined
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,16 +96,17 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
       return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       if (activeTab === "signup") {
-        let fullPhone = undefined;
-        let payloadEmail = undefined;
+        let fullPhone = undefined
+        let payloadEmail = undefined
 
-        if (signupMethod === "phone") {
-          fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, '')}`;
-        } else {
-          payloadEmail = formData.email;
+        if (signupMethod === "phone" || formData.phone) {
+          fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
+        }
+        if (formData.email) {
+          payloadEmail = formData.email
         }
 
         const payload = {
@@ -117,83 +115,107 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           password: formData.password,
           name: formData.firstName,
           surname: formData.lastName,
-          role: isBusinessPartner ? 'partner' : 'client',
+          role: isBusinessPartner ? "partner" : "client",
           businessName: isBusinessPartner ? formData.businessName : undefined,
-          businessType: isBusinessPartner ? formData.businessType : undefined
-        };
-        const res = await api.post('/auth/signup', payload);
-        login(res.data.access_token, { userId: '', phoneNumber: fullPhone, email: payloadEmail, role: payload.role }, redirectTo);
+          businessType: isBusinessPartner ? formData.businessType : undefined,
+        }
+        const res = await api.post("/auth/signup", payload)
+        login(res.data.access_token, { userId: "", phoneNumber: fullPhone, email: payloadEmail, role: payload.role }, redirectTo)
 
         if (signupMethod === "phone") {
           setShowSmsVerification(true)
         } else {
-          toast.success('Account created successfully! 🎉')
+          toast.success("Account created successfully! 🎉")
         }
       } else if (activeTab === "forgot") {
-        let fullPhone = formData.phone;
-        if (fullPhone !== 'haybooking_super_admin') {
-          fullPhone = fullPhone.startsWith('+') ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\D/g, '')}`;
+        let payloadIdentifier = ""
+        let fullPhone: string | undefined = undefined
+        let payloadEmail: string | undefined = undefined
+
+        if (forgotMethod === "phone") {
+          fullPhone = formData.phone
+          if (fullPhone !== "haybooking_super_admin") {
+            fullPhone = fullPhone.startsWith("+") ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\D/g, "")}`
+          }
+          payloadIdentifier = fullPhone
+        } else {
+          payloadEmail = formData.email?.trim()
+          payloadIdentifier = payloadEmail
         }
-        const res = await api.post('/auth/forgot-password', {
-          phoneNumber: fullPhone
-        });
-        toast.success(res.data.message || 'If that phone number exists, a reset code has been sent via SMS.');
+
+        const res = await api.post("/auth/forgot-password", {
+          identifier: payloadIdentifier,
+          phoneNumber: fullPhone,
+          email: payloadEmail,
+        })
+        toast.success(res.data.message || (forgotMethod === "email" ? t("auth.verifyDescEmail") : t("auth.verifyDescPhone")))
         onTabChange("reset-verify")
       } else if (activeTab === "reset-verify") {
-        let fullPhone = formData.phone;
-        if (fullPhone !== 'haybooking_super_admin') {
-          fullPhone = fullPhone.startsWith('+') ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\D/g, '')}`;
-        }
-
         if (formData.password !== formData.confirmPassword) {
-          toast.error("Passwords do not match");
-          setLoading(false);
-          return;
+          toast.error(t("auth.passwordsNoMatch", "Passwords do not match"))
+          setLoading(false)
+          return
         }
 
-        const res = await api.post('/auth/reset-password', {
+        let payloadIdentifier = ""
+        let fullPhone: string | undefined = undefined
+        let payloadEmail: string | undefined = undefined
+
+        if (forgotMethod === "phone") {
+          fullPhone = formData.phone
+          if (fullPhone !== "haybooking_super_admin") {
+            fullPhone = fullPhone.startsWith("+") ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\D/g, "")}`
+          }
+          payloadIdentifier = fullPhone
+        } else {
+          payloadEmail = formData.email?.trim()
+          payloadIdentifier = payloadEmail
+        }
+
+        const res = await api.post("/auth/reset-password", {
+          identifier: payloadIdentifier,
           phoneNumber: fullPhone,
-          code: formData.code,
-          password: formData.password
-        });
-        toast.success(res.data.message || 'Password reset successful');
-        onTabChange("signin");
+          email: payloadEmail,
+          code: formData.code?.trim(),
+          password: formData.password,
+        })
+        toast.success(res.data.message || "Password reset successful")
+        onTabChange("signin")
       } else {
-        let identifier = "";
+        let identifier = ""
         if (signinMethod === "phone") {
-          identifier = formData.phone;
-          if (identifier !== 'haybooking_super_admin') {
-            identifier = identifier.startsWith('+') ? identifier : `${formData.countryCode}${identifier.replace(/\D/g, '')}`;
+          identifier = formData.phone
+          if (identifier !== "haybooking_super_admin") {
+            identifier = identifier.startsWith("+") ? identifier : `${formData.countryCode}${identifier.replace(/\D/g, "")}`
           }
         } else {
-          identifier = formData.email;
+          identifier = formData.email
         }
 
-        const res = await api.post('/auth/login', {
+        const res = await api.post("/auth/login", {
           identifier,
-          password: formData.password
-        });
+          password: formData.password,
+        })
 
-        const targetRedirect = res.data.role === 'super_admin' ? '/admin/dashboard' : redirectTo;
-        login(res.data.access_token, { userId: '', phoneNumber: signinMethod === "phone" ? identifier : undefined, email: signinMethod === "email" ? identifier : undefined, role: res.data.role || 'client' }, targetRedirect);
-        toast.success('Logged in successfully!');
+        const targetRedirect = res.data.role === "super_admin" ? "/admin/dashboard" : redirectTo
+        login(res.data.access_token, { userId: "", phoneNumber: signinMethod === "phone" ? identifier : undefined, email: signinMethod === "email" ? identifier : undefined, role: res.data.role || "client" }, targetRedirect)
+        toast.success("Logged in successfully!")
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Authentication failed');
+      toast.error(err.response?.data?.message || "Authentication failed")
       if (err?.response?.status !== 401) {
-        console.error(err);
+        console.error(err)
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   const handleSmsVerified = () => {
-    toast.success('Account verified! 🎉')
+    toast.success("Account verified! 🎉")
     setShowSmsVerification(false)
   }
 
-  // Show SMS verification page if in that step
   if (showSmsVerification) {
     return (
       <SmsVerification
@@ -206,58 +228,73 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-semibold text-foreground">
-          {activeTab === "signup" ? t("auth.createAccount") : activeTab === "forgot" ? t("auth.forgotPassword") : activeTab === "reset-verify" ? t("auth.verifyPhoneNumber") : t("auth.welcome")}
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          {activeTab === "signup" ? (
+            <>
+              {t("auth.createPrefix", "Create")}{" "}
+              <span className="text-[#FF385C]">{t("auth.yourAccount", "your account")}</span>
+            </>
+          ) : activeTab === "forgot" ? (
+            t("auth.forgotPassword")
+          ) : activeTab === "reset-verify" ? (
+            t("auth.resetPasswordTitle", "Reset Password")
+          ) : (
+            <>
+              {t("auth.welcomePrefix", "Welcome")}{" "}
+              <span className="text-[#FF385C]">{t("auth.backSuffix", "back")}</span>
+            </>
+          )}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1.5 text-sm text-slate-500 font-medium">
           {activeTab === "signup"
-            ? t("auth.createAccountDesc")
+            ? t("auth.createAccountDesc", "Join Haybooking and discover the best local services.")
             : activeTab === "forgot"
-              ? t("auth.verifyDesc")
+              ? (forgotMethod === "email"
+                  ? t("auth.verifyDescEmail", "We'll send you a verification code to your email address to reset your password.")
+                  : t("auth.verifyDescPhone", "We'll send you a verification code via SMS to confirm your phone number."))
               : activeTab === "reset-verify"
-                ? t("auth.weSentCode")
-                : t("auth.welcomeDesc")}
+                ? `${t("auth.weSentCode", "We sent a 6-digit code to")} ${forgotMethod === "email" ? (formData.email || "your email") : `${formData.countryCode} ${formData.phone}`}`
+                : t("auth.welcomeDesc", "Sign in to continue to your account")}
         </p>
       </div>
 
       {/* Tab Switcher */}
       {(activeTab !== "forgot" && activeTab !== "reset-verify") && (
-        <div className="flex border-b border-border">
+        <div className="flex border-b border-slate-200">
           <button
             type="button"
-            onClick={() => onTabChange("signin")}
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
-              activeTab === "signin"
-                ? "text-[#E5555E]"
-                : "text-muted-foreground hover:text-foreground"
+            onClick={() => onTabChange("signup")}
+            className={`relative px-5 pb-3 text-sm font-bold transition-colors ${
+              activeTab === "signup"
+                ? "text-[#FF385C]"
+                : "text-slate-400 hover:text-slate-600"
             }`}
           >
-            {t("auth.signIn")}
-            {activeTab === "signin" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
+            {t("auth.signUp", "Sign Up")}
+            {activeTab === "signup" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF385C] rounded-full" />
             )}
           </button>
           <button
             type="button"
-            onClick={() => onTabChange("signup")}
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
-              activeTab === "signup"
-                ? "text-[#E5555E]"
-                : "text-muted-foreground hover:text-foreground"
+            onClick={() => onTabChange("signin")}
+            className={`relative px-5 pb-3 text-sm font-bold transition-colors ${
+              activeTab === "signin"
+                ? "text-[#FF385C]"
+                : "text-slate-400 hover:text-slate-600"
             }`}
           >
-            {t("auth.signUp")}
-            {activeTab === "signup" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5555E]" />
+            {t("auth.signIn", "Sign In")}
+            {activeTab === "signin" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF385C] rounded-full" />
             )}
           </button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {activeTab === "signup" ? (
           <SignUpForm
             formData={formData}
@@ -269,15 +306,24 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
             setSignupMethod={setSignupMethod}
           />
         ) : activeTab === "forgot" ? (
-          <ForgotPasswordForm formData={formData} onInputChange={handleInputChange} countryCodesList={countryCodesList} />
+          <ForgotPasswordForm
+            formData={formData}
+            onInputChange={handleInputChange}
+            countryCodesList={countryCodesList}
+            forgotMethod={forgotMethod}
+            setForgotMethod={setForgotMethod}
+          />
         ) : activeTab === "reset-verify" ? (
           <ResetVerifyForm formData={formData} onInputChange={handleInputChange} />
         ) : (
-          <SignInForm 
-            formData={formData} 
-            onInputChange={handleInputChange} 
-            onForgot={() => onTabChange("forgot")} 
-            countryCodesList={countryCodesList} 
+          <SignInForm
+            formData={formData}
+            onInputChange={handleInputChange}
+            onForgot={() => {
+              setForgotMethod(signinMethod)
+              onTabChange("forgot")
+            }}
+            countryCodesList={countryCodesList}
             signinMethod={signinMethod}
             setSigninMethod={setSigninMethod}
           />
@@ -286,20 +332,29 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full bg-[#E5555E] hover:bg-[#d44850] text-white"
-          size="lg"
+          className="w-full bg-[#FF385C] hover:bg-[#E0304F] text-white h-12 sm:h-13 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold shadow-md shadow-[#FF385C]/25 transition-all hover:shadow-lg active:scale-98 mt-2 flex items-center justify-center gap-2"
           disabled={loading}
         >
-          {loading ? t("auth.processing") : (activeTab === "signup" ? t("auth.createAccount") : activeTab === "forgot" ? t("auth.sendCode") : activeTab === "reset-verify" ? t("common.confirm") : t("auth.signIn"))}
-          {!loading && <ChevronRight className="ml-1 h-4 w-4" />}
+          <span>
+            {loading
+              ? t("auth.processing")
+              : activeTab === "signup"
+                ? t("auth.createAccountButton", "Create Account")
+                : activeTab === "forgot"
+                  ? t("auth.sendCode")
+                  : activeTab === "reset-verify"
+                    ? t("auth.resetPasswordTitle", "Reset Password")
+                    : t("auth.signIn")}
+          </span>
+          {!loading && <ArrowRight className="h-4.5 w-4.5 stroke-[2.5]" />}
         </Button>
 
         {(activeTab === "forgot" || activeTab === "reset-verify") && (
-          <div className="text-center mt-4">
+          <div className="text-center mt-3">
             <button
               type="button"
               onClick={() => onTabChange("signin")}
-              className="text-sm text-muted-foreground hover:text-foreground font-medium transition-colors"
+              className="text-xs sm:text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors"
             >
               {t("auth.backToSignIn", "Back to sign in")}
             </button>
@@ -307,59 +362,33 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
         )}
 
         {(activeTab !== "forgot" && activeTab !== "reset-verify") && (
-          <>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-3 text-muted-foreground">
-                  {t("auth.orContinueWith")}
-                </span>
-              </div>
-            </div>
-
-            {/* Google Button */}
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full" 
-              size="lg"
-              onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/google`}
-            >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M5.26620003,9.76452941 C6.19878754,6.93863203 8.85444915,4.90909091 12,4.90909091 C13.6909091,4.90909091 15.2181818,5.50909091 16.4181818,6.49090909 L19.9090909,3 C17.7818182,1.14545455 15.0545455,0 12,0 C7.27006974,0 3.1977497,2.69829785 1.23999023,6.65002441 L5.26620003,9.76452941 Z" />
-                <path fill="#34A853" d="M16.0407269,18.0125889 C14.9509167,18.7163016 13.5660892,19.0909091 12,19.0909091 C8.86648613,19.0909091 6.21911939,17.076871 5.27698177,14.2678769 L1.23746264,17.3349879 C3.19279051,21.2936293 7.26500293,24 12,24 C14.9328362,24 17.7353462,22.9573905 19.834192,20.9995801 L16.0407269,18.0125889 Z" />
-                <path fill="#4A90E2" d="M19.834192,20.9995801 C22.0291676,18.9520994 23.4545455,15.903663 23.4545455,12 C23.4545455,11.2909091 23.3454545,10.5272727 23.1818182,9.81818182 L12,9.81818182 L12,14.4545455 L18.4363636,14.4545455 C18.1187732,16.013626 17.2662994,17.2212117 16.0407269,18.0125889 L19.834192,20.9995801 Z" />
-                <path fill="#FBBC05" d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7 1.23746264,17.3349879 L5.27698177,14.2678769 Z" />
-              </svg>
-              {t("auth.continueGoogle")}
-            </Button>
-
-            {/* Terms */}
-            <p className="text-center text-xs text-muted-foreground">
-              {t("auth.termsAgree")}{" "}
-              <Link href="#" className="underline hover:text-foreground">
-                {t("auth.terms")}
-              </Link>{" "}
-              {t("auth.and")}{" "}
-              <Link href="#" className="underline hover:text-foreground">
-                {t("auth.privacy")}
-              </Link>
-              .
+          <div className="text-center pt-3">
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              {activeTab === "signup" ? (
+                <>
+                  {t("auth.hasAccount", "Already have an account?")}{" "}
+                  <button
+                    type="button"
+                    onClick={() => onTabChange("signin")}
+                    className="font-bold text-[#FF385C] underline hover:text-[#E0304F] ml-1"
+                  >
+                    {t("auth.signIn", "Sign In")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {t("auth.noAccount", "Don't have an account?")}{" "}
+                  <button
+                    type="button"
+                    onClick={() => onTabChange("signup")}
+                    className="font-bold text-[#FF385C] underline hover:text-[#E0304F] ml-1"
+                  >
+                    {t("auth.signUp", "Sign Up")}
+                  </button>
+                </>
+              )}
             </p>
-
-            {/* Help */}
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-muted">
-                <User className="h-4 w-4" />
-              </div>
-              <span>{t("auth.needHelp")}</span>
-              <Link href="#" className="text-foreground underline hover:text-primary">
-                {t("auth.contactConcierge")}
-              </Link>
-            </div>
-          </>
+          </div>
         )}
       </form>
     </div>
@@ -392,202 +421,215 @@ function SignUpForm({
   isBusinessPartner,
   setIsBusinessPartner,
   countryCodesList,
-  signupMethod,
-  setSignupMethod,
 }: SignUpFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   return (
-    <>
-      {/* Name Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">{t("auth.name")}</Label>
+    <div className="space-y-3.5">
+      {/* Row 1: Full Name & Email Address */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="space-y-1.5">
+          <Label htmlFor="firstName" className="text-xs font-bold text-slate-700">
+            {t("auth.fullName", "Full Name")}
+          </Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               id="firstName"
-              placeholder="Jane"
+              placeholder={t("auth.enterFullName", "Enter your full name") as string}
               value={formData.firstName}
               onChange={(e) => onInputChange("firstName", e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
             />
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">{t("auth.surname")}</Label>
-          <Input
-            id="lastName"
-            placeholder="Doe"
-            value={formData.lastName}
-            onChange={(e) => onInputChange("lastName", e.target.value)}
-          />
-        </div>
-      </div>
 
-      {/* Method Toggle */}
-      <div className="flex gap-4 mb-4">
-        <button
-          type="button"
-          onClick={() => setSignupMethod("email")}
-          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
-            signupMethod === "email" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {t("common.email", "Email")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setSignupMethod("phone")}
-          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
-            signupMethod === "phone" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {t("common.phone", "Phone Number")}
-        </button>
-      </div>
-
-      {signupMethod === "email" ? (
-        <div className="space-y-2">
-          <Label htmlFor="email">{t("common.email")}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-xs font-bold text-slate-700">
+            {t("common.email", "Email Address")}
+          </Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               id="email"
               type="email"
-              placeholder="jane.doe@example.com"
+              placeholder={t("auth.enterEmail", "Enter your email") as string}
               value={formData.email}
               onChange={(e) => onInputChange("email", e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
               required
             />
           </div>
         </div>
-      ) : (
-        <div className="space-y-2">
-          <Label htmlFor="phone">{t("common.phone")}</Label>
-          <div className="flex gap-2">
-            <Select
-              value={formData.countryCode}
-              onValueChange={(value) => onInputChange("countryCode", value)}
-            >
-              <SelectTrigger className="w-[120px] shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {countryCodesList.map((cc) => (
-                  <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
-                    {cc.flag} {cc.code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="relative flex-1">
-              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="phone"
-                type="tel"
-                placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
-                value={formData.phone}
-                onChange={(e) => onInputChange("phone", e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+      </div>
+
+      {/* Row 2: Phone Number */}
+      <div className="space-y-1.5">
+        <Label htmlFor="phone" className="text-xs font-bold text-slate-700">
+          {t("common.phone", "Phone Number")}
+        </Label>
+        <div className="flex gap-2">
+          <Select
+            value={formData.countryCode}
+            onValueChange={(value) => onInputChange("countryCode", value)}
+          >
+            <SelectTrigger className="w-[105px] h-11 shrink-0 rounded-xl border-slate-200 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+              {countryCodesList.map((cc) => (
+                <SelectItem key={cc.code} value={cc.code}>
+                  {cc.flag} {cc.code}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="relative flex-1">
+            <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              id="phone"
+              type="tel"
+              placeholder={t("auth.enterPhone", "Enter your phone number") as string}
+              value={formData.phone}
+              onChange={(e) => onInputChange("phone", e.target.value)}
+              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
+              required
+            />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Password */}
-      <div className="space-y-2">
-        <Label htmlFor="password">{t("common.password")}</Label>
+      {/* Row 3: Password */}
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="text-xs font-bold text-slate-700">
+          {t("common.password", "Password")}
+        </Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder={t("auth.createPassword", "Create a password") as string}
             value={formData.password}
             onChange={(e) => onInputChange("password", e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
-      {/* Confirm Password */}
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">{t("auth.confirmPass")}</Label>
+      {/* Row 4: Confirm Password */}
+      <div className="space-y-1.5">
+        <Label htmlFor="confirmPassword" className="text-xs font-bold text-slate-700">
+          {t("auth.confirmPass", "Confirm Password")}
+        </Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder={t("auth.confirmYourPassword", "Confirm your password") as string}
             value={formData.confirmPassword}
             onChange={(e) => onInputChange("confirmPassword", e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-          <p className="text-xs text-red-500">{t("auth.passwordsNoMatch")}</p>
+          <p className="text-xs text-red-500 font-medium mt-1">{t("auth.passwordsNoMatch")}</p>
         )}
       </div>
 
+      {/* Terms Checkbox */}
+      <div className="flex items-start gap-2 pt-1">
+        <Checkbox
+          id="terms"
+          defaultChecked
+          className="mt-0.5 shrink-0 rounded border-slate-300 data-[state=checked]:bg-[#FF385C] data-[state=checked]:border-[#FF385C]"
+        />
+        <Label htmlFor="terms" className="cursor-pointer text-[11px] sm:text-xs text-slate-500 font-normal leading-relaxed">
+          <span>{t("auth.acceptTermsAgree", "I agree to Haybooking's")}</span>{" "}
+          <Link
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[#FF385C] underline font-semibold hover:text-[#E0304F] inline-block"
+          >
+            {t("auth.terms", "Terms of Service")}
+          </Link>{" "}
+          <span>{t("auth.and", "and")}</span>{" "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[#FF385C] underline font-semibold hover:text-[#E0304F] inline-block"
+          >
+            {t("auth.privacy", "Privacy Policy")}
+          </Link>
+          .
+        </Label>
+      </div>
+
       {/* Business Partner Checkbox */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2.5 pt-1">
         <Checkbox
           id="business"
           checked={isBusinessPartner}
           onCheckedChange={(checked) => setIsBusinessPartner(checked as boolean)}
-          className="data-[state=checked]:bg-[#E5555E] data-[state=checked]:border-[#E5555E] data-[state=checked]:text-white"
+          className="rounded border-slate-300 data-[state=checked]:bg-[#FF385C] data-[state=checked]:border-[#FF385C]"
         />
-        <Label htmlFor="business" className="cursor-pointer text-sm font-normal">
-          {t("auth.registerBusiness")}
+        <Label htmlFor="business" className="cursor-pointer text-xs font-semibold text-slate-600">
+          {t("auth.registerBusiness", "Register as a Business Partner")}
         </Label>
       </div>
 
-      {/* Business Details Section — no branch address */}
+      {/* Business Details Section */}
       {isBusinessPartner && (
-        <div className="rounded-lg border border-dashed border-[#E5555E]/30 bg-[#E5555E]/5 p-4 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#E5555E] tracking-wider uppercase">
+        <div className="rounded-xl border border-dashed border-[#FF385C]/30 bg-[#FFF0F3]/30 p-3.5 space-y-3 mt-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#FF385C] tracking-wider uppercase">
             <Building2 className="h-4 w-4" />
-            {t("auth.businessDetails")}
+            {t("auth.businessDetails", "BUSINESS DETAILS")}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="businessName">{t("dashboard.businessName")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="businessName" className="text-xs font-bold text-slate-700">
+              {t("dashboard.businessName", "Business Name")}
+            </Label>
             <Input
               id="businessName"
               placeholder="HayBooking Solutions Ltd."
               value={formData.businessName}
               onChange={(e) => onInputChange("businessName", e.target.value)}
+              className="h-10 text-xs rounded-xl border-slate-200"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="businessType">{t("dashboard.businessType")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="businessType" className="text-xs font-bold text-slate-700">
+              {t("dashboard.businessType", "Business Type")}
+            </Label>
             <Select
               value={formData.businessType}
               onValueChange={(value) => onInputChange("businessType", value)}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("dashboard.selectType")} />
+              <SelectTrigger className="w-full h-10 text-xs rounded-xl border-slate-200">
+                <SelectValue placeholder={t("dashboard.selectType", "Select type")} />
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
@@ -600,7 +642,7 @@ function SignUpForm({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -623,14 +665,14 @@ function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signi
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <>
+    <div className="space-y-4">
       {/* Method Toggle */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-2">
         <button
           type="button"
           onClick={() => setSigninMethod("email")}
-          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
-            signinMethod === "email" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            signinMethod === "email" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
           }`}
         >
           {t("common.email", "Email")}
@@ -638,8 +680,8 @@ function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signi
         <button
           type="button"
           onClick={() => setSigninMethod("phone")}
-          className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
-            signinMethod === "phone" ? "border-[#E5555E] text-[#E5555E]" : "border-transparent text-muted-foreground hover:text-foreground"
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            signinMethod === "phone" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
           }`}
         >
           {t("common.phone", "Phone Number")}
@@ -647,49 +689,49 @@ function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signi
       </div>
 
       {signinMethod === "email" ? (
-        <div className="space-y-2">
-          <Label htmlFor="signin-email">{t("common.email")}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="signin-email" className="text-xs font-bold text-slate-700">{t("common.email", "Email Address")}</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               id="signin-email"
               type="email"
-              placeholder="jane.doe@example.com"
+              placeholder={t("auth.enterEmail", "Enter your email") as string}
               value={formData.email}
               onChange={(e) => onInputChange("email", e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
               required
             />
           </div>
         </div>
       ) : (
-        <div className="space-y-2">
-          <Label htmlFor="signin-phone">{t("common.phone")}</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="signin-phone" className="text-xs font-bold text-slate-700">{t("common.phone", "Phone Number")}</Label>
           <div className="flex gap-2">
             <Select
               value={formData.countryCode}
               onValueChange={(value) => onInputChange("countryCode", value)}
             >
-              <SelectTrigger className="w-[120px] shrink-0">
+              <SelectTrigger className="w-[105px] h-11 shrink-0 rounded-xl border-slate-200 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="max-h-60">
                 {countryCodesList.map((cc) => (
-                  <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                  <SelectItem key={cc.code} value={cc.code}>
                     {cc.flag} {cc.code}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <div className="relative flex-1">
-              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 id="signin-phone"
                 type="tel"
                 placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
                 value={formData.phone}
                 onChange={(e) => onInputChange("phone", e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
                 required
               />
             </div>
@@ -697,23 +739,23 @@ function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signi
         </div>
       )}
 
-      {/* Password with eye toggle */}
-      <div className="space-y-2">
-        <Label htmlFor="signin-password">{t("common.password")}</Label>
+      {/* Password */}
+      <div className="space-y-1.5">
+        <Label htmlFor="signin-password" className="text-xs font-bold text-slate-700">{t("common.password", "Password")}</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             id="signin-password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={formData.password}
             onChange={(e) => onInputChange("password", e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -722,124 +764,173 @@ function SignInForm({ formData, onInputChange, onForgot, countryCodesList, signi
           <button
             type="button"
             onClick={onForgot}
-            className="text-xs text-[#E5555E] font-medium hover:underline"
+            className="text-xs text-[#FF385C] font-semibold hover:underline"
           >
-            {t("auth.forgotPassword")}
+            {t("auth.forgotPassword", "Forgot password?")}
           </button>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function ForgotPasswordForm({ formData, onInputChange, countryCodesList }: { formData: any, onInputChange: any, countryCodesList: any[] }) {
-  const { t } = useTranslation()
-  return (
-    <div className="space-y-4 pt-2">
-      {/* Phone Number with Country Code */}
-      <div className="space-y-2">
-        <Label htmlFor="forgot-phone">{t("common.phone", "Phone Number")}</Label>
-        <div className="flex gap-2">
-          <Select
-            value={formData.countryCode}
-            onValueChange={(value) => onInputChange("countryCode", value)}
-          >
-            <SelectTrigger className="w-[120px] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {countryCodesList.map((cc) => (
-                <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
-                  {cc.flag} {cc.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1">
-            <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="forgot-phone"
-              type="tel"
-              placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
-              value={formData.phone}
-              onChange={(e) => onInputChange("phone", e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function ResetVerifyForm({ formData, onInputChange }: { formData: any, onInputChange: any }) {
+function ForgotPasswordForm({
+  formData,
+  onInputChange,
+  countryCodesList,
+  forgotMethod,
+  setForgotMethod,
+}: {
+  formData: { phone: string; countryCode: string; email: string }
+  onInputChange: (field: string, value: string) => void
+  countryCodesList: { code: string; country: string; flag: string }[]
+  forgotMethod: "phone" | "email"
+  setForgotMethod: (method: "phone" | "email") => void
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-4 mb-2">
+        <button
+          type="button"
+          onClick={() => setForgotMethod("email")}
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            forgotMethod === "email" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          {t("common.email", "Email")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setForgotMethod("phone")}
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            forgotMethod === "phone" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          {t("common.phone", "Phone Number")}
+        </button>
+      </div>
+
+      {forgotMethod === "email" ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="forgot-email" className="text-xs font-bold text-slate-700">{t("common.email", "Email Address")}</Label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              id="forgot-email"
+              type="email"
+              placeholder={t("auth.enterEmail", "Enter your email") as string}
+              value={formData.email}
+              onChange={(e) => onInputChange("email", e.target.value)}
+              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200"
+              required
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <Label htmlFor="forgot-phone" className="text-xs font-bold text-slate-700">{t("common.phone", "Phone Number")}</Label>
+          <div className="flex gap-2">
+            <Select
+              value={formData.countryCode}
+              onValueChange={(value) => onInputChange("countryCode", value)}
+            >
+              <SelectTrigger className="w-[105px] h-11 shrink-0 rounded-xl border-slate-200 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {countryCodesList.map((cc) => (
+                  <SelectItem key={cc.code} value={cc.code}>
+                    {cc.flag} {cc.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                id="forgot-phone"
+                type="tel"
+                placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
+                value={formData.phone}
+                onChange={(e) => onInputChange("phone", e.target.value)}
+                className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ResetVerifyForm({
+  formData,
+  onInputChange,
+}: {
+  formData: { code: string; password: string; confirmPassword: string }
+  onInputChange: (field: string, value: string) => void
+}) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   return (
-    <div className="space-y-4 pt-2">
-      {/* Verification Code */}
-      <div className="space-y-2">
-        <Label htmlFor="reset-code">{t("auth.code", "6-Digit Code")}</Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="reset-code"
-            type="text"
-            placeholder="123456"
-            value={formData.code}
-            onChange={(e) => onInputChange("code", e.target.value)}
-            className="pl-10 tracking-widest font-mono text-center"
-            maxLength={6}
-            required
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label htmlFor="reset-code" className="text-xs font-bold text-slate-700">{t("auth.code", "6-Digit Code")}</Label>
+        <Input
+          id="reset-code"
+          placeholder={t("auth.codePlaceholder", "Enter 6-digit code") as string}
+          value={formData.code}
+          onChange={(e) => onInputChange("code", e.target.value)}
+          className="h-11 text-xs sm:text-sm rounded-xl border-slate-200"
+          required
+        />
       </div>
 
-      {/* New Password */}
-      <div className="space-y-2">
-        <Label htmlFor="new-password">{t("auth.newPassword", "New Password")}</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="reset-password" className="text-xs font-bold text-slate-700">{t("auth.newPassword", "New Password")}</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            id="new-password"
+            id="reset-password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={formData.password}
             onChange={(e) => onInputChange("password", e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200"
             required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
-      {/* Confirm Password */}
-      <div className="space-y-2">
-        <Label htmlFor="confirm-new-password">{t("auth.confirmNewPassword", "Confirm New Password")}</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="reset-confirm-password" className="text-xs font-bold text-slate-700">{t("auth.confirmNewPassword", "Confirm New Password")}</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            id="confirm-new-password"
+            id="reset-confirm-password"
             type={showConfirmPassword ? "text" : "password"}
             placeholder="••••••••"
             value={formData.confirmPassword}
             onChange={(e) => onInputChange("confirmPassword", e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200"
             required
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>

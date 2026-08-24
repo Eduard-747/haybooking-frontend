@@ -32,8 +32,8 @@ export function OverviewTab({ partner, branches }: { partner: any, branches: any
           {branches.map(b => (
             <div key={b._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-2">
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-lg bg-[#F5EAEA] flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="h-5 w-5 text-[#C69C9B]" />
+                <div className="h-10 w-10 rounded-lg bg-[#FEF2F2] flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin className="h-5 w-5 text-[#FF4444]" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">{b.address.line1}</h3>

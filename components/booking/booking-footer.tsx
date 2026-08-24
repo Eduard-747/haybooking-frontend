@@ -61,7 +61,7 @@ export function BookingFooter({
             size="lg" 
             onClick={onConfirm}
             disabled={!isReady || isSubmitting}
-            className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md px-4 sm:px-8 font-semibold shadow-sm flex-1 sm:flex-none transition-colors whitespace-nowrap"
+            className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white rounded-md px-4 sm:px-8 font-semibold shadow-sm flex-1 sm:flex-none transition-colors whitespace-nowrap"
           >
             {isSubmitting ? (
               <>

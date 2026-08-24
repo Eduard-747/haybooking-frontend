@@ -103,12 +103,12 @@ export default function MyBookingsPage() {
           <p className="text-muted-foreground">{t("clientBookings.manageAppointments", "Manage your appointments and view service history.")}</p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 bg-[#FDF6F6] border border-[#C69C9B]/20 rounded-xl px-6 sm:px-8 py-4 sm:py-5 w-full md:w-auto">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 bg-[#FEF2F2] border border-[#FF4444]/20 rounded-xl px-6 sm:px-8 py-4 sm:py-5 w-full md:w-auto">
           <div className="text-center md:text-left">
-            <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase mb-1">{t("clientBookings.upcoming", "Upcoming")}</p>
+            <p className="text-[10px] font-bold tracking-wider text-[#FF4444] uppercase mb-1">{t("clientBookings.upcoming", "Upcoming")}</p>
             <p className="text-2xl font-bold text-foreground">{upcoming.length}</p>
           </div>
-          <div className="w-px h-10 bg-[#C69C9B]/20 hidden sm:block" />
+          <div className="w-px h-10 bg-[#FF4444]/20 hidden sm:block" />
           <div className="text-center md:text-left">
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">{t("clientBookings.completed", "Completed")}</p>
             <p className="text-2xl font-bold text-foreground">{past.length}</p>
@@ -123,27 +123,27 @@ export default function MyBookingsPage() {
           className={`relative pb-4 text-sm font-bold transition-colors ${tab === "upcoming" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           {t("clientBookings.upcoming", "Upcoming")}
-          {upcoming.length > 0 && <span className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-[#E5555E] rounded-full" />}
-          {tab === "upcoming" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#C69C9B]" />}
+          {upcoming.length > 0 && <span className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-[#FF4444] rounded-full" />}
+          {tab === "upcoming" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FF4444]" />}
         </button>
         <button
           onClick={() => setTab("past")}
           className={`relative pb-4 text-sm font-semibold transition-colors ${tab === "past" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           {t("clientBookings.past", "Past")}
-          {tab === "past" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#C69C9B]" />}
+          {tab === "past" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FF4444]" />}
         </button>
       </div>
 
       {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
         </div>
       ) : displayedBookings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-16 w-16 rounded-full bg-[#FDF6F6] flex items-center justify-center mb-4">
-            <Calendar className="h-8 w-8 text-[#C69C9B]" />
+          <div className="h-16 w-16 rounded-full bg-[#FEF2F2] flex items-center justify-center mb-4">
+            <Calendar className="h-8 w-8 text-[#FF4444]" />
           </div>
           <h2 className="text-lg font-bold text-foreground mb-2">{tab === "upcoming" ? t("clientBookings.noUpcoming", "No upcoming bookings") : t("clientBookings.noPast", "No past bookings")}</h2>
           <p className="text-sm text-muted-foreground">
@@ -199,23 +199,23 @@ export default function MyBookingsPage() {
                     {specialistName && (
                       <>
                         <span className="hidden sm:inline text-border">•</span>
-                        <p className="text-sm font-medium text-[#C69C9B] truncate">{t("common.with")} {specialistName}</p>
+                        <p className="text-sm font-medium text-[#FF4444] truncate">{t("common.with")} {specialistName}</p>
                       </>
                     )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-muted-foreground mt-3 pt-3 border-t border-border/40">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-[#C69C9B]" />
+                      <Calendar className="h-3.5 w-3.5 text-[#FF4444]" />
                       {formatDate(booking.startTime, i18n.language)}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-[#C69C9B]" />
+                      <Clock className="h-3.5 w-3.5 text-[#FF4444]" />
                       {formatTime(booking.startTime)} – {formatTime(booking.endTime)}
                     </div>
                     {branchAddress && (
                       <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5 text-[#C69C9B]" />
+                        <MapPin className="h-3.5 w-3.5 text-[#FF4444]" />
                         <span className="truncate max-w-[200px]">{branchAddress}</span>
                       </div>
                     )}

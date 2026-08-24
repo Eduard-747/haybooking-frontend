@@ -39,7 +39,7 @@ export function RoleGuard({ allowedRole, children }: RoleGuardProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="h-8 w-8 border-2 border-[#C69C9B] border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-[#FF4444] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

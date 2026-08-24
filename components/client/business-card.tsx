@@ -39,8 +39,8 @@ export function ClientBusinessCard({ business }: ClientBusinessCardProps) {
         />
         
         {/* Verified Badge – top left (matches home page style) */}
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-bold text-[#E5555E] flex items-center gap-1 shadow-sm">
-          <BadgeCheck className="h-3.5 w-3.5 fill-[#E5555E] text-white" />
+        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-xs font-bold text-[#FF4444] flex items-center gap-1 shadow-sm">
+          <BadgeCheck className="h-3.5 w-3.5 fill-[#FF4444] text-white" />
           {t("common.verified", "Verified")}
         </div>
 
@@ -49,10 +49,10 @@ export function ClientBusinessCard({ business }: ClientBusinessCardProps) {
           onClick={() => toggleFavorite(business)}
           className={cn(
             "absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-1.5 rounded-full transition-all shadow-sm",
-            favorited ? "text-[#E5555E]" : "text-muted-foreground hover:text-[#E5555E]"
+            favorited ? "text-[#FF4444]" : "text-muted-foreground hover:text-[#FF4444]"
           )}
         >
-          <Heart className={cn("h-4 w-4 transition-all", favorited && "fill-[#E5555E]")} />
+          <Heart className={cn("h-4 w-4 transition-all", favorited && "fill-[#FF4444]")} />
         </button>
       </div>
 
@@ -81,7 +81,7 @@ export function ClientBusinessCard({ business }: ClientBusinessCardProps) {
           </div>
           <Link
             href={`/booking/${business.id}`}
-            className="flex items-center gap-1 px-4 py-1.5 bg-[#E5555E] hover:bg-[#c44047] text-white rounded-full text-xs font-bold transition-colors shadow-sm"
+            className="flex items-center gap-1 px-4 py-1.5 bg-[#FF4444] hover:bg-[#c44047] text-white rounded-full text-xs font-bold transition-colors shadow-sm"
           >
             {t("common.book", "Book")}
             <ChevronRight className="h-3.5 w-3.5" />

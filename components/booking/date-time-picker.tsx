@@ -129,7 +129,7 @@ export function DateTimePicker({
             disabled={disabledDays}
             className="rounded-md"
             classNames={{
-              day_selected: "bg-[#E5555E] text-white hover:bg-[#E5555E] hover:text-white focus:bg-[#E5555E] focus:text-white rounded-full",
+              day_selected: "bg-[#FF4444] text-white hover:bg-[#FF4444] hover:text-white focus:bg-[#FF4444] focus:text-white rounded-full",
               day_today: "bg-accent text-accent-foreground rounded-full",
               day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-muted rounded-full transition-colors",
               head_cell: "text-muted-foreground font-semibold text-[10px] tracking-wider uppercase w-9",
@@ -159,7 +159,7 @@ export function DateTimePicker({
                   className={cn(
                     "py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 border",
                     isSelected
-                      ? "bg-[#E5555E] text-white border-[#E5555E] shadow-sm shadow-[#E5555E]/20"
+                      ? "bg-[#FF4444] text-white border-[#FF4444] shadow-sm shadow-[#FF4444]/20"
                       : isBooked
                         ? "bg-muted/50 text-muted-foreground/50 border-border/40 cursor-not-allowed line-through"
                         : "bg-white text-foreground border-border/60 hover:border-muted-foreground/30 hover:bg-[#FAFAFA]"
@@ -173,8 +173,8 @@ export function DateTimePicker({
 
           {/* Summary Alert */}
           {selectedDate && selectedTime && (
-            <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-[#FDEAEA] border border-[#E5555E]/20">
-              <CheckCircle2 className="h-5 w-5 text-[#E5555E] shrink-0 mt-0.5" />
+            <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-[#FDEAEA] border border-[#FF4444]/20">
+              <CheckCircle2 className="h-5 w-5 text-[#FF4444] shrink-0 mt-0.5" />
               <p className="text-sm text-[#3D2B2B]">
                 {t("book.appointmentSet", "Your selected appointment is set for")}{" "}
                 <span className="font-bold">

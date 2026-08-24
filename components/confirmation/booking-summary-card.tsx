@@ -19,7 +19,7 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
       
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-[#FAFAFA]/50">
-        <p className="text-[10px] font-bold tracking-wider text-[#C69C9B] uppercase">
+        <p className="text-[10px] font-bold tracking-wider text-[#FF4444] uppercase">
           Booking ID: {booking.id}
         </p>
         <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
@@ -32,8 +32,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
         
         {/* Service */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <User className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <User className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Service</p>
@@ -43,8 +43,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
 
         {/* Provider */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <Building2 className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <Building2 className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Provider</p>
@@ -54,8 +54,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
 
         {/* Date & Time */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <Calendar className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <Calendar className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Date & Time</p>
@@ -65,8 +65,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
 
         {/* Location */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <MapPin className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <MapPin className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Location</p>
@@ -76,8 +76,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
 
         {/* Total Paid */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <CreditCard className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <CreditCard className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Total Paid</p>
@@ -87,8 +87,8 @@ export function BookingSummaryCard({ booking }: BookingSummaryCardProps) {
 
         {/* Duration */}
         <div className="flex items-start gap-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FDF6F6]">
-            <Clock className="h-4 w-4 text-[#C69C9B]" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2]">
+            <Clock className="h-4 w-4 text-[#FF4444]" />
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-1">Duration</p>

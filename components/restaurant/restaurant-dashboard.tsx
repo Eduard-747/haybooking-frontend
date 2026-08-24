@@ -118,20 +118,20 @@ export function RestaurantDashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6">
-                <h3 className="font-bold text-lg mb-4">{t("restaurant.dashboard.quickActions", "Quick Actions")}</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <a href="/dashboard/restaurant/reservations" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
-                    <Clock className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">{t("restaurant.dashboard.manageReservations", "Manage Reservations")}</span>
+               <div className="bg-white rounded-2xl shadow-xs border border-border/40 p-4 sm:p-6">
+                <h3 className="font-bold text-base sm:text-lg mb-4">{t("restaurant.dashboard.quickActions", "Quick Actions")}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <a href="/dashboard/restaurant/reservations" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
+                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.manageReservations", "Manage Reservations")}</span>
                   </a>
-                  <a href="/dashboard/restaurant/floor-plan" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
-                    <Users className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">{t("restaurant.dashboard.editFloorPlan", "Edit Floor Plan")}</span>
+                  <a href="/dashboard/restaurant/floor-plan" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.editFloorPlan", "Edit Floor Plan")}</span>
                   </a>
-                  <a href="/dashboard/restaurant/reservations?add=true" className="flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:bg-gray-50 transition-colors gap-2 text-center">
-                    <Plus className="h-6 w-6 text-[#E5555E]" />
-                    <span className="font-semibold text-sm">{t("restaurant.dashboard.addBooking", "Add Booking")}</span>
+                  <a href="/dashboard/restaurant/reservations?add=true" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
+                    <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.addBooking", "Add Booking")}</span>
                   </a>
                 </div>
                </div>

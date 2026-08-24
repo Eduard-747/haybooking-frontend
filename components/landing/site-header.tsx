@@ -8,65 +8,64 @@ import { LogOut, User } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { Logo } from "@/components/ui/logo"
+
 export function SiteHeader() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-  const { t } = useTranslation();
+  const { user, logout } = useAuth()
+  const router = useRouter()
+  const { t } = useTranslation()
 
   const handleAvatarClick = () => {
     if (user?.role === 'partner') {
-      router.push('/dashboard');
+      router.push('/dashboard')
     } else {
-      router.push('/client/discover');
+      router.push('/client/discover')
     }
-  };
+  }
 
   return (
-    <header className="w-full bg-background border-b border-border/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="w-full bg-white sticky top-0 z-50 border-b border-slate-100/90 shadow-2xs">
+      <div className="max-w-[1380px] mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between py-2 sm:py-3.5">
         {/* Left: Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Logo />
+        <Link href="/" className="flex items-center gap-2 group transition-transform active:scale-98 shrink-0">
+          <Logo width={180} height={50} className="h-8 sm:h-11 md:h-12 w-auto" />
         </Link>
 
-
-
-        {/* Right: Auth */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <LanguageSwitcher />
+
+          {/* Auth Button */}
           {user ? (
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <button 
                 onClick={() => {
-                  logout();
-                  window.location.href = '/auth';
+                  logout()
+                  window.location.href = '/auth'
                 }} 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-slate-200 bg-white shrink-0"
               >
-                <LogOut className="h-4 w-4 shrink-0" />
+                <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 <span className="hidden sm:inline">{t("auth.logout", "Sign Out")}</span>
               </button>
               <Avatar 
                 onClick={handleAvatarClick}
-                className="h-9 w-9 sm:h-10 sm:w-10 cursor-pointer border border-border bg-[#FDF6F6] hover:ring-2 hover:ring-[#C69C9B]/50 transition-all shrink-0"
+                className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer border-2 border-white ring-2 ring-[#FF385C]/20 hover:ring-[#FF385C]/50 transition-all shrink-0"
               >
-                <AvatarFallback className="bg-[#FDF6F6]">
-                  {user.name ? user.name.substring(0, 2).toUpperCase() : <User className="h-5 w-5 text-[#C69C9B]" />}
+                <AvatarFallback className="bg-[#FFF0F3] text-[#FF385C] font-bold text-xs">
+                  {user.name ? user.name.substring(0, 2).toUpperCase() : <User className="h-4 w-4 text-[#FF385C]" />}
                 </AvatarFallback>
                 {(user.image || user.name) && (
-                  <AvatarImage src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent((user.name || '') + ' ' + (user.surname || ''))}&background=FDF6F6&color=C69C9B&size=100`} />
+                  <AvatarImage src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent((user.name || '') + ' ' + (user.surname || ''))}&background=FFF0F3&color=FF385C&size=100`} />
                 )}
               </Avatar>
             </div>
           ) : (
-            <>
-              <Link href="/auth" className="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#BC9B9E] text-white rounded-md text-xs sm:text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm whitespace-nowrap">
-                {t("auth.signIn", "Sign In")}
-              </Link>
-              <Link href="/auth?tab=signup" className="hidden xs:inline-flex px-3 py-1.5 sm:px-4 sm:py-2 bg-[#BC9B9E] text-white rounded-md text-xs sm:text-sm font-semibold hover:bg-[#a68689] transition-colors shadow-sm whitespace-nowrap">
-                {t("auth.signUp", "Sign Up")}
-              </Link>
-            </>
+            <Link 
+              href="/auth" 
+              className="px-3.5 sm:px-6 py-1.5 sm:py-2.5 bg-[#FF385C] hover:bg-[#E0304F] active:scale-95 text-white rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs whitespace-nowrap flex items-center justify-center shrink-0"
+            >
+              {t("auth.signIn", "Sign in")}
+            </Link>
           )}
         </div>
       </div>

@@ -211,7 +211,7 @@ export default function ManageServicesPage() {
                   setFormData(defaultForm)
                   setIsModalOpen(true)
                 }}
-                className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+                className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 {t("servicesPage.addNewService")}
@@ -229,7 +229,7 @@ export default function ManageServicesPage() {
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   placeholder={t("servicesPage.searchServices")} 
-                  className="w-full h-10 pl-9 pr-4 bg-[#FAFAFA] border-none rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
+                  className="w-full h-10 pl-9 pr-4 bg-[#FAFAFA] border-none rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#FF4444]/50"
                 />
               </div>
               
@@ -304,7 +304,7 @@ export default function ManageServicesPage() {
                           <td className="px-6 py-4 text-sm font-bold text-foreground">{formatPrice(service.price, partner?.currency)}</td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => handleEdit(service)} className="p-2 text-muted-foreground hover:text-[#C69C9B] transition-colors rounded-lg hover:bg-[#FDF6F6]">
+                              <button onClick={() => handleEdit(service)} className="p-2 text-muted-foreground hover:text-[#FF4444] transition-colors rounded-lg hover:bg-[#FEF2F2]">
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button onClick={() => handleDelete(service._id)} className="p-2 text-muted-foreground hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
@@ -344,7 +344,7 @@ export default function ManageServicesPage() {
                             key={page}
                             onClick={() => setCurrentPage(page)}
                             className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${
-                              isActive ? "bg-[#FDF6F6] text-[#E5555E] font-bold" : "hover:bg-[#FAFAFA] text-muted-foreground"
+                              isActive ? "bg-[#FEF2F2] text-[#FF4444] font-bold" : "hover:bg-[#FAFAFA] text-muted-foreground"
                             }`}
                           >
                             {page}
@@ -388,22 +388,22 @@ export default function ManageServicesPage() {
                 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesPage.serviceName")}</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Deep Tissue Massage" />
+                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" placeholder="e.g. Deep Tissue Massage" />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesPage.category")}</label>
-                  <input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" placeholder="e.g. Premium Grooming" />
+                  <input type="text" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" placeholder="e.g. Premium Grooming" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesPage.durationMin")}</label>
-                    <input required type="number" min="5" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value === "" ? "" : Number(e.target.value)})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                    <input required type="number" min="5" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value === "" ? "" : Number(e.target.value)})} className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesPage.price")} ({partner?.currency || 'USD'})</label>
-                    <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="0.00" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#C69C9B]" />
+                    <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="0.00" className="w-full px-4 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm focus:outline-none focus:border-[#FF4444]" />
                   </div>
                 </div>
 
@@ -425,9 +425,9 @@ export default function ManageServicesPage() {
                                   : [...prev.assignedBranches, b._id]
                               }))
                             }}
-                            className="rounded border-border text-[#E5555E] focus:ring-[#E5555E]"
+                            className="rounded border-border text-[#FF4444] focus:ring-[#FF4444]"
                           />
-                          <MapPin className="h-3.5 w-3.5 text-[#C69C9B]" />
+                          <MapPin className="h-3.5 w-3.5 text-[#FF4444]" />
                           <span className="text-sm">{b.address.city} - {b.address.line1}</span>
                         </label>
                       ))}
@@ -442,7 +442,7 @@ export default function ManageServicesPage() {
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("servicesPage.serviceImage")}</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-border/60 hover:border-[#C69C9B] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FDF6F6] gap-2"
+                    className="w-full border-2 border-dashed border-border/60 hover:border-[#FF4444] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#FAFAFA] hover:bg-[#FEF2F2] gap-2"
                   >
                     {imagePreview ? (
                       <div className="relative w-28 h-28 rounded-lg overflow-hidden border border-border/40">
@@ -450,7 +450,7 @@ export default function ManageServicesPage() {
                       </div>
                     ) : (
                       <>
-                        <Upload className="h-8 w-8 text-[#C69C9B]/60" />
+                        <Upload className="h-8 w-8 text-[#FF4444]/60" />
                         <p className="text-sm font-medium text-muted-foreground">{t("servicesPage.clickToUpload")}</p>
                         <p className="text-xs text-muted-foreground">{t("servicesPage.fileFormats")}</p>
                       </>
@@ -471,7 +471,7 @@ export default function ManageServicesPage() {
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
                 {t("common.cancel")}
               </button>
-              <button type="submit" form="service-form" disabled={isSubmitting} className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
+              <button type="submit" form="service-form" disabled={isSubmitting} className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50">
                 {isSubmitting ? t("common.saving") : (editingId ? t("servicesPage.updateService") : t("servicesPage.saveService"))}
               </button>
             </div>

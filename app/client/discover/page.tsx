@@ -267,7 +267,7 @@ function DiscoverContent() {
               placeholder={t("common.search", "Search...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#C69C9B] shadow-sm transition-colors"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#FF4444] shadow-sm transition-colors"
             />
           </div>
         </div>
@@ -284,8 +284,8 @@ function DiscoverContent() {
                 onClick={() => setActiveCategory(category.value)}
                 className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-colors border ${
                   activeCategory === category.value 
-                    ? "bg-[#C69C9B] border-[#C69C9B] text-white shadow-sm" 
-                    : "bg-white border-border/60 text-muted-foreground hover:border-[#C69C9B] hover:text-[#C69C9B]"
+                    ? "bg-[#FF4444] border-[#FF4444] text-white shadow-sm" 
+                    : "bg-white border-border/60 text-muted-foreground hover:border-[#FF4444] hover:text-[#FF4444]"
                 }`}
               >
                 {t(category.label, category.fallback)}
@@ -296,7 +296,7 @@ function DiscoverContent() {
             <div className="absolute bottom-2 right-0 bg-gradient-to-l from-background via-background to-transparent pl-12 pr-1 flex items-center z-10">
               <button
                 onClick={() => setIsExpanded(true)}
-                className="bg-white shadow-sm border border-border/60 rounded-full px-4 py-1.5 text-sm font-bold text-muted-foreground hover:text-[#C69C9B] transition-colors"
+                className="bg-white shadow-sm border border-border/60 rounded-full px-4 py-1.5 text-sm font-bold text-muted-foreground hover:text-[#FF4444] transition-colors"
               >
                 ...
               </button>
@@ -306,7 +306,7 @@ function DiscoverContent() {
             <div className="flex justify-center mt-3">
               <button
                  onClick={() => setIsExpanded(false)}
-                 className="bg-white shadow-sm border border-border/60 rounded-full px-5 py-1.5 text-xs font-bold text-foreground hover:border-[#C69C9B] transition-colors flex items-center gap-1"
+                 className="bg-white shadow-sm border border-border/60 rounded-full px-5 py-1.5 text-xs font-bold text-foreground hover:border-[#FF4444] transition-colors flex items-center gap-1"
               >
                  {t("common.showLess", "Show Less")} <ChevronUp className="h-3 w-3" />
               </button>
@@ -318,7 +318,7 @@ function DiscoverContent() {
       {/* Recommended Section */}
       <div className="mb-16">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-1.5 h-6 bg-[#C69C9B] rounded-full" />
+          <div className="w-1.5 h-6 bg-[#FF4444] rounded-full" />
           <h2 className="text-xl font-bold text-foreground">{t("landing.recommendedForYou", "Recommended for You")}</h2>
           {!isLoading && (
             <span className="text-xs text-muted-foreground ml-auto">
@@ -330,10 +330,10 @@ function DiscoverContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm animate-pulse">
-                <div className="aspect-[16/10] bg-[#F5EAEA]" />
+                <div className="aspect-[16/10] bg-[#FEF2F2]" />
                 <div className="p-5 space-y-3">
-                  <div className="h-4 bg-[#F5EAEA] rounded w-2/3" />
-                  <div className="h-3 bg-[#F5EAEA] rounded w-1/2" />
+                  <div className="h-4 bg-[#FEF2F2] rounded w-2/3" />
+                  <div className="h-3 bg-[#FEF2F2] rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -419,7 +419,7 @@ function DiscoverContent() {
             {t("landing.databaseUpdatedDaily", "Our database is updated daily with hundreds of new service providers. Search by location or specific treatment to find exactly what fits your schedule.")}
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
-            <Button className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-full px-8">
+            <Button className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white rounded-full px-8">
               {t("landing.exploreAllCategories", "Explore All Categories")}
             </Button>
             <Button 
@@ -434,10 +434,10 @@ function DiscoverContent() {
 
         <div className="w-full md:w-1/2 flex justify-center relative z-10">
           <div className="relative w-full max-w-md h-48 bg-[#FAFAFA] rounded-2xl border border-border/60 overflow-hidden flex items-center justify-center shadow-inner">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#C69C9B_1px,transparent_1px)] [background-size:16px_16px]" />
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#FF4444_1px,transparent_1px)] [background-size:16px_16px]" />
             <div className="bg-white/90 backdrop-blur-sm px-6 py-4 rounded-xl shadow-md border border-border/40 flex items-center gap-4 relative z-10">
               <div className="h-10 w-10 rounded-full bg-[#FDEAEA] flex items-center justify-center shrink-0">
-                <MapPin className="h-5 w-5 text-[#C69C9B]" />
+                <MapPin className="h-5 w-5 text-[#FF4444]" />
               </div>
               <p className="font-semibold text-sm text-foreground">{t("landing.over500Locations", "Over 500+ locations near you")}</p>
             </div>
@@ -493,7 +493,7 @@ export default function DiscoverPage() {
   return (
     <Suspense fallback={
       <div className="w-full min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-[#E5555E] border-t-transparent rounded-full" />
+        <div className="animate-spin h-8 w-8 border-2 border-[#FF4444] border-t-transparent rounded-full" />
       </div>
     }>
       <DiscoverContent />

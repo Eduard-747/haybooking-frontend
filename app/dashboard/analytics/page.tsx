@@ -156,7 +156,7 @@ export default function AnalyticsPage() {
                 <p className="text-muted-foreground mt-1 text-sm">{t("analyticsPage.realtimePerformance", "Real-time performance data for your business.")}</p>
               </div>
               <Select value={timeRange} onValueChange={(val: any) => setTimeRange(val)}>
-                <SelectTrigger className="w-full sm:w-[180px] h-[42px] bg-white border border-border/60 hover:border-[#C69C9B] rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#C69C9B]/20 transition-colors">
+                <SelectTrigger className="w-full sm:w-[180px] h-[42px] bg-white border border-border/60 hover:border-[#FF4444] rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4444]/20 transition-colors">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
 
             {(isLoading || partnerLoading) ? (
               <div className="flex items-center justify-center py-24">
-                <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
               </div>
             ) : (
               <>
@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
                     { label: t("analyticsPage.totalBookings", "Total Bookings"), value: computedStats.total, icon: Calendar, color: "text-blue-500", bg: "bg-blue-50" },
                     { label: t("analyticsPage.confirmed", "Confirmed"), value: computedStats.confirmed, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
                     { label: t("analyticsPage.declined", "Declined"), value: computedStats.declined, icon: XCircle, color: "text-red-400", bg: "bg-red-50" },
-                    { label: t("analyticsPage.revenue", "Revenue"), value: formatPrice(revenue, partner?.currency), icon: TrendingUp, color: "text-[#C69C9B]", bg: "bg-[#FDF6F6]" },
+                    { label: t("analyticsPage.revenue", "Revenue"), value: formatPrice(revenue, partner?.currency), icon: TrendingUp, color: "text-[#FF4444]", bg: "bg-[#FEF2F2]" },
                   ].map(({ label, value, icon: Icon, color, bg }) => (
                     <div key={label} className="bg-white rounded-2xl border border-border/60 shadow-sm p-5">
                       <div className={`h-10 w-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
@@ -198,16 +198,16 @@ export default function AnalyticsPage() {
                   {/* Bookings Bar Chart */}
                   <div className="lg:col-span-2 bg-white rounded-2xl border border-border/60 shadow-sm p-6">
                     <div className="flex items-center gap-2 mb-6">
-                      <BarChart3 className="h-5 w-5 text-[#C69C9B]" />
+                      <BarChart3 className="h-5 w-5 text-[#FF4444]" />
                       <h2 className="font-bold text-foreground">{t("analyticsPage.bookingsLast7Days", "Bookings – Last 7 Days")}</h2>
                     </div>
                     <div className="flex items-end gap-3 h-40">
                       {perDay.map((d, i) => (
                         <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
                           <span className="text-xs font-bold text-foreground">{d.count || ""}</span>
-                          <div className="w-full rounded-t-md bg-[#C69C9B]/20 flex items-end"
+                          <div className="w-full rounded-t-md bg-[#FF4444]/20 flex items-end"
                             style={{ height: "100px" }}>
-                            <div className="w-full rounded-t-md bg-[#C69C9B] transition-all duration-500"
+                            <div className="w-full rounded-t-md bg-[#FF4444] transition-all duration-500"
                               style={{ height: `${(d.count / maxDay) * 100}px` }} />
                           </div>
                           <span className="text-[10px] text-muted-foreground font-medium">{t(`calendar.${d.label.toLowerCase()}`, d.label)}</span>
@@ -219,7 +219,7 @@ export default function AnalyticsPage() {
                   {/* Confirmation Rate */}
                   <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-6 flex flex-col">
                     <div className="flex items-center gap-2 mb-4">
-                      <Users className="h-5 w-5 text-[#C69C9B]" />
+                      <Users className="h-5 w-5 text-[#FF4444]" />
                       <h2 className="font-bold text-foreground">{t("analyticsPage.bookingStatus", "Booking Status")}</h2>
                     </div>
                     <div className="flex-1 flex flex-col justify-center space-y-4">
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
                               </div>
                             </div>
                             <div className="h-1.5 bg-[#FAFAFA] rounded-full overflow-hidden">
-                              <div className="h-full bg-[#C69C9B] rounded-full" style={{ width: `${(s.count / (topServices[0]?.count || 1)) * 100}%` }} />
+                              <div className="h-full bg-[#FF4444] rounded-full" style={{ width: `${(s.count / (topServices[0]?.count || 1)) * 100}%` }} />
                             </div>
                           </div>
                         ))}
@@ -287,8 +287,8 @@ export default function AnalyticsPage() {
                           return (
                             <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
                               <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-[#FDF6F6] flex items-center justify-center">
-                                  <Clock className="h-4 w-4 text-[#C69C9B]" />
+                                <div className="h-8 w-8 rounded-full bg-[#FEF2F2] flex items-center justify-center">
+                                  <Clock className="h-4 w-4 text-[#FF4444]" />
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">{name}</p>

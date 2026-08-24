@@ -12,7 +12,7 @@ export function ConfirmationActions() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
         <Button 
           size="lg" 
-          className="bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-md w-full font-semibold shadow-sm transition-colors"
+          className="bg-[#FF4444] hover:bg-[#BCAAA4] text-white rounded-md w-full font-semibold shadow-sm transition-colors"
         >
           <Calendar className="mr-2 h-4 w-4" />
           Add to Calendar
@@ -21,7 +21,7 @@ export function ConfirmationActions() {
         <Button 
           variant="outline" 
           size="lg" 
-          className="bg-white border-border/60 text-[#C69C9B] hover:bg-[#FAFAFA] hover:text-[#BCAAA4] rounded-md w-full font-semibold shadow-sm transition-colors"
+          className="bg-white border-border/60 text-[#FF4444] hover:bg-[#FAFAFA] hover:text-[#BCAAA4] rounded-md w-full font-semibold shadow-sm transition-colors"
         >
           <Bell className="mr-2 h-4 w-4" />
           Set Reminder

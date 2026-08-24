@@ -8,7 +8,7 @@ export function TrustBar() {
           
           {/* Item 1 */}
           <div className="flex flex-col items-center md:items-start md:flex-row gap-4">
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#F5EAEA] flex items-center justify-center text-[#BC9B9E]">
+            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#FEF2F2] flex items-center justify-center text-[#FF4444]">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
@@ -19,7 +19,7 @@ export function TrustBar() {
 
           {/* Item 2 */}
           <div className="flex flex-col items-center md:items-start md:flex-row gap-4">
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#F5EAEA] flex items-center justify-center text-[#BC9B9E]">
+            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#FEF2F2] flex items-center justify-center text-[#FF4444]">
               <Clock className="h-6 w-6" />
             </div>
             <div>
@@ -30,7 +30,7 @@ export function TrustBar() {
 
           {/* Item 3 */}
           <div className="flex flex-col items-center md:items-start md:flex-row gap-4">
-            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#F5EAEA] flex items-center justify-center text-[#BC9B9E]">
+            <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#FEF2F2] flex items-center justify-center text-[#FF4444]">
               <CalendarCheck className="h-6 w-6" />
             </div>
             <div>

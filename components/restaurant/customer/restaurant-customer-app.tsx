@@ -57,7 +57,7 @@ export function RestaurantCustomerApp({
                   onClick={() => onBranchSelect(b._id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${
                     selectedBranch === b._id 
-                      ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' 
+                      ? 'border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]' 
                       : 'border-border/60 bg-white text-muted-foreground hover:bg-gray-50'
                   }`}
                 >
@@ -74,7 +74,7 @@ export function RestaurantCustomerApp({
             onClick={() => setActiveTab("book")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
               activeTab === "book"
-                ? "bg-[#E5555E] text-white shadow-md scale-105"
+                ? "bg-[#FF4444] text-white shadow-md scale-105"
                 : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
             }`}
           >

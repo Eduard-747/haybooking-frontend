@@ -18,7 +18,7 @@ export default function FavoritesPage() {
         {/* Header */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-          <Heart className="h-7 w-7 text-[#E5555E] fill-[#E5555E]" />
+          <Heart className="h-7 w-7 text-[#FF4444] fill-[#FF4444]" />
           {t("nav.favorites", "My Favorites")}
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -31,8 +31,8 @@ export default function FavoritesPage() {
       {favorites.length === 0 ? (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-20 w-20 rounded-full bg-[#FDF6F6] flex items-center justify-center mb-6">
-            <Heart className="h-10 w-10 text-[#C69C9B]" />
+          <div className="h-20 w-20 rounded-full bg-[#FEF2F2] flex items-center justify-center mb-6">
+            <Heart className="h-10 w-10 text-[#FF4444]" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">{t("clientFavorites.noFavorites", "No favorites yet")}</h2>
           <p className="text-muted-foreground text-sm max-w-xs mb-8">
@@ -40,7 +40,7 @@ export default function FavoritesPage() {
           </p>
           <Link
             href="/client/discover"
-            className="px-8 py-3 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white rounded-full text-sm font-semibold transition-colors shadow-sm"
+            className="px-8 py-3 bg-[#FF4444] hover:bg-[#BCAAA4] text-white rounded-full text-sm font-semibold transition-colors shadow-sm"
           >
             {t("landing.discoverServices", "Discover Services")}
           </Link>

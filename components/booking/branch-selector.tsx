@@ -41,21 +41,21 @@ export function BranchSelector({ branches, onSelect }: BranchSelectorProps) {
             <button
               key={branch._id}
               onClick={() => onSelect(branch._id)}
-              className="w-full flex items-center justify-between p-5 bg-white border border-border/60 hover:border-[#E5555E]/50 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left"
+              className="w-full flex items-center justify-between p-5 bg-white border border-border/60 hover:border-[#FF4444]/50 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left"
             >
               <div className="flex items-start gap-4">
-                <div className="mt-1 p-2 bg-[#FDEAEA] rounded-full text-[#E5555E]">
+                <div className="mt-1 p-2 bg-[#FDEAEA] rounded-full text-[#FF4444]">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground text-lg group-hover:text-[#E5555E] transition-colors">{branch.address?.city || t("book.mainBranch", "Branch")}</h3>
+                  <h3 className="font-bold text-foreground text-lg group-hover:text-[#FF4444] transition-colors">{branch.address?.city || t("book.mainBranch", "Branch")}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{branch.address?.line1}</p>
                   {branch.phoneNumbers && branch.phoneNumbers.length > 0 && (
                     <p className="text-xs text-muted-foreground mt-1.5 font-medium">{branch.phoneNumbers[0]}</p>
                   )}
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-[#E5555E] group-hover:-translate-x-1 transition-all" />
+              <ArrowRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-[#FF4444] group-hover:-translate-x-1 transition-all" />
             </button>
           ))}
         </div>

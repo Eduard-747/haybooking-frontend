@@ -6,8 +6,6 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { usePartner } from "@/hooks/usePartner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
-import { useBranchContext } from "./branch-context"
-import { MapPin } from "lucide-react"
 import { NotificationsPopover } from "./notifications-popover"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
@@ -23,8 +21,6 @@ export function DashboardHeader() {
   const initials = partner?.businessName
     ? partner.businessName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
     : user?.phoneNumber?.substring(0, 2) || "HB"
-
-  const { branches, selectedBranchId, setSelectedBranchId } = useBranchContext()
 
   const { setIsOpen } = useMobileNav()
 
@@ -42,7 +38,7 @@ export function DashboardHeader() {
         </button>
 
         <div className="flex items-center min-w-0">
-          <Link href="/dashboard" className="text-sm font-semibold text-foreground truncate hover:text-[#C69C9B] transition-colors cursor-pointer">
+          <Link href="/dashboard" className="text-sm font-semibold text-foreground truncate hover:text-[#FF4444] transition-colors cursor-pointer">
             {partner?.businessName || "La Bohem"}
           </Link>
           {partner?.verified && (
@@ -51,30 +47,6 @@ export function DashboardHeader() {
             </span>
           )}
         </div>
-
-        {branches.length > 0 && (
-          <div className="hidden md:flex items-center gap-2">
-            <span className="text-muted-foreground/50 font-medium">/</span>
-            <div className="relative flex items-center">
-              <MapPin className="w-3.5 h-3.5 text-muted-foreground absolute left-2 pointer-events-none" />
-              <select
-                value={selectedBranchId || ""}
-                onChange={(e) => setSelectedBranchId(e.target.value || null)}
-                className="pl-7 pr-8 py-1 bg-transparent hover:bg-gray-50 rounded-lg text-sm font-medium text-muted-foreground focus:outline-none appearance-none cursor-pointer transition-colors"
-              >
-                <option value="">{t("common.allBranches")}</option>
-                {branches.map(b => (
-                  <option key={b._id} value={b._id}>
-                    {b.address.line1}, {b.address.city}
-                  </option>
-                ))}
-              </select>
-              <svg className="w-3 h-3 text-muted-foreground absolute right-2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Right: Actions */}
@@ -88,11 +60,11 @@ export function DashboardHeader() {
         
         {/* Business Image / Avatar */}
         <Link href="/dashboard/settings">
-          <Avatar className="h-9 w-9 rounded-full border border-border cursor-pointer bg-[#C69C9B]/20 hover:ring-2 hover:ring-[#C69C9B]/50 transition-all flex items-center justify-center">
+          <Avatar className="h-9 w-9 rounded-full border border-border cursor-pointer bg-[#FF4444]/20 hover:ring-2 hover:ring-[#FF4444]/50 transition-all flex items-center justify-center">
             {partner?.image ? (
               <AvatarImage src={partner.image} alt={partner.businessName} className="object-cover rounded-full" />
             ) : null}
-            <AvatarFallback className="text-[#C69C9B] font-semibold text-xs rounded-full flex items-center justify-center">
+            <AvatarFallback className="text-[#FF4444] font-semibold text-xs rounded-full flex items-center justify-center">
               {initials}
             </AvatarFallback>
           </Avatar>

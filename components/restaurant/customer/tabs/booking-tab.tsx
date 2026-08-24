@@ -457,7 +457,7 @@ export function BookingTab({
           }}
           className="rounded-md border shadow"
           classNames={{
-            day_selected: "bg-[#E5555E] text-white hover:bg-[#E5555E] hover:text-white focus:bg-[#E5555E] focus:text-white rounded-full",
+            day_selected: "bg-[#FF4444] text-white hover:bg-[#FF4444] hover:text-white focus:bg-[#FF4444] focus:text-white rounded-full",
             day_today: "bg-accent text-accent-foreground rounded-full",
             day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-muted rounded-full transition-colors text-lg",
             head_cell: "text-muted-foreground font-semibold tracking-wider uppercase w-10",
@@ -497,7 +497,7 @@ export function BookingTab({
                       }}
                       className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                         activeFloorIdResolved === fId 
-                          ? 'bg-[#E5555E] text-white shadow-md' 
+                          ? 'bg-[#FF4444] text-white shadow-md' 
                           : 'bg-white border border-border/60 text-muted-foreground hover:bg-gray-50'
                       }`}
                     >
@@ -577,17 +577,17 @@ export function BookingTab({
               </button>
 
               <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
-                <span className="bg-[#E5555E] text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                <span className="bg-[#FF4444] text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
                   {t("restaurant.table_num", "Table {{number}}", { number: selectedTable.tableNumber })}
                 </span>
-                <span className="bg-rose-100/80 border border-rose-200/60 text-[#E5555E] text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                <span className="bg-rose-100/80 border border-rose-200/60 text-[#FF4444] text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
                   {t("restaurant.up_to_guests", "Up to {{capacity}} guests", { capacity: selectedTable.capacity })}
                 </span>
               </div>
 
               <h3 className="text-base sm:text-lg font-extrabold text-gray-900 tracking-tight">{t("restaurant.reserve_table_num", "Reserve Table {{number}}", { number: selectedTable.tableNumber })}</h3>
               <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 font-medium">
-                <CalendarIcon className="w-3.5 h-3.5 text-[#E5555E]" />
+                <CalendarIcon className="w-3.5 h-3.5 text-[#FF4444]" />
                 {format(selectedDate, "EEEE, MMMM d, yyyy")}
               </p>
             </div>
@@ -605,7 +605,7 @@ export function BookingTab({
               <div className="bg-white p-3.5 sm:p-4.5 rounded-2xl border border-border/60 shadow-2xs space-y-2.5">
                 <div className="flex items-center justify-between flex-wrap gap-1">
                   <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Clock className="h-3.5 w-3.5 text-[#E5555E]" /> {t("restaurant.available_hours_today", "Available Hours Today")}
+                    <Clock className="h-3.5 w-3.5 text-[#FF4444]" /> {t("restaurant.available_hours_today", "Available Hours Today")}
                   </label>
                   <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-bold">
                     <span className="flex items-center gap-1 text-emerald-700">
@@ -631,7 +631,7 @@ export function BookingTab({
                           slot.isBooked
                             ? "bg-gray-100/80 border-gray-200 text-gray-400 cursor-not-allowed line-through"
                             : isSelected
-                            ? "bg-[#E5555E] border-[#E5555E] text-white shadow-md scale-[1.02]"
+                            ? "bg-[#FF4444] border-[#FF4444] text-white shadow-md scale-[1.02]"
                             : "bg-[#FAFAFA] border-border/60 text-gray-800 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800 shadow-2xs"
                         }`}
                       >
@@ -668,26 +668,26 @@ export function BookingTab({
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div className="space-y-1">
                     <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1 uppercase tracking-wider">
-                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> {t("restaurant.arrival_time", "Arrival Time")}
+                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#FF4444]" /> {t("restaurant.arrival_time", "Arrival Time")}
                     </label>
                     <input 
                       type="time" 
                       required
                       value={selectedTime || ""}
                       onChange={(e) => handleArrivalChange(e.target.value)}
-                      className="w-full h-10 px-2 sm:px-3 rounded-xl border border-border/60 bg-[#FAFAFA] text-xs sm:text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] shadow-2xs transition-all"
+                      className="w-full h-10 px-2 sm:px-3 rounded-xl border border-border/60 bg-[#FAFAFA] text-xs sm:text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] shadow-2xs transition-all"
                     />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1 uppercase tracking-wider">
-                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#E5555E]" /> {t("restaurant.departure_time", "Departure Time")}
+                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#FF4444]" /> {t("restaurant.departure_time", "Departure Time")}
                     </label>
                     <input 
                       type="time" 
                       required
                       value={selectedEndTime || ""}
                       onChange={(e) => setSelectedEndTime && setSelectedEndTime(e.target.value)}
-                      className="w-full h-10 px-2 sm:px-3 rounded-xl border border-border/60 bg-[#FAFAFA] text-xs sm:text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] shadow-2xs transition-all"
+                      className="w-full h-10 px-2 sm:px-3 rounded-xl border border-border/60 bg-[#FAFAFA] text-xs sm:text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] shadow-2xs transition-all"
                     />
                   </div>
                 </div>
@@ -709,7 +709,7 @@ export function BookingTab({
                           className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all shadow-2xs ${
                             isDisabled 
                               ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 line-through opacity-50"
-                              : "bg-gray-100 text-gray-700 hover:bg-[#E5555E] hover:text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-[#FF4444] hover:text-white"
                           }`}
                         >
                           {t("restaurant.hours_short", "{{count}}h", { count: dur })}
@@ -729,7 +729,7 @@ export function BookingTab({
               <div className="bg-white p-3.5 sm:p-4.5 rounded-2xl border border-border/60 shadow-2xs space-y-2.5">
                 <div className="flex items-center justify-between flex-wrap gap-1">
                   <label className="text-[11px] sm:text-xs font-bold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Users className="h-3.5 w-3.5 text-[#E5555E]" /> {t("restaurant.party_size", "Party Size")}
+                    <Users className="h-3.5 w-3.5 text-[#FF4444]" /> {t("restaurant.party_size", "Party Size")}
                   </label>
                   <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
                     {t("restaurant.capacity_guests", "Capacity: {{capacity}} guests", { capacity: selectedTable.capacity })}
@@ -772,7 +772,7 @@ export function BookingTab({
                   value={reservationNotes || ""}
                   onChange={(e) => setReservationNotes && setReservationNotes(e.target.value)}
                   placeholder={t("restaurant.notes_placeholder", "Any special requests, seating preferences, or allergies?")}
-                  className="w-full h-16 sm:h-20 p-2.5 sm:p-3 rounded-2xl border border-border/60 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E] resize-none shadow-2xs"
+                  className="w-full h-16 sm:h-20 p-2.5 sm:p-3 rounded-2xl border border-border/60 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444] resize-none shadow-2xs"
                 />
               </div>
 
@@ -780,7 +780,7 @@ export function BookingTab({
               <div className="pt-1 space-y-1.5">
                 <button 
                   type="submit"
-                  className="w-full py-3 sm:py-3.5 bg-[#E5555E] text-white rounded-2xl font-extrabold text-sm sm:text-base hover:bg-[#D4444D] transition-all active:scale-[0.98] shadow-md flex justify-center items-center gap-2"
+                  className="w-full py-3 sm:py-3.5 bg-[#FF4444] text-white rounded-2xl font-extrabold text-sm sm:text-base hover:bg-[#D4444D] transition-all active:scale-[0.98] shadow-md flex justify-center items-center gap-2"
                 >
                   <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" /> {t("restaurant.request_reservation", "Request Reservation")}
                 </button>

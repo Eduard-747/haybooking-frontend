@@ -1,10 +1,11 @@
 "use client"
 
+import React, { useState } from "react"
 import {
   Undo, Redo, Copy, ClipboardPaste, CopyPlus, Trash2, 
   ZoomIn, ZoomOut, Maximize, Grid, Magnet, Ruler, Eye, 
   MousePointer2, Hand, SquarePen, BoxSelect, Plus, Type,
-  Search, Save, ChevronDown, Sparkles
+  Search, Save, ChevronDown, Sparkles, X, Layers
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -39,25 +40,30 @@ interface FloorPlanToolbarProps {
   onOpenAiModal?: () => void
 }
 
-const Sep = () => <div className="h-5 w-px bg-gray-200 mx-1 shrink-0" />
-
 const ToolBtn = ({
-  onClick, active = false, disabled = false, title, icon: Icon
+  onClick, active = false, disabled = false, title, icon: Icon, activeVariant = "coral"
 }: {
-  onClick?: () => void; active?: boolean; disabled?: boolean; title?: string; icon: any
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    className={`p-1.5 rounded-md transition-all shrink-0 ${active
-      ? "bg-blue-50 text-blue-600"
-      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      } disabled:opacity-30 disabled:pointer-events-none`}
-  >
-    <Icon className="w-4 h-4" />
-  </button>
-)
+  onClick?: () => void; active?: boolean; disabled?: boolean; title?: string; icon: any; activeVariant?: "coral" | "dark" | "blue"
+}) => {
+  let activeStyles = "bg-[#FF385C] text-white shadow-xs scale-105"
+  if (activeVariant === "dark") activeStyles = "bg-slate-900 text-white shadow-xs scale-105"
+  if (activeVariant === "blue") activeStyles = "bg-blue-600 text-white shadow-xs scale-105"
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`p-1.5 rounded-lg transition-all duration-200 shrink-0 flex items-center justify-center ${
+        active
+          ? activeStyles
+          : "text-slate-600 hover:text-slate-900 hover:bg-white hover:shadow-2xs"
+      } disabled:opacity-30 disabled:pointer-events-none active:scale-95`}
+    >
+      <Icon className="w-4 h-4" />
+    </button>
+  )
+}
 
 export function FloorPlanToolbar({
   onUndo, onRedo, canUndo, canRedo, mode = "select", setMode,
@@ -68,102 +74,149 @@ export function FloorPlanToolbar({
   floors = [], activeFloorId, setActiveFloorId, onAddFloor, onOpenAiModal
 }: FloorPlanToolbarProps) {
   const { t } = useTranslation()
+  const [searchFilter, setSearchFilter] = useState("")
+  const [showFloorDropdown, setShowFloorDropdown] = useState(false)
+
+  const activeFloor = floors.find(f => f._id === activeFloorId)
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 h-12 flex items-center justify-between shrink-0 shadow-sm z-10 w-full">
+    <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/90 px-3 sm:px-4 h-14 flex items-center justify-between shrink-0 shadow-xs z-30 w-full select-none gap-2 overflow-x-auto custom-scrollbar">
 
-      {/* Left section: Floor Selection & Core Tools */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-        {/* Floor Selector */}
-        <div className="relative group mr-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm font-semibold transition-colors">
-            {activeFloorId && floors.length > 0 ? floors.find(f => f._id === activeFloorId)?.name || t("restaurant.floorPlan.selectFloor", "Select Floor") : t("restaurant.floorPlan.selectFloor", "Select Floor")}
-            <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+      {/* Left Section: Floor Selector & Tool Capsules */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        
+        {/* Floor Selection Pill Dropdown */}
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setShowFloorDropdown(!showFloorDropdown)}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 border border-slate-800"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#FF385C]" />
+            <span>
+              {activeFloor ? activeFloor.name : t("restaurant.floorPlan.selectFloor", "Select Floor")}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showFloorDropdown ? "rotate-180" : ""}`} />
           </button>
-          <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-            {floors.map(floor => (
-              <button
-                key={floor._id}
-                onClick={() => setActiveFloorId?.(floor._id)}
-                className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${activeFloorId === floor._id ? 'bg-blue-50 text-blue-700 font-medium' : 'hover:bg-gray-50 text-gray-700'}`}
-              >
-                {floor.name}
-              </button>
-            ))}
-            <div className="h-px bg-gray-100 my-1"></div>
-            <button
-              onClick={onAddFloor}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <Plus className="w-4 h-4 text-gray-500" /> {t("restaurant.floorPlan.addFloor", "Add Floor")}
-            </button>
-          </div>
+
+          {showFloorDropdown && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowFloorDropdown(false)} />
+              <div className="absolute top-full left-0 mt-1.5 w-52 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                <div className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {t("restaurant.floorPlan.floors", "FLOORS")}
+                </div>
+                {floors.map(floor => (
+                  <button
+                    key={floor._id}
+                    onClick={() => {
+                      setActiveFloorId?.(floor._id)
+                      setShowFloorDropdown(false)
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs rounded-xl transition-all flex items-center justify-between ${
+                      activeFloorId === floor._id
+                        ? "bg-[#FFF0F3] text-[#FF385C] font-bold"
+                        : "hover:bg-slate-50 text-slate-700 font-medium"
+                    }`}
+                  >
+                    <span>{floor.name}</span>
+                    {activeFloorId === floor._id && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF385C]" />
+                    )}
+                  </button>
+                ))}
+                <div className="h-px bg-slate-100 my-1"></div>
+                <button
+                  onClick={() => {
+                    onAddFloor?.()
+                    setShowFloorDropdown(false)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#FF385C]" /> {t("restaurant.floorPlan.addFloor", "Add Floor")}
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
-        <Sep />
+        {/* Capsule 1: Edit History & Actions */}
+        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
+          <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title={`${t("restaurant.floorPlan.undo", "Undo")} (Ctrl+Z)`} />
+          <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title={`${t("restaurant.floorPlan.redo", "Redo")} (Ctrl+Y)`} />
+          <div className="h-4 w-px bg-slate-200/80 mx-0.5 shrink-0" />
+          <ToolBtn icon={Copy} onClick={onCopy} title={`${t("restaurant.floorPlan.copy", "Copy")} (Ctrl+C)`} />
+          <ToolBtn icon={ClipboardPaste} onClick={onPaste} title={`${t("restaurant.floorPlan.paste", "Paste")} (Ctrl+V)`} />
+          <ToolBtn icon={CopyPlus} onClick={onDuplicate} title={`${t("restaurant.floorPlan.duplicate", "Duplicate")} (Ctrl+D)`} />
+          <ToolBtn icon={Trash2} onClick={onDelete} title={`${t("restaurant.floorPlan.delete", "Delete")} (Del)`} />
+        </div>
 
-        {/* Edit Tools */}
-        <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title={`${t("restaurant.floorPlan.undo", "Undo")} (Ctrl+Z)`} />
-        <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title={`${t("restaurant.floorPlan.redo", "Redo")} (Ctrl+Y)`} />
-        <ToolBtn icon={Copy} onClick={onCopy} title={`${t("restaurant.floorPlan.copy", "Copy")} (Ctrl+C)`} />
-        <ToolBtn icon={ClipboardPaste} onClick={onPaste} title={`${t("restaurant.floorPlan.paste", "Paste")} (Ctrl+V)`} />
-        <ToolBtn icon={CopyPlus} onClick={onDuplicate} title={`${t("restaurant.floorPlan.duplicate", "Duplicate")} (Ctrl+D)`} />
-        <ToolBtn icon={Trash2} onClick={onDelete} title={`${t("restaurant.floorPlan.delete", "Delete")} (Del)`} />
+        {/* Capsule 2: Interactive Mode Tools */}
+        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
+          <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} activeVariant="coral" title={`${t("restaurant.floorPlan.selectTool", "Selection Tool")} (V)`} />
+          <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} activeVariant="coral" title={`${t("restaurant.floorPlan.panTool", "Pan Tool")} (Space)`} />
+          <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} activeVariant="coral" title={t("restaurant.floorPlan.drawWall", "Draw Wall")} />
+          <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} activeVariant="coral" title={t("restaurant.floorPlan.drawRoom", "Draw Room")} />
+          <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} activeVariant="coral" title={t("restaurant.floorPlan.addLabel", "Add Label")} />
+        </div>
 
-        <Sep />
-
-        {/* Mode Tools */}
-        <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} title={`${t("restaurant.floorPlan.selectTool", "Selection Tool")} (V)`} />
-        <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} title={`${t("restaurant.floorPlan.panTool", "Pan Tool")} (Space)`} />
-        <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} title={t("restaurant.floorPlan.drawWall", "Draw Wall")} />
-        <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} title={t("restaurant.floorPlan.drawRoom", "Draw Room")} />
-        <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} title={t("restaurant.floorPlan.addLabel", "Add Label")} />
-
-        <Sep />
-
-        {/* View Tools */}
-        <ToolBtn icon={ZoomOut} onClick={onZoomOut} title="Zoom Out (-)" />
-        <ToolBtn icon={ZoomIn} onClick={onZoomIn} title="Zoom In (+)" />
-        <ToolBtn icon={Maximize} onClick={onFitScreen} title="Fit Screen (Shift+1)" />
-        
-        <Sep />
-
-        {/* Toggles */}
-        <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} title={t("restaurant.floorPlan.toggleGrid", "Toggle Grid")} />
-        <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} title={t("restaurant.floorPlan.toggleSnap", "Toggle Snap")} />
-        <ToolBtn icon={Ruler} onClick={() => setMeasurementEnabled?.(!measurementEnabled)} active={measurementEnabled} title={t("restaurant.floorPlan.toggleMeasurements", "Toggle Measurements")} />
-        <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} title={t("restaurant.floorPlan.previewMode", "Preview Mode")} />
+        {/* Capsule 3: Canvas View & Toggles */}
+        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
+          <ToolBtn icon={ZoomOut} onClick={onZoomOut} title="Zoom Out (-)" />
+          <ToolBtn icon={ZoomIn} onClick={onZoomIn} title="Zoom In (+)" />
+          <ToolBtn icon={Maximize} onClick={onFitScreen} title="Fit Screen (Shift+1)" />
+          <div className="h-4 w-px bg-slate-200/80 mx-0.5 shrink-0" />
+          <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleGrid", "Toggle Grid")} />
+          <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleSnap", "Toggle Snap")} />
+          <ToolBtn icon={Ruler} onClick={() => setMeasurementEnabled?.(!measurementEnabled)} active={measurementEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleMeasurements", "Toggle Measurements")} />
+          <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} activeVariant="dark" title={t("restaurant.floorPlan.previewMode", "Preview Mode")} />
+        </div>
       </div>
 
-      {/* Right section: Search & Save */}
-      <div className="flex items-center gap-3 shrink-0">
+      {/* Right Section: AI Generator, Quick Search & Save */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        
+        {/* AI Generator Button */}
         <button
           onClick={onOpenAiModal}
           title="AI Generate Floor Plan ($0.99 per request)"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shrink-0 shadow-sm"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-[#FF385C] rounded-xl hover:opacity-95 transition-all shrink-0 shadow-md shadow-indigo-500/20 active:scale-95 border border-white/20"
         >
-          <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-          <span className="hidden sm:inline font-semibold">{t("restaurant.floorPlan.aiGenerate", "AI Generate")}</span>
-          <span className="bg-indigo-800/80 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded ml-0.5 border border-indigo-400/30">$0.99</span>
+          <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+          <span className="hidden sm:inline">{t("restaurant.floorPlan.aiGenerate", "AI Generate")}</span>
+          <span className="bg-black/30 text-amber-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ml-0.5 border border-white/20">$0.99</span>
         </button>
 
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+        {/* Quick Tool Search Input */}
+        <div className="relative hidden md:block">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           <input 
             type="text" 
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
             placeholder={t("restaurant.floorPlan.searchTools", "Search tools...")} 
-            className="w-40 pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-36 lg:w-44 pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-200/90 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF385C]/20 focus:border-[#FF385C] transition-all"
           />
+          {searchFilter && (
+            <button
+              onClick={() => setSearchFilter("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
+
+        {/* Main Coral-Red Save Layout Button */}
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 shadow-sm"
+          className="flex items-center gap-1.5 px-4 py-1.5 bg-[#FF385C] hover:bg-[#E0304F] text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-xs shadow-[#FF385C]/25 active:scale-95 shrink-0"
         >
-          <Save className="w-4 h-4" />
+          <Save className="w-3.5 h-3.5" />
           {isSaving ? t("restaurant.floorPlan.savingLayout", "Saving...") : t("restaurant.floorPlan.saveLayout", "Save")}
         </button>
       </div>
+
     </div>
   )
 }

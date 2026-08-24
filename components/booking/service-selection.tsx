@@ -43,14 +43,14 @@ export function ServiceSelection({
               className={cn(
                 "flex items-start gap-4 p-5 rounded-lg border cursor-pointer transition-all",
                 isSelected
-                  ? "border-[#E5555E] bg-[#FDF6F6]"
+                  ? "border-[#FF4444] bg-[#FEF2F2]"
                   : "border-border hover:border-border/80 hover:bg-[#FAFAFA]"
               )}
             >
               {/* Checkbox Icon */}
               <div className="mt-0.5 shrink-0 flex items-center gap-3">
                 {isSelected ? (
-                  <CheckSquare className="h-5 w-5 text-[#E5555E] fill-[#E5555E]/10" />
+                  <CheckSquare className="h-5 w-5 text-[#FF4444] fill-[#FF4444]/10" />
                 ) : (
                   <Square className="h-5 w-5 text-muted-foreground/40" />
                 )}
@@ -59,8 +59,8 @@ export function ServiceSelection({
                 {service.image ? (
                   <img src={service.image} alt={service.name} className="h-12 w-12 rounded-lg object-cover border border-border/60" />
                 ) : (
-                  <div className="h-12 w-12 rounded-lg bg-[#FDF6F6] flex items-center justify-center border border-border/60">
-                    <CheckSquare className="h-4 w-4 text-[#C69C9B]" />
+                  <div className="h-12 w-12 rounded-lg bg-[#FEF2F2] flex items-center justify-center border border-border/60">
+                    <CheckSquare className="h-4 w-4 text-[#FF4444]" />
                   </div>
                 )}
               </div>

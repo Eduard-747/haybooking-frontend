@@ -119,8 +119,8 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
 
       {/* Header */}
       <div className="text-center space-y-3">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#FDF6F6]">
-          <Phone className="h-7 w-7 text-[#E5555E]" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#FEF2F2]">
+          <Phone className="h-7 w-7 text-[#FF4444]" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground">Verify your phone</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
@@ -145,10 +145,10 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
               w-12 h-14 text-center text-xl font-bold rounded-xl border-2 
               outline-none transition-all duration-200
               ${digit
-                ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]"
-                : "border-border bg-white text-foreground hover:border-[#C69C9B]"
+                ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]"
+                : "border-border bg-white text-foreground hover:border-[#FF4444]"
               }
-              focus:border-[#E5555E] focus:ring-2 focus:ring-[#E5555E]/20
+              focus:border-[#FF4444] focus:ring-2 focus:ring-[#FF4444]/20
             `}
           />
         ))}
@@ -157,7 +157,7 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
       {/* Verify button */}
       <Button
         onClick={() => handleVerify(code.join(""))}
-        className="w-full bg-[#E5555E] hover:bg-[#d44850] text-white"
+        className="w-full bg-[#FF4444] hover:bg-[#d44850] text-white"
         size="lg"
         disabled={isVerifying || code.some(d => d === "")}
       >
@@ -169,7 +169,7 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
         {canResend ? (
           <button
             onClick={handleResend}
-            className="flex items-center gap-2 mx-auto text-sm font-medium text-[#E5555E] hover:text-[#d44850] transition-colors"
+            className="flex items-center gap-2 mx-auto text-sm font-medium text-[#FF4444] hover:text-[#d44850] transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Resend Code

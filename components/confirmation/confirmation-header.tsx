@@ -19,7 +19,7 @@ export function ConfirmationHeader() {
             <Logo />
           </Link>
           
-          <Link href="/dashboard" className="hidden md:block text-sm font-semibold text-foreground hover:text-[#C69C9B] transition-colors">
+          <Link href="/dashboard" className="hidden md:block text-sm font-semibold text-foreground hover:text-[#FF4444] transition-colors">
             My Bookings
           </Link>
         </div>
@@ -32,7 +32,7 @@ export function ConfirmationHeader() {
           <input 
             type="text" 
             placeholder="Explore services..." 
-            className="w-full h-9 pl-9 pr-4 bg-[#FAFAFA] border border-border/50 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[#C69C9B]/50"
+            className="w-full h-9 pl-9 pr-4 bg-[#FAFAFA] border border-border/50 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[#FF4444]/50"
           />
         </div>
 
@@ -40,7 +40,7 @@ export function ConfirmationHeader() {
         <div className="flex items-center gap-4">
           <button className="text-muted-foreground hover:text-foreground transition-colors p-2 relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#E5555E] rounded-full"></span>
+            <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#FF4444] rounded-full"></span>
           </button>
           
           <div className="flex items-center gap-3">

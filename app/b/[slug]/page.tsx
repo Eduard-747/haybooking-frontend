@@ -112,8 +112,8 @@ export default function PublicBookingPage() {
   // Guest Checkout State
   const [showGuestModal, setShowGuestModal] = useState(false)
   const [guestStep, setGuestStep] = useState<"details" | "verify">("details")
-  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
-  const [guestDetails, setGuestDetails] = useState({ firstName: "", lastName: "", email: "", phone: "", countryCode: "+1" })
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+374")
+  const [guestDetails, setGuestDetails] = useState({ firstName: "", lastName: "", email: "", phone: "", countryCode: "+374" })
   const [smsCode, setSmsCode] = useState("")
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function PublicBookingPage() {
           ...s, 
           id: s._id,
           role: "Specialist",
-          image: s.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=C69C9B&color=fff&size=200`
+          image: s.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=FF4444&color=fff&size=200`
         })))
         setMenuItems(mRes.data || [])
         
@@ -361,10 +361,17 @@ export default function PublicBookingPage() {
       }
 
       let userId = "000000000000000000000000"
+      let userProfile: any = user
       try {
-        const profileRes = await api.get('/auth/profile')
-        userId = profileRes.data._id || profileRes.data.userId || userId
+        if (!userProfile) {
+          const profileRes = await api.get('/auth/profile')
+          userProfile = profileRes?.data
+        }
       } catch { /* fallback */ }
+
+      if (userProfile && (userProfile._id || userProfile.userId)) {
+        userId = userProfile._id || userProfile.userId
+      }
 
       let payload: any = {
         userId,
@@ -395,7 +402,17 @@ export default function PublicBookingPage() {
         }
         if (selectedSpecialist) payload.specialistId = selectedSpecialist
       }
-      
+
+      if (userProfile) {
+        const uFirst = userProfile.firstName || userProfile.name || ""
+        const uLast = userProfile.lastName || userProfile.surname || ""
+        const fullName = `${uFirst} ${uLast}`.trim() || userProfile.email || ""
+        const phone = userProfile.phoneNumber || userProfile.phone || ""
+        if (fullName) payload.guestName = fullName
+        if (phone) payload.guestPhone = phone
+        if (userProfile.email) payload.guestEmail = userProfile.email
+      }
+
       if (guestData) {
         payload.guestName = guestData.name
         payload.guestEmail = guestData.email
@@ -416,7 +433,7 @@ export default function PublicBookingPage() {
 
   const handleGuestDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phone) {
+    if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.phone) {
       toast.error("Please fill in all details")
       return
     }
@@ -463,7 +480,7 @@ export default function PublicBookingPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-[#E5555E] border-t-transparent rounded-full" />
+        <div className="animate-spin h-8 w-8 border-2 border-[#FF4444] border-t-transparent rounded-full" />
       </div>
     )
   }
@@ -473,7 +490,7 @@ export default function PublicBookingPage() {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-foreground">Business not found</h1>
         <p className="text-muted-foreground">The business you&apos;re looking for doesn&apos;t exist.</p>
-        <button onClick={() => router.push('/')} className="text-[#E5555E] font-medium hover:underline">Go Home</button>
+        <button onClick={() => router.push('/')} className="text-[#FF4444] font-medium hover:underline">Go Home</button>
       </div>
     )
   }
@@ -492,7 +509,7 @@ export default function PublicBookingPage() {
            </p>
            <button 
              onClick={() => window.location.reload()}
-             className="px-6 py-3 bg-[#E5555E] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
+             className="px-6 py-3 bg-[#FF4444] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
            >
              {t("restaurant.make_another_booking", "Make Another Booking")}
            </button>
@@ -573,7 +590,7 @@ export default function PublicBookingPage() {
                       onClick={() => setActiveTab("book")}
                       className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                         activeTab === "book"
-                          ? "bg-[#E5555E] text-white shadow-sm"
+                          ? "bg-[#FF4444] text-white shadow-sm"
                           : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
                       }`}
                     >
@@ -584,7 +601,7 @@ export default function PublicBookingPage() {
                       onClick={() => setActiveTab("about")}
                       className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                         activeTab === "about"
-                          ? "bg-[#E5555E] text-white shadow-sm"
+                          ? "bg-[#FF4444] text-white shadow-sm"
                           : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
                       }`}
                     >
@@ -598,7 +615,7 @@ export default function PublicBookingPage() {
                           onClick={() => setActiveTab("menu")}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                             activeTab === "menu"
-                              ? "bg-[#E5555E] text-white shadow-sm"
+                              ? "bg-[#FF4444] text-white shadow-sm"
                               : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
                           }`}
                         >
@@ -609,7 +626,7 @@ export default function PublicBookingPage() {
                           onClick={() => setActiveTab("gallery")}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                             activeTab === "gallery"
-                              ? "bg-[#E5555E] text-white shadow-sm"
+                              ? "bg-[#FF4444] text-white shadow-sm"
                               : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
                           }`}
                         >
@@ -626,7 +643,7 @@ export default function PublicBookingPage() {
                         setSelectedBranch(null);
                         setActiveTab("book");
                       }} 
-                      className="text-sm font-medium text-[#E5555E] hover:underline"
+                      className="text-sm font-medium text-[#FF4444] hover:underline"
                     >
                       {t("book.changeLocation", "Change Location")}
                     </button>
@@ -640,7 +657,7 @@ export default function PublicBookingPage() {
             {!isRestaurant && (!branches.length || selectedBranch) && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
                     {branches.length > 0 ? "2" : "1"}
                   </div>
                   <h2 className="text-lg font-bold text-foreground">{t("book.selectServices")}</h2>
@@ -658,7 +675,7 @@ export default function PublicBookingPage() {
             {!isRestaurant && selectedServices.length > 0 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
                     {branches.length > 0 ? "3" : "2"}
                   </div>
                   <h2 className="text-lg font-bold text-foreground">{t("book.selectSpecialist")}</h2>
@@ -675,7 +692,7 @@ export default function PublicBookingPage() {
             {(isRestaurant || selectedSpecialist) && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FDF6F6] text-[#E5555E] text-xs font-bold shrink-0 mt-0.5">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold shrink-0 mt-0.5">
                     {branches.length > 0 ? (isRestaurant ? "2" : "4") : (isRestaurant ? "1" : "3")}
                   </div>
                   <div>
@@ -716,8 +733,8 @@ export default function PublicBookingPage() {
                 {branches.map(b => (
                   <div key={b._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-2">
                     <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-[#F5EAEA] flex items-center justify-center shrink-0 mt-0.5">
-                        <MapPin className="h-5 w-5 text-[#C69C9B]" />
+                      <div className="h-10 w-10 rounded-lg bg-[#FEF2F2] flex items-center justify-center shrink-0 mt-0.5">
+                        <MapPin className="h-5 w-5 text-[#FF4444]" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">{b.address.line1}</h3>
@@ -813,8 +830,8 @@ export default function PublicBookingPage() {
                       {s.image ? (
                         <img src={s.image} alt={s.name} className="h-16 w-16 rounded-lg object-cover border border-border/60 shrink-0" />
                       ) : (
-                        <div className="h-16 w-16 rounded-lg bg-[#FDF6F6] flex items-center justify-center border border-border/60 shrink-0">
-                          <CheckSquare className="h-6 w-6 text-[#C69C9B]" />
+                        <div className="h-16 w-16 rounded-lg bg-[#FEF2F2] flex items-center justify-center border border-border/60 shrink-0">
+                          <CheckSquare className="h-6 w-6 text-[#FF4444]" />
                         </div>
                       )}
                       <div className="flex-1">
@@ -927,7 +944,7 @@ export default function PublicBookingPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-foreground text-sm truncate">{item.name}</h3>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#C69C9B]">{item.category}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF4444]">{item.category}</span>
                           <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                         </div>
                       </div>
@@ -1033,17 +1050,6 @@ export default function PublicBookingPage() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-foreground">{t("common.email", "Email Address")}</label>
-                    <input 
-                      type="email" 
-                      required
-                      className="w-full px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm"
-                      value={guestDetails.email}
-                      onChange={e => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-foreground">{t("common.phone", "Phone Number")}</label>
                     <div className="flex gap-2">
                       <select 
@@ -1052,7 +1058,7 @@ export default function PublicBookingPage() {
                         onChange={e => setGuestDetails(prev => ({ ...prev, countryCode: e.target.value }))}
                       >
                         {countryCodesList.map((cc) => (
-                          <option key={`${cc.code}-${cc.country}`} value={cc.code}>
+                          <option key={cc.code} value={cc.code}>
                             {cc.flag} {cc.code}
                           </option>
                         ))}
@@ -1071,7 +1077,7 @@ export default function PublicBookingPage() {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full mt-6 py-2.5 bg-[#E5555E] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                    className="w-full mt-6 py-2.5 bg-[#FF4444] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
                     {t("book.nextVerify", "Continue")}
@@ -1097,7 +1103,7 @@ export default function PublicBookingPage() {
                   <button 
                     type="submit"
                     disabled={isSubmitting || smsCode.length < 4}
-                    className="w-full mt-6 py-2.5 bg-[#E5555E] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+                    className="w-full mt-6 py-2.5 bg-[#FF4444] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
                     {t("book.confirmBooking", "Confirm Booking")}

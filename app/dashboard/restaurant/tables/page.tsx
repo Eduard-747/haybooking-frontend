@@ -84,8 +84,8 @@ export default function TablesManagementPage() {
 
             {!selectedBranchId ? (
               <div className="bg-white rounded-xl border border-border/40 p-12 flex flex-col items-center justify-center text-center shadow-sm mt-6">
-                <div className="w-20 h-20 bg-[#FDF6F6] rounded-full flex items-center justify-center mb-6">
-                  <Search className="w-10 h-10 text-[#C69C9B]" />
+                <div className="w-20 h-20 bg-[#FEF2F2] rounded-full flex items-center justify-center mb-6">
+                  <Search className="w-10 h-10 text-[#FF4444]" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">{t("restaurant.floorPlan.selectBranchTitle", "Select a Branch")}</h2>
                 <p className="text-muted-foreground max-w-md">{t("restaurant.tables.selectBranchSubtitle", "Please select a specific branch from the top menu to view and manage its tables.")}</p>
@@ -156,7 +156,7 @@ export default function TablesManagementPage() {
             {/* Table List */}
             {isLoading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
               </div>
             ) : filteredTables.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-xl border border-border/60 border-dashed">
@@ -211,7 +211,7 @@ export default function TablesManagementPage() {
                             </select>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <a href="/dashboard/restaurant/floor-plan" className="inline-flex items-center gap-1 text-[#E5555E] hover:underline text-xs font-semibold">
+                            <a href="/dashboard/restaurant/floor-plan" className="inline-flex items-center gap-1 text-[#FF4444] hover:underline text-xs font-semibold">
                               <Edit className="h-3 w-3" /> {t("restaurant.tables.editInFloorPlan", "Edit in Floor Plan")}
                             </a>
                           </td>

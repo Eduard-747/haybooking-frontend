@@ -63,7 +63,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
         <div className="flex items-center justify-between p-5 border-b border-border/40 bg-[#FAFAFA]">
           <div>
             <Select value={booking.status} onValueChange={(value) => onUpdateStatus(booking._id, value)}>
-              <SelectTrigger className={`mt-1.5 h-8 text-[10px] font-bold px-2 py-1 rounded border tracking-wider uppercase focus:ring-[#C69C9B]/20 ${statusColors[booking.status] || "bg-gray-100 text-gray-500"}`}>
+              <SelectTrigger className={`mt-1.5 h-8 text-[10px] font-bold px-2 py-1 rounded border tracking-wider uppercase focus:ring-[#FF4444]/20 ${statusColors[booking.status] || "bg-gray-100 text-gray-500"}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -87,14 +87,14 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
           {/* Customer Info */}
           <div>
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("role.customer", "Customer")}</h3>
-            <div className="flex items-center gap-3 bg-[#FDF6F6] p-3 rounded-xl border border-[#E5555E]/20">
-              <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center text-[#E5555E] font-bold shadow-sm shrink-0">
+            <div className="flex items-center gap-3 bg-[#FEF2F2] p-3 rounded-xl border border-[#FF4444]/20">
+              <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center text-[#FF4444] font-bold shadow-sm shrink-0">
                 {name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <p className="font-bold text-foreground text-sm">{name}</p>
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                  {phone && <a href={`tel:${phone}`} className="flex items-center gap-1 hover:text-[#E5555E] transition-colors"><Phone className="h-3 w-3" /> {phone}</a>}
+                  {phone && <a href={`tel:${phone}`} className="flex items-center gap-1 hover:text-[#FF4444] transition-colors"><Phone className="h-3 w-3" /> {phone}</a>}
                 </div>
               </div>
             </div>
@@ -106,11 +106,11 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("book.dateAndTime", "Date & Time")}</h3>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <CalendarIcon className="h-4 w-4 text-[#C69C9B]" />
+                  <CalendarIcon className="h-4 w-4 text-[#FF4444]" />
                   {formattedDate}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground font-medium">
-                  <Clock className="h-4 w-4 text-[#C69C9B]" />
+                  <Clock className="h-4 w-4 text-[#FF4444]" />
                   {formattedTime}
                 </div>
               </div>
@@ -118,7 +118,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
             <div>
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("common.specialist", "Specialist")}</h3>
               <div className="flex items-center gap-2 text-sm text-foreground font-medium">
-                <User className="h-4 w-4 text-[#C69C9B]" />
+                <User className="h-4 w-4 text-[#FF4444]" />
                 {booking.specialistId?.name || t("book.anyAvailable", "Any available")}
               </div>
             </div>
@@ -139,7 +139,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
               ))}
               <div className="flex justify-between items-center pt-2 mt-2 border-t border-border/60">
                 <p className="text-sm font-bold text-foreground">{t("book.total", "Total")} ({totalDuration} {t("common.min", "min")})</p>
-                <p className="text-base font-bold text-[#E5555E]">{formatPrice(totalPrice, currency)}</p>
+                <p className="text-base font-bold text-[#FF4444]">{formatPrice(totalPrice, currency)}</p>
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
         <div className="p-5 border-t border-border/40 bg-[#FAFAFA] flex flex-wrap gap-2 justify-end">
           {phone && (
             <a href={`tel:${phone}`} className="flex items-center gap-1.5 px-4 py-2 bg-white border border-border/60 text-foreground hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors mr-auto shadow-sm">
-              <PhoneCall className="h-4 w-4 text-[#C69C9B]" />
+              <PhoneCall className="h-4 w-4 text-[#FF4444]" />
               {t("landing.contact", "Contact")}
             </a>
           )}

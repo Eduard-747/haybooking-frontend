@@ -16,7 +16,7 @@ export default function LegacyBookingRedirect() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="animate-spin h-8 w-8 border-2 border-[#E5555E] border-t-transparent rounded-full" />
+      <div className="animate-spin h-8 w-8 border-2 border-[#FF4444] border-t-transparent rounded-full" />
     </div>
   )
 }

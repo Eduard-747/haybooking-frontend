@@ -18,7 +18,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
       <select
         value={hour}
         onChange={(e) => onChange(`${e.target.value}:${minute}`)}
-        className="px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#C69C9B] appearance-none text-center cursor-pointer min-w-[3rem]"
+        className="px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#FF4444] appearance-none text-center cursor-pointer min-w-[3rem]"
       >
         {HOURS.map((h) => (
           <option key={h} value={h}>{h}</option>
@@ -28,7 +28,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
       <select
         value={minute}
         onChange={(e) => onChange(`${hour}:${e.target.value}`)}
-        className="px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#C69C9B] appearance-none text-center cursor-pointer min-w-[3rem]"
+        className="px-2 py-1.5 bg-[#FAFAFA] border border-border/60 rounded-lg text-sm outline-none focus:border-[#FF4444] appearance-none text-center cursor-pointer min-w-[3rem]"
       >
         {MINUTES.map((m) => (
           <option key={m} value={m}>{m}</option>

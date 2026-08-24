@@ -219,14 +219,14 @@ export default function BusinessDashboardPage() {
                     <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")} {date ? `- ${getLocalizedDate(date)}` : ""}</h1>
                     <p className="text-sm text-muted-foreground mt-0.5">{filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
                   </div>
-                  <Link href="/dashboard/book" className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start sm:self-auto">
+                  <Link href="/dashboard/book" className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start sm:self-auto">
                     <Plus className="h-4 w-4" /> {t("nav.createBooking", "Create Booking")}
                   </Link>
                 </div>
 
                 {(isLoading || partnerLoading) ? (
                   <div className="flex items-center justify-center py-24">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#C69C9B]" />
+                    <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
                   </div>
                 ) : bookings.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
@@ -260,13 +260,13 @@ export default function BusinessDashboardPage() {
                       const canAccept = booking.status !== "confirmed" && booking.status !== "completed" && !isEnded;
 
                       return (
-                        <div key={booking._id} className="bg-white rounded-xl border border-[#C69C9B]/30 shadow-sm p-5 hover:shadow-md transition-shadow">
+                        <div key={booking._id} className="bg-white rounded-xl border border-[#FF4444]/30 shadow-sm p-5 hover:shadow-md transition-shadow">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-border/40 gap-3">
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-3 text-sm font-semibold text-foreground">
-                                <span className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4 text-[#C69C9B]" /> {formatDate(booking.startTime, i18n.language)}</span>
+                                <span className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4 text-[#FF4444]" /> {formatDate(booking.startTime, i18n.language)}</span>
                                 <span className="text-border/60">|</span>
-                                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#C69C9B]" /> {formatTime(booking.startTime)} – {formatTime(booking.endTime)}</span>
+                                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#FF4444]" /> {formatTime(booking.startTime)} – {formatTime(booking.endTime)}</span>
                               </div>
                               <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${statusColors[booking.status] || "bg-gray-50 text-gray-400 border border-gray-200"}`}>
                                 {t(`common.${booking.status}` as any, booking.status)}
@@ -274,7 +274,7 @@ export default function BusinessDashboardPage() {
                             </div>
                             <div className="flex items-center gap-2 self-start sm:self-auto">
                               <Select value={booking.status} onValueChange={(value) => updateStatus(booking._id, value)}>
-                                <SelectTrigger className="h-8 w-[130px] px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:ring-[#C69C9B]/20 transition-colors">
+                                <SelectTrigger className="h-8 w-[130px] px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:ring-[#FF4444]/20 transition-colors">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -341,7 +341,7 @@ export default function BusinessDashboardPage() {
                               key={i}
                               onClick={() => setCurrentPage(i + 1)}
                               className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${currentPage === i + 1
-                                  ? "bg-[#C69C9B] text-white shadow-sm"
+                                  ? "bg-[#FF4444] text-white shadow-sm"
                                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground bg-white border border-border/60"
                                 }`}
                             >
@@ -370,7 +370,7 @@ export default function BusinessDashboardPage() {
                     <h2 className="text-xl font-bold text-foreground">{t("nav.calendar", "Calendar")}</h2>
                     <button
                       onClick={() => setDate(undefined)}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${!date ? "bg-[#C69C9B] text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"}`}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${!date ? "bg-[#FF4444] text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"}`}
                     >
                       {t("dashboard.allDays", "All Days")}
                     </button>
@@ -382,7 +382,7 @@ export default function BusinessDashboardPage() {
                       onSelect={setDate}
                       className="rounded-md"
                       classNames={{
-                        day_selected: "bg-[#C69C9B] text-white hover:bg-[#C69C9B] hover:text-white rounded-full",
+                        day_selected: "bg-[#FF4444] text-white hover:bg-[#FF4444] hover:text-white rounded-full",
                         day_today: "bg-accent text-accent-foreground rounded-full",
                         day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-muted rounded-full transition-colors",
                         head_cell: "text-muted-foreground font-semibold text-[10px] tracking-wider uppercase w-9",
@@ -398,7 +398,7 @@ export default function BusinessDashboardPage() {
                       {topSpecialists.map(({ name, count }) => (
                         <div key={name} className="flex items-center justify-between">
                           <span className="text-sm font-medium text-foreground">{name}</span>
-                          <span className="text-xs font-bold text-[#C69C9B] bg-[#C69C9B]/10 px-2 py-1 rounded-md">{count} {t("dashboard.completedBookings", "completed")}</span>
+                          <span className="text-xs font-bold text-[#FF4444] bg-[#FF4444]/10 px-2 py-1 rounded-md">{count} {t("dashboard.completedBookings", "completed")}</span>
                         </div>
                       ))}
                     </div>
@@ -414,7 +414,7 @@ export default function BusinessDashboardPage() {
                       {topServices.map(({ name, count }) => (
                         <div key={name} className="flex items-center justify-between">
                           <span className="text-sm font-medium text-foreground line-clamp-1 pr-2">{name}</span>
-                          <span className="text-xs font-bold text-[#C69C9B] bg-[#C69C9B]/10 px-2 py-1 rounded-md shrink-0">{count} {t("dashboard.completedBookings", "completed")}</span>
+                          <span className="text-xs font-bold text-[#FF4444] bg-[#FF4444]/10 px-2 py-1 rounded-md shrink-0">{count} {t("dashboard.completedBookings", "completed")}</span>
                         </div>
                       ))}
                     </div>

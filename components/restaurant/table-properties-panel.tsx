@@ -91,7 +91,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
                 const size = selectedTable.size || { width: 80, height: 80 }
                 onUpdate({ shape: "square", size: { width: Math.max(size.width, size.height), height: Math.max(size.width, size.height) } })
               }}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "square" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "square" ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <Square className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Square</span>
@@ -101,7 +101,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
                 const size = selectedTable.size || { width: 80, height: 80 }
                 onUpdate({ shape: "round", size: { width: Math.max(size.width, size.height), height: Math.max(size.width, size.height) } })
               }}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "round" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "round" ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <Circle className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Round</span>
@@ -113,7 +113,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
                 if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
                 onUpdate(updates)
               }}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "rectangular" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "rectangular" ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <RectangleHorizontal className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium">Rectangle</span>
@@ -125,7 +125,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
                 if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
                 onUpdate(updates)
               }}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "oval" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "oval" ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <div className="h-4 w-6 rounded-[50%] border-2 border-current mb-1" />
               <span className="text-[10px] font-medium">Oval</span>
@@ -137,7 +137,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
                 if (size.width === size.height) updates.size = { ...size, width: size.width * 1.5 }
                 onUpdate(updates)
               }}
-              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "banquet" ? "border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
+              className={`flex flex-col items-center justify-center p-2 rounded-lg border ${selectedTable.shape === "banquet" ? "border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]" : "border-border text-muted-foreground hover:bg-gray-50"}`}
             >
               <div className="h-4 w-6 rounded-full border-2 border-current mb-1" />
               <span className="text-[10px] font-medium">Banquet</span>
@@ -162,7 +162,7 @@ export function TablePropertiesPanel({ selectedTable, onUpdate, onDelete, onDese
           <button
             onClick={() => onUpdate({ isVip: !selectedTable.isVip })}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              selectedTable.isVip ? 'bg-[#E5555E]' : 'bg-gray-200'
+              selectedTable.isVip ? 'bg-[#FF4444]' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

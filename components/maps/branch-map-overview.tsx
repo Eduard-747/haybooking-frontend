@@ -63,7 +63,7 @@ export default function BranchMapOverview({ markers, onMarkerClick }: BranchMapO
             {m.id && onMarkerClick && (
               <button
                 onClick={(e) => { e.stopPropagation(); onMarkerClick(m.id!, m.branchId); }}
-                className="mt-2 w-full px-2 py-1 bg-[#E5555E] text-white text-xs rounded-md"
+                className="mt-2 w-full px-2 py-1 bg-[#FF4444] text-white text-xs rounded-md"
               >
                 Select Branch
               </button>

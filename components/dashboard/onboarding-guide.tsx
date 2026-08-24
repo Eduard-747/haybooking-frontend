@@ -60,8 +60,8 @@ export function OnboardingGuide({ hasBranch, hasService, hasSpecialist }: Onboar
         <div className="p-6 md:p-8 border-b border-border/40 bg-[#FAFAFA]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="h-16 w-16 rounded-full bg-[#C69C9B]/10 flex items-center justify-center shrink-0">
-                <PlayCircle className="h-8 w-8 text-[#C69C9B]" />
+              <div className="h-16 w-16 rounded-full bg-[#FF4444]/10 flex items-center justify-center shrink-0">
+                <PlayCircle className="h-8 w-8 text-[#FF4444]" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-foreground">
@@ -80,7 +80,7 @@ export function OnboardingGuide({ hasBranch, hasService, hasSpecialist }: Onboar
               </div>
               <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-[#C69C9B] transition-all duration-500 ease-out rounded-full"
+                  className="h-full bg-[#FF4444] transition-all duration-500 ease-out rounded-full"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
@@ -103,7 +103,7 @@ export function OnboardingGuide({ hasBranch, hasService, hasSpecialist }: Onboar
                     <Circle className="h-8 w-8 text-muted-foreground/30 shrink-0" />
                   )}
                   
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${step.isComplete ? 'bg-emerald-50 text-emerald-600' : 'bg-[#FDF6F6] text-[#C69C9B]'}`}>
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${step.isComplete ? 'bg-emerald-50 text-emerald-600' : 'bg-[#FEF2F2] text-[#FF4444]'}`}>
                     <Icon className="h-6 w-6" />
                   </div>
                   
@@ -130,7 +130,7 @@ export function OnboardingGuide({ hasBranch, hasService, hasSpecialist }: Onboar
                       {t("common.completed", "Completed")}
                     </div>
                   ) : (
-                    <Link href={step.href} className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#C69C9B] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto">
+                    <Link href={step.href} className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto">
                       {step.cta}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -143,8 +143,8 @@ export function OnboardingGuide({ hasBranch, hasService, hasSpecialist }: Onboar
       </div>
       
       {progress === 0 && (
-        <div className="text-center bg-[#FDF6F6] border border-[#C69C9B]/20 rounded-xl p-6">
-          <p className="text-[#C69C9B] font-medium">
+        <div className="text-center bg-[#FEF2F2] border border-[#FF4444]/20 rounded-xl p-6">
+          <p className="text-[#FF4444] font-medium">
             {t("onboarding.tip", "💡 Tip: Start by adding your branch location. You won't be able to add services or specialists without a branch!")}
           </p>
         </div>

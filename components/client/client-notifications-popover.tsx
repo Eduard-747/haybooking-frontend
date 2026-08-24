@@ -77,11 +77,17 @@ export function ClientNotificationsPopover() {
       case "Booking Completed": return t("client.bookingCompleted", "Booking Completed");
       case "Booking Declined": return t("client.bookingDeclined", "Booking Declined");
       case "Booking Cancelled": return t("client.bookingCancelled", "Booking Cancelled");
+      case "Reservation Submitted": return t("dashboard.reservationSubmitted", "Reservation Submitted");
       default: return t(title, title);
     }
   }
 
   const getTranslatedMessage = (msg: string) => {
+    if (!msg) return ""
+
+    if (msg === "Your reservation has been submitted to the restaurant and is pending confirmation.") {
+      return t("dashboard.reservationPendingConfirmation", "Your reservation has been submitted to the restaurant and is pending confirmation.");
+    }
     if (msg.includes("has been accepted")) {
       return t("client.bookingAcceptedMsg", "Your booking has been accepted by the business.");
     }
@@ -103,7 +109,7 @@ export function ClientNotificationsPopover() {
         <button className="text-muted-foreground hover:text-foreground transition-colors p-2 relative outline-none">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 text-[10px] font-bold bg-[#E5555E] text-white rounded-full flex items-center justify-center">
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 text-[10px] font-bold bg-[#FF4444] text-white rounded-full flex items-center justify-center">
             </span>
           )}
         </button>
@@ -114,7 +120,7 @@ export function ClientNotificationsPopover() {
           {unreadCount > 0 && (
             <button 
               onClick={markAllAsRead}
-              className="text-xs text-[#C69C9B] hover:text-foreground font-medium transition-colors"
+              className="text-xs text-[#FF4444] hover:text-foreground font-medium transition-colors"
             >
               {t("dashboard.markAllRead", "Mark all read")}
             </button>
@@ -133,13 +139,13 @@ export function ClientNotificationsPopover() {
               {notifications.map((n) => (
                 <div 
                   key={n._id}
-                  className={`p-4 border-b border-border/40 last:border-0 transition-colors cursor-pointer hover:bg-muted/30 ${!n.read ? 'bg-[#C69C9B]/5' : ''}`}
+                  className={`p-4 border-b border-border/40 last:border-0 transition-colors cursor-pointer hover:bg-muted/30 ${!n.read ? 'bg-[#FF4444]/5' : ''}`}
                   onClick={() => !n.read && markAsRead(n._id)}
                 >
                   <div className="flex gap-3">
                     <div className="mt-0.5">
                       {!n.read ? (
-                        <span className="h-2 w-2 rounded-full bg-[#C69C9B] block mt-1.5" />
+                        <span className="h-2 w-2 rounded-full bg-[#FF4444] block mt-1.5" />
                       ) : (
                         <Check className="h-3.5 w-3.5 text-muted-foreground/40 mt-0.5" />
                       )}

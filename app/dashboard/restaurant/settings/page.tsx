@@ -65,7 +65,7 @@ export default function RestaurantSettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-[#E5555E] hover:bg-[#d44850] text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-[#FF4444] hover:bg-[#d44850] text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
                 {isSaving ? t("restaurant.settings.saving", "Saving...") : t("restaurant.settings.saveChanges", "Save Changes")}
@@ -75,7 +75,7 @@ export default function RestaurantSettingsPage() {
             <div className="grid gap-6 md:grid-cols-2">
               {/* General Booking Rules */}
               <div className="bg-white p-6 rounded-xl border border-border/60 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-[#E5555E] mb-4">
+                <div className="flex items-center gap-2 text-[#FF4444] mb-4">
                   <Clock className="h-5 w-5" />
                   <h2 className="font-bold text-foreground">{t("restaurant.settings.timeAndDuration", "Time & Duration")}</h2>
                 </div>
@@ -105,7 +105,7 @@ export default function RestaurantSettingsPage() {
 
               {/* Party & Capacity Rules */}
               <div className="bg-white p-6 rounded-xl border border-border/60 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 text-[#E5555E] mb-4">
+                <div className="flex items-center gap-2 text-[#FF4444] mb-4">
                   <Users className="h-5 w-5" />
                   <h2 className="font-bold text-foreground">{t("restaurant.settings.partyAndCapacity", "Party & Capacity")}</h2>
                 </div>
@@ -129,7 +129,7 @@ export default function RestaurantSettingsPage() {
                   <button
                     onClick={() => handleChange('allowWalkIns', !settings.allowWalkIns)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.allowWalkIns ? 'bg-[#E5555E]' : 'bg-gray-200'
+                      settings.allowWalkIns ? 'bg-[#FF4444]' : 'bg-gray-200'
                     }`}
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -141,7 +141,7 @@ export default function RestaurantSettingsPage() {
 
               {/* Advanced Settings */}
               <div className="bg-[#ffffff] p-6 rounded-xl border border-border/60 shadow-sm space-y-4 md:col-span-2">
-                <div className="flex items-center gap-2 text-[#E5555E] mb-4">
+                <div className="flex items-center gap-2 text-[#FF4444] mb-4">
                   <ShieldAlert className="h-5 w-5" />
                   <h2 className="font-bold text-foreground">{t("restaurant.settings.policiesAndAdvanced", "Policies & Advanced")}</h2>
                 </div>
@@ -156,7 +156,7 @@ export default function RestaurantSettingsPage() {
                       <button
                         onClick={() => handleChange('autoConfirm', !settings.autoConfirm)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          settings.autoConfirm ? 'bg-[#E5555E]' : 'bg-gray-200'
+                          settings.autoConfirm ? 'bg-[#FF4444]' : 'bg-gray-200'
                         }`}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

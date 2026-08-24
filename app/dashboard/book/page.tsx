@@ -56,8 +56,8 @@ export default function DashboardBookPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [clientPhone, setClientPhone] = useState("")
   const [clientName, setClientName] = useState("")
-  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+1")
-  const [countryCode, setCountryCode] = useState("+1")
+  const { countryCode: detectedCountryCode, countryCodesList } = useCountryCode("+374")
+  const [countryCode, setCountryCode] = useState("+374")
 
   useEffect(() => {
     setCountryCode(detectedCountryCode)
@@ -204,16 +204,16 @@ export default function DashboardBookPage() {
                 <input
                   type="text" placeholder={t("bookDashboard.clientName")} value={clientName}
                   onChange={e => setClientName(e.target.value)}
-                  className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                  className="px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                 />
                 <div className="flex gap-2">
                   <Select value={countryCode} onValueChange={setCountryCode}>
-                    <SelectTrigger className="w-[110px] shrink-0 h-[42px] border-border bg-white focus:ring-[#E5555E]/20 focus:border-[#E5555E]">
+                    <SelectTrigger className="w-[110px] shrink-0 h-[42px] border-border bg-white focus:ring-[#FF4444]/20 focus:border-[#FF4444]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {countryCodesList.map((cc) => (
-                        <SelectItem key={`${cc.code}-${cc.country}`} value={cc.code}>
+                        <SelectItem key={cc.code} value={cc.code}>
                           {cc.flag} {cc.code}
                         </SelectItem>
                       ))}
@@ -222,7 +222,7 @@ export default function DashboardBookPage() {
                   <input
                     type="tel" placeholder={getPhonePlaceholder(countryCode, countryCodesList)} value={clientPhone}
                     onChange={e => setClientPhone(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#E5555E]/20 focus:border-[#E5555E]"
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 focus:border-[#FF4444]"
                   />
                 </div>
               </div>
@@ -239,8 +239,8 @@ export default function DashboardBookPage() {
                       onClick={() => setSelectedBranch(b._id === selectedBranch ? null : b._id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-all ${
                         selectedBranch === b._id
-                          ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]'
-                          : 'border-border/60 hover:border-[#C69C9B]'
+                          ? 'border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]'
+                          : 'border-border/60 hover:border-[#FF4444]'
                       }`}
                     >
                       <MapPin className="h-3.5 w-3.5" />
@@ -260,7 +260,7 @@ export default function DashboardBookPage() {
                     key={s._id}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                       selectedServices.includes(s._id)
-                        ? 'border-[#E5555E] bg-[#FDF6F6]' : 'border-border/60 hover:border-[#C69C9B]'
+                        ? 'border-[#FF4444] bg-[#FEF2F2]' : 'border-border/60 hover:border-[#FF4444]'
                     }`}
                   >
                     <input type="checkbox" checked={selectedServices.includes(s._id)}
@@ -270,7 +270,7 @@ export default function DashboardBookPage() {
                       className="sr-only"
                     />
                     <div className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 ${
-                      selectedServices.includes(s._id) ? 'border-[#E5555E] bg-[#E5555E]' : 'border-border'
+                      selectedServices.includes(s._id) ? 'border-[#FF4444] bg-[#FF4444]' : 'border-border'
                     }`}>
                       {selectedServices.includes(s._id) && <CheckCircle className="h-3 w-3 text-white" />}
                     </div>
@@ -291,7 +291,7 @@ export default function DashboardBookPage() {
                     onClick={() => setSelectedSpecialist(null)}
                     className={`px-4 py-2 rounded-lg border text-sm transition-all ${
                       selectedSpecialist === null
-                        ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' : 'border-border/60 hover:border-[#C69C9B]'
+                        ? 'border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]' : 'border-border/60 hover:border-[#FF4444]'
                     }`}
                   >
                     {t("bookDashboard.anyAvailable")}
@@ -302,7 +302,7 @@ export default function DashboardBookPage() {
                       onClick={() => setSelectedSpecialist(sp._id)}
                       className={`px-4 py-2 rounded-lg border text-sm transition-all ${
                         selectedSpecialist === sp._id
-                          ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' : 'border-border/60 hover:border-[#C69C9B]'
+                          ? 'border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]' : 'border-border/60 hover:border-[#FF4444]'
                       }`}
                     >
                       {sp.name}
@@ -343,7 +343,7 @@ export default function DashboardBookPage() {
                           setDateOffset(Math.floor(diffDays / 7) * 7);
                         }
                       }}
-                      className="text-xs px-2 py-1.5 rounded-md border border-border/60 text-muted-foreground cursor-pointer outline-none focus:border-[#C69C9B]"
+                      className="text-xs px-2 py-1.5 rounded-md border border-border/60 text-muted-foreground cursor-pointer outline-none focus:border-[#FF4444]"
                     />
                   </div>
 
@@ -371,7 +371,7 @@ export default function DashboardBookPage() {
                   return (
                     <button key={i} onClick={() => setSelectedDate(d)}
                       className={`flex flex-col items-center px-3 py-2 rounded-lg border shrink-0 text-xs transition-all ${
-                        isSelected ? 'border-[#E5555E] bg-[#FDF6F6] text-[#E5555E]' : 'border-border/60 hover:border-[#C69C9B]'
+                        isSelected ? 'border-[#FF4444] bg-[#FEF2F2] text-[#FF4444]' : 'border-border/60 hover:border-[#FF4444]'
                       }`}
                     >
                       <span className="font-medium capitalize">{d.toLocaleDateString(localeStr, { weekday: 'short' })}</span>
@@ -398,9 +398,9 @@ export default function DashboardBookPage() {
                   <button key={time} onClick={() => setSelectedTime(time)}
                     disabled={isBooked}
                     className={`py-2 rounded-lg text-sm font-medium border transition-all ${
-                      selectedTime === time ? 'border-[#E5555E] bg-[#E5555E] text-white' : 
+                      selectedTime === time ? 'border-[#FF4444] bg-[#FF4444] text-white' : 
                       isBooked ? 'bg-muted/50 text-muted-foreground/50 border-border/40 cursor-not-allowed line-through' :
-                      'border-border/60 hover:border-[#C69C9B]'
+                      'border-border/60 hover:border-[#FF4444]'
                     }`}
                   >
                     {time}
@@ -418,12 +418,12 @@ export default function DashboardBookPage() {
                   <span className="mx-2 text-muted-foreground">·</span>
                   <span className="text-sm text-muted-foreground">{totalDuration} {t("common.min")}</span>
                 </div>
-                <span className="text-xl font-bold text-[#E5555E]">{formatPrice(totalPrice, partner?.currency)}</span>
+                <span className="text-xl font-bold text-[#FF4444]">{formatPrice(totalPrice, partner?.currency)}</span>
               </div>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || selectedServices.length === 0 || !selectedTime || !selectedBranch || !clientName.trim() || !clientPhone.trim()}
-                className="w-full py-3 bg-[#E5555E] text-white rounded-lg text-sm font-semibold hover:bg-[#d44850] transition-colors disabled:opacity-50"
+                className="w-full py-3 bg-[#FF4444] text-white rounded-lg text-sm font-semibold hover:bg-[#d44850] transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? t("common.creating") : t("bookDashboard.createBookingBtn")}
               </button>

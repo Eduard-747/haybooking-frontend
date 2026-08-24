@@ -98,11 +98,11 @@ export function BusinessCard({ business }: BusinessCardProps) {
         {/* Distance and View Details */}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
           <Link
-            href={`/b/${business.id}?tab=about`}
+            href={`/b/${business.id}`}
             className="flex items-center text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors py-1.5 px-3 rounded-md shadow-sm"
           >
-            <Info className="h-3.5 w-3.5 mr-1.5" />
-            About Us
+            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+            Book Now
           </Link>
           <Link 
             href={`/booking/${business.id}`}

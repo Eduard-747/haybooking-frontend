@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Search, Bell, CalendarDays } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
 
 import { Logo } from "@/components/ui/logo"
 interface CalendarHeaderProps {
@@ -17,8 +18,9 @@ export function CalendarHeader({
   currentDate,
   onDateChange,
   viewMode,
-  onViewModeChange,
 }: CalendarHeaderProps) {
+  const { i18n } = useTranslation()
+
   const formatDateRange = () => {
     const startOfWeek = new Date(currentDate)
     const dayOfWeek = startOfWeek.getDay()
@@ -29,8 +31,9 @@ export function CalendarHeader({
     endOfWeek.setDate(startOfWeek.getDate() + 6)
 
     const options: Intl.DateTimeFormatOptions = { month: "long", day: "numeric", year: "numeric" }
-    const startStr = startOfWeek.toLocaleDateString("en-US", { month: "long", day: "numeric" })
-    const endStr = endOfWeek.toLocaleDateString("en-US", options)
+    const localeStr = i18n.language === 'am' || i18n.language === 'hy' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
+    const startStr = startOfWeek.toLocaleDateString(localeStr, { month: "long", day: "numeric" })
+    const endStr = endOfWeek.toLocaleDateString(localeStr, options)
 
     return `${startStr} - ${endStr}`
   }

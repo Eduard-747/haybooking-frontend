@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`bg-background ${geist.variable} ${geistMono.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`bg-background ${geist.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-background text-foreground min-h-screen w-full overflow-x-hidden flex flex-col">
         <AuthProvider>
           <I18nProvider>

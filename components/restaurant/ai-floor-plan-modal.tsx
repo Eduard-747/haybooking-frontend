@@ -65,7 +65,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file')
+      toast.error(t("restaurant.aiModal.uploadImageError", "Please upload an image file"))
       return
     }
 
@@ -92,7 +92,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
   const handleProceedToPayment = () => {
     if (!selectedImage) {
-      toast.error("Please upload a floor plan image first")
+      toast.error(t("restaurant.aiModal.uploadFirstError", "Please upload a floor plan image first"))
       return
     }
     // Pre-fill test card info for easy testing
@@ -105,16 +105,16 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
     setStep('processing')
     setIsGenerating(true)
-    setPaymentStatusText("Authorizing Payment ($0.99)...")
+    setPaymentStatusText(t("restaurant.aiModal.authorizingPayment", "Authorizing Payment ($0.99)..."))
 
     try {
       // Simulate payment processing delay (1.2 seconds)
       await new Promise((res) => setTimeout(res, 1200))
       
-      setPaymentStatusText("Payment Approved ✓ Billed $0.99. Analyzing Floor Plan...")
+      setPaymentStatusText(t("restaurant.aiModal.paymentApproved", "Payment Approved ✓ Billed $0.99. Analyzing Floor Plan..."))
       await new Promise((res) => setTimeout(res, 800))
 
-      setPaymentStatusText("AI Vision processing layout & tables...")
+      setPaymentStatusText(t("restaurant.aiModal.aiProcessingLayout", "AI Vision processing layout & tables..."))
 
       // Call Backend API
       const response = await api.post('/restaurant/ai-floor-plan/generate', {
@@ -161,16 +161,16 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
-              <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              {step === 'upload' && "AI Floor Plan Generator"}
-              {step === 'payment' && "Complete $0.99 Payment"}
-              {step === 'processing' && "Processing AI Request..."}
+              <Sparkles className="w-5 h-5 text-[#FF4444]" />
+              {step === 'upload' && t("restaurant.aiModal.titleUpload", "AI Floor Plan Generator")}
+              {step === 'payment' && t("restaurant.aiModal.titlePayment", "Complete $0.99 Payment")}
+              {step === 'processing' && t("restaurant.aiModal.titleProcessing", "Processing AI Request...")}
             </DialogTitle>
           </div>
           <DialogDescription className="text-sm text-slate-500">
-            {step === 'upload' && "Upload a photo or drawing of your layout. AI Vision will convert it into interactive 2D tables."}
-            {step === 'payment' && "Secure single request checkout. Pay $0.99 to generate your AI interactive floor plan."}
-            {step === 'processing' && "Please wait while we verify payment and construct your digital layout."}
+            {step === 'upload' && t("restaurant.aiModal.descUpload", "Upload a photo or drawing of your layout. AI Vision will convert it into interactive 2D tables.")}
+            {step === 'payment' && t("restaurant.aiModal.descPayment", "Secure single request checkout. Pay $0.99 to generate your AI interactive floor plan.")}
+            {step === 'processing' && t("restaurant.aiModal.descProcessing", "Please wait while we verify payment and construct your digital layout.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -178,52 +178,52 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
         {step === 'upload' && (
           <>
             {/* Feature & Pricing Banner */}
-            <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 border border-indigo-200/80 dark:border-indigo-800/80 rounded-xl p-4 space-y-3 my-1">
+            <div className="bg-gradient-to-r from-rose-500/10 via-red-500/10 to-rose-500/10 border border-rose-200/80 dark:border-rose-900/80 rounded-xl p-4 space-y-3 my-1">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 bg-indigo-600 text-white rounded-lg shadow-sm shrink-0">
+                  <div className="p-2.5 bg-[#FF4444] text-white rounded-lg shadow-sm shrink-0">
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                      What can this action do?
-                      <span className="text-[10px] uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                        AI Vision
+                      {t("restaurant.aiModal.whatCanDo", "What can this action do?")}
+                      <span className="text-[10px] uppercase tracking-wider bg-rose-100 text-[#FF4444] dark:bg-rose-950 dark:text-rose-300 font-bold px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">
+                        {t("restaurant.aiModal.aiVision", "AI VISION")}
                       </span>
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      Processes floor images & hand sketches to construct tables, walls, and seating.
+                      {t("restaurant.aiModal.bannerDesc", "Processes floor images & hand sketches to construct tables, walls, and seating.")}
                     </p>
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
                   <div className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                     <DollarSign className="w-3.5 h-3.5" />
-                    $0.99 / request
+                    {t("restaurant.aiModal.perRequest", "$0.99 / request")}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-indigo-100 dark:border-indigo-900/40">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-rose-100 dark:border-rose-900/40">
                 <div className="flex items-start gap-2 bg-white/70 dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#FF4444] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">Sketch Recognition</p>
-                    <p className="text-[10px] text-slate-500 leading-tight">Reads photos, blueprints & architectural drawings</p>
+                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">{t("restaurant.aiModal.sketchRec", "Sketch Recognition")}</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">{t("restaurant.aiModal.sketchRecDesc", "Reads photos, blueprints & architectural drawings")}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 bg-white/70 dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#FF4444] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">Smart Mapping</p>
-                    <p className="text-[10px] text-slate-500 leading-tight">Auto-detects tables, seats, walls & room labels</p>
+                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">{t("restaurant.aiModal.smartMap", "Smart Mapping")}</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">{t("restaurant.aiModal.smartMapDesc", "Auto-detects tables, seats, walls & room labels")}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 bg-white/70 dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#FF4444] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">Instant Canvas</p>
-                    <p className="text-[10px] text-slate-500 leading-tight">Generates ready-to-edit interactive floor plan</p>
+                    <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">{t("restaurant.aiModal.instantCanvas", "Instant Canvas")}</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">{t("restaurant.aiModal.instantCanvasDesc", "Generates ready-to-edit interactive floor plan")}</p>
                   </div>
                 </div>
               </div>
@@ -231,10 +231,10 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
             <div className="grid gap-4 py-2">
               <div className="space-y-2">
-                <Label htmlFor="floor-name" className="text-xs font-semibold">Floor Name</Label>
+                <Label htmlFor="floor-name" className="text-xs font-semibold">{t("restaurant.aiModal.floorName", "Floor Name")}</Label>
                 <Input
                   id="floor-name"
-                  placeholder="e.g. Ground Floor, Main Dining..."
+                  placeholder={t("restaurant.aiModal.floorNamePlaceholder", "e.g. Ground Floor, Main Dining...")}
                   value={floorName}
                   onChange={(e) => setFloorName(e.target.value)}
                   disabled={isGenerating}
@@ -242,13 +242,13 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold">Floor Plan Image</Label>
+                <Label className="text-xs font-semibold">{t("restaurant.aiModal.floorPlanImage", "Floor Plan Image")}</Label>
                 {!selectedImage ? (
                   <div
                     className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${
                       dragActive 
-                        ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10" 
-                        : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800/50"
+                        ? "border-[#FF4444] bg-rose-50/50 dark:bg-rose-500/10" 
+                        : "border-slate-300 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-600 bg-slate-50 dark:bg-slate-800/50"
                     }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
@@ -266,9 +266,9 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
                     <div className="flex flex-col items-center justify-center pt-4 pb-5 text-slate-500 dark:text-slate-400">
                       <Upload className="w-9 h-9 mb-2 text-slate-400" />
                       <p className="mb-1 text-xs">
-                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">Click to upload</span> or drag and drop
+                        <span className="font-semibold text-[#FF4444]">{t("restaurant.aiModal.clickToUpload", "Click to upload")}</span> {t("restaurant.aiModal.orDragAndDrop", "or drag and drop")}
                       </p>
-                      <p className="text-[11px] text-slate-500">PNG, JPG, JPEG (Max 5MB)</p>
+                      <p className="text-[11px] text-slate-500">{t("restaurant.aiModal.fileFormats", "PNG, JPG, JPEG (Max 5MB)")}</p>
                     </div>
                   </div>
                 ) : (
@@ -285,7 +285,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
                         onClick={handleRemoveImage}
                         className="gap-2 shadow-lg text-xs"
                       >
-                        <X className="w-4 h-4" /> Remove Image
+                        <X className="w-4 h-4" /> {t("restaurant.aiModal.removeImage", "Remove Image")}
                       </Button>
                     </div>
                   </div>
@@ -293,24 +293,18 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
               </div>
             </div>
 
-            <DialogFooter className="sm:justify-between items-center border-t pt-4">
-              <div className="text-xs text-slate-500 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                Powered by Gemini Vision • <span className="font-semibold text-slate-700 dark:text-slate-300">$0.99 / request</span>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleClose} className="text-xs">
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleProceedToPayment} 
-                  disabled={!selectedImage}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[170px] text-xs font-semibold"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Continue to Pay ($0.99)
-                </Button>
-              </div>
+            <DialogFooter className="flex justify-end items-center gap-2 border-t pt-4">
+              <Button variant="outline" onClick={handleClose} className="text-xs">
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button 
+                onClick={handleProceedToPayment} 
+                disabled={!selectedImage}
+                className="bg-[#FF4444] hover:bg-[#D4444D] text-white min-w-[170px] text-xs font-semibold shadow-md shadow-[#FF4444]/25"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                {t("restaurant.aiModal.continueToPay", "Continue to Pay ($0.99)")}
+              </Button>
             </DialogFooter>
           </>
         )}
@@ -319,19 +313,19 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
         {step === 'payment' && (
           <div className="space-y-4 py-2">
             {/* Order Summary Box */}
-            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-[#FEF2F2] border border-rose-200/90 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600">
+                <div className="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center text-[#FF4444]">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">AI Floor Plan Generation</h4>
-                  <p className="text-xs text-slate-500">1x Vision Layout Analysis Request</p>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t("restaurant.aiModal.orderSummaryTitle", "AI Floor Plan Generation")}</h4>
+                  <p className="text-xs text-slate-500">{t("restaurant.aiModal.orderSummaryDesc", "1x Vision Layout Analysis Request")}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">$0.99</p>
-                <p className="text-[10px] text-slate-400">One-time charge</p>
+                <p className="text-lg font-extrabold text-[#FF4444]">$0.99</p>
+                <p className="text-[10px] text-slate-400">{t("restaurant.aiModal.oneTimeCharge", "One-time charge")}</p>
               </div>
             </div>
 
@@ -339,24 +333,24 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
             <div className="space-y-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
               <div className="flex items-center justify-between border-b pb-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                  <CreditCard className="w-4 h-4 text-indigo-600" />
-                  Credit or Debit Card
+                  <CreditCard className="w-4 h-4 text-[#FF4444]" />
+                  {t("restaurant.aiModal.cardHeader", "Credit or Debit Card")}
                 </div>
                 <Button 
                   type="button" 
                   variant="ghost" 
                   size="sm" 
                   onClick={handleAutoFillTestCard}
-                  className="text-[11px] h-7 text-indigo-600 hover:text-indigo-700"
+                  className="text-[11px] h-7 text-[#FF4444] hover:text-[#D4444D]"
                 >
-                  ⚡ Auto-fill Test Card
+                  {t("restaurant.aiModal.autofillTest", "⚡ Auto-fill Test Card")}
                 </Button>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Cardholder Name</Label>
+                <Label className="text-xs">{t("restaurant.aiModal.cardholderName", "Cardholder Name")}</Label>
                 <Input 
-                  placeholder="e.g. John Doe"
+                  placeholder={t("restaurant.aiModal.cardholderPlaceholder", "e.g. John Doe")}
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value)}
                   className="text-xs h-9"
@@ -364,7 +358,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Card Number</Label>
+                <Label className="text-xs">{t("restaurant.aiModal.cardNumber", "Card Number")}</Label>
                 <div className="relative">
                   <Input 
                     placeholder="4242 4242 4242 4242"
@@ -378,7 +372,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Expiration Date</Label>
+                  <Label className="text-xs">{t("restaurant.aiModal.expirationDate", "Expiration Date")}</Label>
                   <Input 
                     placeholder="MM/YY"
                     value={expiry}
@@ -387,7 +381,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">CVC / CWW</Label>
+                  <Label className="text-xs">{t("restaurant.aiModal.cvc", "CVC / CWW")}</Label>
                   <Input 
                     placeholder="123"
                     value={cvc}
@@ -400,7 +394,7 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>256-bit SSL Encrypted & Secure Checkout</span>
+              <span>{t("restaurant.aiModal.sslSecure", "256-bit SSL Encrypted & Secure Checkout")}</span>
             </div>
 
             <DialogFooter className="sm:justify-between items-center border-t pt-4">
@@ -409,13 +403,13 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
                 onClick={() => setStep('upload')} 
                 className="text-xs gap-1.5"
               >
-                <ArrowLeft className="w-3.5 h-3.5" /> Back
+                <ArrowLeft className="w-3.5 h-3.5" /> {t("common.back", "Back")}
               </Button>
               <Button 
                 onClick={handleExecutePaymentAndGenerate} 
-                className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[200px] text-xs font-bold shadow-md shadow-emerald-600/20"
+                className="bg-[#FF4444] hover:bg-[#D4444D] text-white min-w-[200px] text-xs font-bold shadow-md shadow-[#FF4444]/25"
               >
-                Pay $0.99 & Generate Plan
+                {t("restaurant.aiModal.payAndGenerate", "Pay $0.99 & Generate Plan")}
               </Button>
             </DialogFooter>
           </div>
@@ -425,8 +419,8 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
         {step === 'processing' && (
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center border-2 border-indigo-500/30">
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+              <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center border-2 border-rose-500/30">
+                <Loader2 className="w-8 h-8 text-[#FF4444] animate-spin" />
               </div>
               <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full text-xs shadow-md">
                 <Check className="w-3.5 h-3.5" />
@@ -438,12 +432,12 @@ export function AiFloorPlanModal({ isOpen, onClose, branchId, partnerId, onSucce
                 {paymentStatusText}
               </h4>
               <p className="text-xs text-slate-500">
-                Please do not close this window. Your payment of $0.99 is authorized and AI is building your floor layout.
+                {t("restaurant.aiModal.doNotClose", "Please do not close this window. Your payment of $0.99 is authorized and AI is building your floor layout.")}
               </p>
             </div>
 
             <div className="w-full max-w-xs bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-indigo-600 h-full animate-pulse w-3/4 rounded-full"></div>
+              <div className="bg-[#FF4444] h-full animate-pulse w-3/4 rounded-full"></div>
             </div>
           </div>
         )}

@@ -5,7 +5,7 @@ import { Bell, Check, Clock } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useAuth } from "@/components/auth/auth-provider"
 import api from "@/lib/api"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 import { hy, ru, enUS } from "date-fns/locale"
 import { useTranslation } from "react-i18next"
 
@@ -24,7 +24,7 @@ export function ClientNotificationsPopover() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
 
-  const dateLocale = i18n.language === 'am' ? hy : i18n.language === 'ru' ? ru : enUS
+  const dateLocale = i18n.language === 'am' || i18n.language === 'hy' ? hy : i18n.language === 'ru' ? ru : enUS
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return
@@ -73,34 +73,75 @@ export function ClientNotificationsPopover() {
 
   const getTranslatedTitle = (title: string) => {
     switch (title) {
-      case "Booking Accepted": return t("client.bookingAccepted", "Booking Accepted");
-      case "Booking Completed": return t("client.bookingCompleted", "Booking Completed");
-      case "Booking Declined": return t("client.bookingDeclined", "Booking Declined");
-      case "Booking Cancelled": return t("client.bookingCancelled", "Booking Cancelled");
-      case "Reservation Submitted": return t("dashboard.reservationSubmitted", "Reservation Submitted");
-      default: return t(title, title);
+      case "New Booking Received": return t("dashboard.newBookingReceived", { defaultValue: "New Booking Received" })
+      case "Reservation Submitted": return t("dashboard.reservationSubmitted", { defaultValue: "Reservation Submitted" })
+      case "Reservation Confirmed": return t("dashboard.reservationConfirmed", { defaultValue: "Reservation Confirmed" })
+      case "Reservation Updated": return t("dashboard.reservationUpdated", { defaultValue: "Reservation Updated" })
+      case "Booking Accepted": return t("dashboard.bookingAccepted", { defaultValue: "Booking Accepted" })
+      case "Booking Completed": return t("dashboard.bookingCompleted", { defaultValue: "Booking Completed" })
+      case "Booking Declined": return t("dashboard.bookingDeclined", { defaultValue: "Booking Declined" })
+      case "Booking Cancelled": return t("dashboard.bookingCancelled", { defaultValue: "Booking Cancelled" })
+      case "Booking Submitted": return t("dashboard.bookingSubmitted", { defaultValue: "Booking Submitted" })
+      default: return title
     }
   }
 
   const getTranslatedMessage = (msg: string) => {
     if (!msg) return ""
 
+    if (msg === "A client has requested a new appointment.") {
+      return t("dashboard.clientRequestedNew", { defaultValue: "A client has requested a new appointment." })
+    }
     if (msg === "Your reservation has been submitted to the restaurant and is pending confirmation.") {
-      return t("dashboard.reservationPendingConfirmation", "Your reservation has been submitted to the restaurant and is pending confirmation.");
+      return t("dashboard.reservationPendingConfirmation", { defaultValue: "Your reservation has been submitted to the restaurant and is pending confirmation." })
     }
-    if (msg.includes("has been accepted")) {
-      return t("client.bookingAcceptedMsg", "Your booking has been accepted by the business.");
+    if (msg === "Your table reservation has been confirmed!") {
+      return t("dashboard.tableReservationConfirmed", { defaultValue: "Your table reservation has been confirmed!" })
     }
-    if (msg.includes("has been marked as completed")) {
-      return t("client.bookingCompletedMsg", "Your booking has been marked as completed. Thank you!");
+    if (msg === "Your table reservation details have been updated.") {
+      return t("dashboard.tableReservationUpdated", { defaultValue: "Your table reservation details have been updated." })
     }
-    if (msg.includes("has been declined")) {
-      return t("client.bookingDeclinedMsg", "Your booking has been declined by the business.");
+    if (msg === "Your appointment request has been submitted.") {
+      return t("dashboard.appointmentSubmittedMsg", { defaultValue: "Your appointment request has been submitted." })
     }
-    if (msg.includes("has been cancelled")) {
-      return t("client.bookingCancelledMsg", "Your booking has been cancelled.");
+    if (msg === "Your booking has been marked as completed. Thank you!") {
+      return t("dashboard.bookingCompletedMsg", { defaultValue: "Your booking has been marked as completed. Thank you!" })
     }
-    return t(msg, msg);
+    if (msg === "Your booking has been accepted by the business.") {
+      return t("dashboard.bookingAcceptedMsg", { defaultValue: "Your booking has been accepted by the business." })
+    }
+    if (msg === "Your booking has been declined by the business.") {
+      return t("dashboard.bookingDeclinedMsg", { defaultValue: "Your booking has been declined by the business." })
+    }
+    if (msg === "Your booking has been cancelled.") {
+      return t("dashboard.bookingCancelledMsg", { defaultValue: "Your booking has been cancelled." })
+    }
+    if (msg.includes("has cancelled their appointment.")) {
+      const name = msg.split(" ")[0]
+      return t("dashboard.userCancelledAppointment", { name, defaultValue: "{{name}} has cancelled their appointment." })
+    }
+    if (msg.toLowerCase().includes("a new reservation request has been submitted for")) {
+      const rawDateStr = msg.replace(/.*a new reservation request has been submitted for/i, "").trim().replace(/\.$/, "")
+      const cleanDateStr = rawDateStr.replace(/\s*\([^)]*\)/g, "").trim()
+      let formattedDate = rawDateStr
+      try {
+        let d: Date
+        if (/^\d{2}\.\d{2}\.\d{4}$/.test(cleanDateStr)) {
+          const parts = cleanDateStr.split('.')
+          d = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10))
+        } else {
+          d = new Date(cleanDateStr)
+        }
+        if (!isNaN(d.getTime())) {
+          formattedDate = (i18n.language === 'am' || i18n.language === 'hy')
+            ? format(d, "dd.MM.yyyy")
+            : format(d, "MMM d, yyyy", { locale: dateLocale })
+        }
+      } catch {}
+      return t("dashboard.newReservationSubmittedFor", { date: formattedDate, defaultValue: "A new reservation request has been submitted for {{date}}." })
+    }
+
+    return msg
   }
 
   return (

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { BookingCard } from "./booking-card"
 import { Loader2 } from "lucide-react"
 import api from "@/lib/api"
+import { useTranslation } from "react-i18next"
 
 interface BookingData {
   _id: string
@@ -16,10 +17,11 @@ interface BookingData {
   branchId: { _id: string; address: { line1: string; city: string } } | null
 }
 
-function formatBooking(b: BookingData) {
+function formatBooking(b: BookingData, language: string = 'en') {
   const start = new Date(b.startTime)
   const end = new Date(b.endTime)
-  const date = start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  const localeStr = language === 'am' || language === 'hy' ? 'hy-AM' : language === 'ru' ? 'ru-RU' : 'en-US'
+  const date = start.toLocaleDateString(localeStr, { month: "short", day: "numeric", year: "numeric" })
   const time = `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`
   const location = b.branchId ? `${b.branchId.address.line1}, ${b.branchId.address.city}` : "—"
 
@@ -40,6 +42,7 @@ function formatBooking(b: BookingData) {
 }
 
 export function BookingsContent() {
+  const { i18n } = useTranslation()
   const [bookings, setBookings] = useState<BookingData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming")
@@ -162,7 +165,7 @@ export function BookingsContent() {
                 upcomingBookings.map((booking) => (
                   <BookingCard
                     key={booking._id}
-                    booking={formatBooking(booking)}
+                    booking={formatBooking(booking, i18n.language)}
                     showActions
                     onCancel={() => handleCancel(booking._id)}
                   />
@@ -177,7 +180,7 @@ export function BookingsContent() {
                 pastBookings.map((booking) => (
                   <BookingCard
                     key={booking._id}
-                    booking={formatBooking(booking)}
+                    booking={formatBooking(booking, i18n.language)}
                     showActions={false}
                   />
                 ))

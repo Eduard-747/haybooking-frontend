@@ -51,7 +51,7 @@ export function BookingModal({ booking, onClose, onUpdateStatus, currency = "AMD
 
   const startDate = new Date(booking.startTime)
   const endDate = new Date(booking.endTime)
-  const dateLocale = i18n.language === 'am' ? hy : i18n.language === 'ru' ? ru : enUS
+  const dateLocale = i18n.language === 'am' || i18n.language === 'hy' ? hy : i18n.language === 'ru' ? ru : enUS
   const formattedDate = format(startDate, "EEEE, MMMM d, yyyy", { locale: dateLocale })
   const formattedTime = `${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })} - ${endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`
 

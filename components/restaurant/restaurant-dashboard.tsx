@@ -27,7 +27,8 @@ export function RestaurantDashboard() {
       const fetchStats = async () => {
         try {
           const dateStr = new Date().toISOString()
-          const branchQuery = selectedBranchId ? `&branchId=${selectedBranchId}` : ''
+          const isValidObjectId = (id: any) => typeof id === 'string' && /^[a-fA-F0-9]{24}$/.test(id)
+          const branchQuery = isValidObjectId(selectedBranchId) ? `&branchId=${selectedBranchId}` : ''
           const partnerQuery = `partnerId=${partnerId}`
           
           const [resData, tablesData] = await Promise.all([
@@ -70,15 +71,15 @@ export function RestaurantDashboard() {
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-8">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{t("restaurant.dashboard.title", "Restaurant Dashboard")}</h1>
-              <p className="text-muted-foreground mt-2">{t("restaurant.dashboard.subtitle", "Welcome back. Here's what's happening at your restaurant today.")}</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("dashboard.title", "Restaurant Dashboard")}</h1>
+              <p className="text-muted-foreground mt-2">{t("dashboard.subtitle", "Welcome back. Here's what's happening at your restaurant today.")}</p>
             </div>
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Stat Cards */}
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.todaysBookings", "Today's Bookings")}</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("dashboard.todaysBookings", "Today's Bookings")}</h3>
                   <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
                     <CalendarCheck className="h-5 w-5 text-blue-500" />
                   </div>
@@ -88,7 +89,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.currentlySeated", "Currently Seated")}</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("dashboard.currentlySeated", "Currently Seated")}</h3>
                   <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
                     <Users className="h-5 w-5 text-emerald-500" />
                   </div>
@@ -98,7 +99,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.completed", "Completed")}</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("dashboard.completed", "Completed")}</h3>
                   <div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center">
                     <CheckCircle className="h-5 w-5 text-purple-500" />
                   </div>
@@ -108,7 +109,7 @@ export function RestaurantDashboard() {
 
               <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-muted-foreground">{t("restaurant.dashboard.capacityUtilized", "Capacity Utilized")}</h3>
+                  <h3 className="font-semibold text-muted-foreground">{t("dashboard.capacityUtilized", "Capacity Utilized")}</h3>
                   <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center">
                     <TrendingUp className="h-5 w-5 text-amber-500" />
                   </div>
@@ -119,27 +120,27 @@ export function RestaurantDashboard() {
 
             <div className="grid gap-6 md:grid-cols-2">
                <div className="bg-white rounded-2xl shadow-xs border border-border/40 p-4 sm:p-6">
-                <h3 className="font-bold text-base sm:text-lg mb-4">{t("restaurant.dashboard.quickActions", "Quick Actions")}</h3>
+                <h3 className="font-bold text-base sm:text-lg mb-4">{t("dashboard.quickActions", "Quick Actions")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <a href="/dashboard/restaurant/reservations" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
                     <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
-                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.manageReservations", "Manage Reservations")}</span>
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("dashboard.manageReservations", "Manage Reservations")}</span>
                   </a>
                   <a href="/dashboard/restaurant/floor-plan" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
                     <Users className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
-                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.editFloorPlan", "Edit Floor Plan")}</span>
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("dashboard.editFloorPlan", "Edit Floor Plan")}</span>
                   </a>
                   <a href="/dashboard/restaurant/reservations?add=true" className="flex flex-row sm:flex-col items-center justify-start sm:justify-center p-3.5 sm:p-4 rounded-xl border border-border/60 hover:bg-gray-50 transition-colors gap-3 text-left sm:text-center w-full">
                     <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-[#FF4444] shrink-0" />
-                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("restaurant.dashboard.addBooking", "Add Booking")}</span>
+                    <span className="font-bold text-xs sm:text-sm text-foreground leading-tight">{t("dashboard.addBooking", "Add Booking")}</span>
                   </a>
                 </div>
                </div>
                
                <div className="bg-white rounded-xl shadow-sm border border-border/40 p-6 flex flex-col items-center justify-center text-center">
                   <CalendarX className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="font-semibold text-foreground">{t("restaurant.dashboard.noAlerts", "No alerts for today")}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{t("restaurant.dashboard.allSmooth", "Everything is running smoothly.")}</p>
+                  <h3 className="font-semibold text-foreground">{t("dashboard.noAlerts", "No alerts for today")}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{t("dashboard.allSmooth", "Everything is running smoothly.")}</p>
                </div>
             </div>
 

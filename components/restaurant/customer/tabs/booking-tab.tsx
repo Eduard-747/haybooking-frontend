@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Calendar } from "@/components/ui/calendar"
 import { FloorPlanCanvas } from "@/components/restaurant/floor-plan-canvas"
 import { format } from "date-fns"
+import { hy, ru, enUS } from "date-fns/locale"
 import { X, Clock, Users, Calendar as CalendarIcon, Info, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 
 interface BookingTabProps {
@@ -48,7 +49,8 @@ export function BookingTab({
   bookedSlots,
   onBookTable
 }: BookingTabProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const dateLocale = i18n.language === 'am' || i18n.language === 'hy' ? hy : i18n.language === 'ru' ? ru : enUS
   const [activeFloorId, setActiveFloorId] = useState<string | null>(floors[0]?._id || null)
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null)
   const [manualZoom, setManualZoom] = useState<number | null>(null)
@@ -588,7 +590,7 @@ export function BookingTab({
               <h3 className="text-base sm:text-lg font-extrabold text-gray-900 tracking-tight">{t("restaurant.reserve_table_num", "Reserve Table {{number}}", { number: selectedTable.tableNumber })}</h3>
               <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 font-medium">
                 <CalendarIcon className="w-3.5 h-3.5 text-[#FF4444]" />
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                {format(selectedDate, "EEEE, MMMM d, yyyy", { locale: dateLocale })}
               </p>
             </div>
 

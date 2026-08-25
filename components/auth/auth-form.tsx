@@ -99,14 +99,25 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
     setLoading(true)
     try {
       if (activeTab === "signup") {
+        if (signupMethod === "email" && !formData.email) {
+          toast.error(t("auth.enterEmail", "Please enter your email address"))
+          setLoading(false)
+          return
+        }
+        if (signupMethod === "phone" && !formData.phone) {
+          toast.error(t("auth.enterPhone", "Please enter your phone number"))
+          setLoading(false)
+          return
+        }
+
         let fullPhone = undefined
         let payloadEmail = undefined
 
-        if (signupMethod === "phone" || formData.phone) {
+        if (formData.phone && formData.phone.trim() !== "") {
           fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
         }
-        if (formData.email) {
-          payloadEmail = formData.email
+        if (formData.email && formData.email.trim() !== "") {
+          payloadEmail = formData.email.trim()
         }
 
         const payload = {
@@ -421,6 +432,8 @@ function SignUpForm({
   isBusinessPartner,
   setIsBusinessPartner,
   countryCodesList,
+  signupMethod,
+  setSignupMethod,
 }: SignUpFormProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
@@ -428,24 +441,48 @@ function SignUpForm({
 
   return (
     <div className="space-y-3.5">
-      {/* Row 1: Full Name & Email Address */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <div className="space-y-1.5">
-          <Label htmlFor="firstName" className="text-xs font-bold text-slate-700">
-            {t("auth.fullName", "Full Name")}
-          </Label>
-          <div className="relative">
-            <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              id="firstName"
-              placeholder={t("auth.enterFullName", "Enter your full name") as string}
-              value={formData.firstName}
-              onChange={(e) => onInputChange("firstName", e.target.value)}
-              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
-            />
-          </div>
-        </div>
+      {/* Method Toggle */}
+      <div className="flex gap-4 mb-2">
+        <button
+          type="button"
+          onClick={() => setSignupMethod("email")}
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            signupMethod === "email" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          {t("common.email", "Email")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setSignupMethod("phone")}
+          className={`flex-1 py-2 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
+            signupMethod === "phone" ? "border-[#FF385C] text-[#FF385C]" : "border-transparent text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          {t("common.phone", "Phone Number")}
+        </button>
+      </div>
 
+      {/* Full Name */}
+      <div className="space-y-1.5">
+        <Label htmlFor="firstName" className="text-xs font-bold text-slate-700">
+          {t("auth.fullName", "Full Name")}
+        </Label>
+        <div className="relative">
+          <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            id="firstName"
+            placeholder={t("auth.enterFullName", "Enter your full name") as string}
+            value={formData.firstName}
+            onChange={(e) => onInputChange("firstName", e.target.value)}
+            className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Email or Phone Field based on Method */}
+      {signupMethod === "email" ? (
         <div className="space-y-1.5">
           <Label htmlFor="email" className="text-xs font-bold text-slate-700">
             {t("common.email", "Email Address")}
@@ -463,43 +500,42 @@ function SignUpForm({
             />
           </div>
         </div>
-      </div>
-
-      {/* Row 2: Phone Number */}
-      <div className="space-y-1.5">
-        <Label htmlFor="phone" className="text-xs font-bold text-slate-700">
-          {t("common.phone", "Phone Number")}
-        </Label>
-        <div className="flex gap-2">
-          <Select
-            value={formData.countryCode}
-            onValueChange={(value) => onInputChange("countryCode", value)}
-          >
-            <SelectTrigger className="w-[105px] h-11 shrink-0 rounded-xl border-slate-200 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">
-              {countryCodesList.map((cc) => (
-                <SelectItem key={cc.code} value={cc.code}>
-                  {cc.flag} {cc.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1">
-            <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              id="phone"
-              type="tel"
-              placeholder={t("auth.enterPhone", "Enter your phone number") as string}
-              value={formData.phone}
-              onChange={(e) => onInputChange("phone", e.target.value)}
-              className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
-              required
-            />
+      ) : (
+        <div className="space-y-1.5">
+          <Label htmlFor="phone" className="text-xs font-bold text-slate-700">
+            {t("common.phone", "Phone Number")}
+          </Label>
+          <div className="flex gap-2">
+            <Select
+              value={formData.countryCode}
+              onValueChange={(value) => onInputChange("countryCode", value)}
+            >
+              <SelectTrigger className="w-[105px] h-11 shrink-0 rounded-xl border-slate-200 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {countryCodesList.map((cc) => (
+                  <SelectItem key={cc.code} value={cc.code}>
+                    {cc.flag} {cc.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1">
+              <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder={getPhonePlaceholder(formData.countryCode, countryCodesList)}
+                value={formData.phone}
+                onChange={(e) => onInputChange("phone", e.target.value)}
+                className="pl-10 h-11 text-xs sm:text-sm rounded-xl border-slate-200 focus:border-[#FF385C] focus:ring-[#FF385C]/20"
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Row 3: Password */}
       <div className="space-y-1.5">

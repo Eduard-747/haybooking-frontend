@@ -33,7 +33,9 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
   const [branches, setBranches] = useState<Branch[]>([])
   const [selectedBranchId, setSelectedBranchIdState] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("selectedBranchId") || null
+      const saved = localStorage.getItem("selectedBranchId")
+      if (saved === "all") return null
+      return saved || null
     }
     return null
   })
@@ -45,7 +47,7 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
       if (id) {
         localStorage.setItem("selectedBranchId", id)
       } else {
-        localStorage.removeItem("selectedBranchId")
+        localStorage.setItem("selectedBranchId", "all")
       }
     }
   }
@@ -60,12 +62,13 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
 
       if (fetchedBranches.length > 0) {
         const savedId = typeof window !== "undefined" ? localStorage.getItem("selectedBranchId") : null
-        const isValidSavedId = savedId && fetchedBranches.some((b: Branch) => b._id === savedId)
 
-        if (isValidSavedId) {
+        if (savedId === "all") {
+          setSelectedBranchIdState(null)
+        } else if (savedId && fetchedBranches.some((b: Branch) => b._id === savedId)) {
           setSelectedBranchIdState(savedId)
         } else {
-          // Auto-select the first branch if no branch or invalid branch saved in localStorage
+          // If no branch was saved yet in localStorage (first time ever), default to first branch
           setSelectedBranchId(fetchedBranches[0]._id)
         }
       }
@@ -81,7 +84,6 @@ export function BranchProvider({ children }: { children: React.ReactNode }) {
       refreshBranches()
     } else {
       setBranches([])
-      setSelectedBranchId(null)
       setIsLoading(false)
     }
   }, [partnerId])

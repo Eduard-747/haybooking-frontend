@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Phone, RefreshCw } from "lucide-react"
 import api from "@/lib/api"
 import { toast } from "sonner"
+import type { ConfirmationResult } from "firebase/auth"
 
 interface SmsVerificationProps {
   phoneNumber: string
-  onVerified: () => void
+  confirmationResult?: ConfirmationResult | null
+  onVerified: (firebaseUid?: string) => void
   onBack: () => void
+  onResend?: () => Promise<void>
 }
 
-export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerificationProps) {
+export function SmsVerification({ phoneNumber, confirmationResult, onVerified, onBack, onResend }: SmsVerificationProps) {
   const [code, setCode] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
   const [resendTimer, setResendTimer] = useState(60)
@@ -74,15 +77,27 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
   const handleVerify = async (codeStr: string) => {
     setIsVerifying(true)
     try {
-      await api.post("/auth/verify-sms", { phoneNumber, code: codeStr })
-      onVerified()
-    } catch (err: any) {
-      // In dev mode, accept any 6-digit code
-      if (codeStr.length === 6) {
+      if (confirmationResult) {
+        const userCredential = await confirmationResult.confirm(codeStr)
+        const firebaseUid = userCredential.user.uid
+        toast.success("Phone verified successfully!")
+        onVerified(firebaseUid)
+      } else {
+        await api.post("/auth/verify-sms", { phoneNumber, code: codeStr })
         onVerified()
-        return
       }
-      toast.error(err.response?.data?.message || "Invalid verification code")
+    } catch (err: any) {
+      let errorMessage = "Invalid verification code"
+      if (err.code === "auth/invalid-verification-code") {
+        errorMessage = "Invalid verification code. Please check the code and try again."
+      } else if (err.code === "auth/code-expired") {
+        errorMessage = "Verification code has expired. Please click Resend Code."
+      } else if (err.code === "auth/too-many-requests") {
+        errorMessage = "Too many failed attempts. Please try again later."
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
+      }
+      toast.error(errorMessage)
       setCode(["", "", "", "", "", ""])
       inputRefs.current[0]?.focus()
     } finally {
@@ -90,14 +105,16 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
     }
   }
 
-  const handleResend = async () => {
+  const handleResendClick = async () => {
     setCanResend(false)
     setResendTimer(60)
     try {
-      // In production, this would trigger an actual SMS
+      if (onResend) {
+        await onResend()
+      }
       toast.success("Verification code resent!")
-    } catch {
-      toast.error("Failed to resend code")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend code")
     }
   }
 
@@ -168,7 +185,7 @@ export function SmsVerification({ phoneNumber, onVerified, onBack }: SmsVerifica
       <div className="text-center">
         {canResend ? (
           <button
-            onClick={handleResend}
+            onClick={handleResendClick}
             className="flex items-center gap-2 mx-auto text-sm font-medium text-[#FF4444] hover:text-[#d44850] transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />

@@ -32,6 +32,14 @@ import { useTranslation } from "react-i18next"
 import { useCountryCode } from "@/lib/hooks/use-country-code"
 import { getPhonePlaceholder } from "@/lib/countries"
 
+import { auth } from "@/lib/firebase"
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  sendPasswordResetEmail,
+  type ConfirmationResult,
+} from "firebase/auth"
+
 interface AuthFormProps {
   activeTab: "signin" | "signup" | "forgot" | "reset-verify"
   onTabChange: (tab: "signin" | "signup" | "forgot" | "reset-verify") => void
@@ -58,6 +66,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
   const { t } = useTranslation()
   const [isBusinessPartner, setIsBusinessPartner] = useState(false)
   const [showSmsVerification, setShowSmsVerification] = useState(false)
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
   const [signupMethod, setSignupMethod] = useState<"phone" | "email">("email")
   const [signinMethod, setSigninMethod] = useState<"phone" | "email">("email")
   const [forgotMethod, setForgotMethod] = useState<"phone" | "email">("email")
@@ -88,6 +97,26 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || undefined
 
+  const setupRecaptcha = () => {
+    if (typeof window === "undefined") return null
+    if ((window as any).recaptchaVerifier) {
+      return (window as any).recaptchaVerifier
+    }
+    const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+      size: "invisible",
+      callback: () => {},
+    })
+    ;(window as any).recaptchaVerifier = verifier
+    return verifier
+  }
+
+  const triggerPhoneSmsAuth = async (phoneNumberStr: string) => {
+    const recaptcha = setupRecaptcha()
+    const confirmation = await signInWithPhoneNumber(auth, phoneNumberStr, recaptcha)
+    setConfirmationResult(confirmation)
+    setShowSmsVerification(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -99,68 +128,53 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
     setLoading(true)
     try {
       if (activeTab === "signup") {
-        if (signupMethod === "email" && !formData.email) {
-          toast.error(t("auth.enterEmail", "Please enter your email address"))
-          setLoading(false)
-          return
-        }
-        if (signupMethod === "phone" && !formData.phone) {
-          toast.error(t("auth.enterPhone", "Please enter your phone number"))
-          setLoading(false)
-          return
-        }
-
-        let fullPhone = undefined
-        let payloadEmail = undefined
-
-        if (formData.phone && formData.phone.trim() !== "") {
-          fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
-        }
-        if (formData.email && formData.email.trim() !== "") {
-          payloadEmail = formData.email.trim()
-        }
-
-        const payload = {
-          ...(fullPhone && { phoneNumber: fullPhone }),
-          ...(payloadEmail && { email: payloadEmail }),
-          password: formData.password,
-          name: formData.firstName,
-          surname: formData.lastName,
-          role: isBusinessPartner ? "partner" : "client",
-          businessName: isBusinessPartner ? formData.businessName : undefined,
-          businessType: isBusinessPartner ? formData.businessType : undefined,
-        }
-        const res = await api.post("/auth/signup", payload)
-        login(res.data.access_token, { userId: "", phoneNumber: fullPhone, email: payloadEmail, role: payload.role }, redirectTo)
-
-        if (signupMethod === "phone") {
-          setShowSmsVerification(true)
+        if (signupMethod === "email") {
+          if (!formData.email) {
+            toast.error(t("auth.enterEmail", "Please enter your email address"))
+            setLoading(false)
+            return
+          }
+          const payload = {
+            email: formData.email.trim(),
+            registrationMethod: "email",
+            password: formData.password,
+            name: formData.firstName,
+            surname: formData.lastName,
+            role: isBusinessPartner ? "partner" : "client",
+            businessName: isBusinessPartner ? formData.businessName : undefined,
+            businessType: isBusinessPartner ? formData.businessType : undefined,
+          }
+          const res = await api.post("/auth/signup", payload)
+          login(res.data.access_token, { userId: "", email: formData.email.trim(), role: payload.role }, redirectTo)
+          toast.success("Account created successfully! Please verify your email. 🎉")
         } else {
-          toast.success("Account created successfully! 🎉")
+          if (!formData.phone) {
+            toast.error(t("auth.enterPhone", "Please enter your phone number"))
+            setLoading(false)
+            return
+          }
+          const fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
+          await triggerPhoneSmsAuth(fullPhone)
         }
       } else if (activeTab === "forgot") {
-        let payloadIdentifier = ""
-        let fullPhone: string | undefined = undefined
-        let payloadEmail: string | undefined = undefined
-
         if (forgotMethod === "phone") {
-          fullPhone = formData.phone
-          if (fullPhone !== "haybooking_super_admin") {
-            fullPhone = fullPhone.startsWith("+") ? fullPhone : `${formData.countryCode}${fullPhone.replace(/\D/g, "")}`
-          }
-          payloadIdentifier = fullPhone
+          const fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
+          await triggerPhoneSmsAuth(fullPhone)
+          toast.success(t("auth.verifyDescPhone", "We sent an SMS verification code to your phone number."))
         } else {
-          payloadEmail = formData.email?.trim()
-          payloadIdentifier = payloadEmail
+          const cleanEmail = formData.email.trim()
+          if (!cleanEmail) {
+            toast.error("Please enter your email address")
+            setLoading(false)
+            return
+          }
+          try {
+            await sendPasswordResetEmail(auth, cleanEmail)
+          } catch {}
+          await api.post("/auth/forgot-password", { identifier: cleanEmail, email: cleanEmail })
+          toast.success(t("auth.verifyDescEmail", "We'll send you a verification code to your email address."))
+          onTabChange("reset-verify")
         }
-
-        const res = await api.post("/auth/forgot-password", {
-          identifier: payloadIdentifier,
-          phoneNumber: fullPhone,
-          email: payloadEmail,
-        })
-        toast.success(res.data.message || (forgotMethod === "email" ? t("auth.verifyDescEmail") : t("auth.verifyDescPhone")))
-        onTabChange("reset-verify")
       } else if (activeTab === "reset-verify") {
         if (formData.password !== formData.confirmPassword) {
           toast.error(t("auth.passwordsNoMatch", "Passwords do not match"))
@@ -213,7 +227,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
         toast.success("Logged in successfully!")
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Authentication failed")
+      toast.error(err.response?.data?.message || err.message || "Authentication failed")
       if (err?.response?.status !== 401) {
         console.error(err)
       }
@@ -222,23 +236,49 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
     }
   }
 
-  const handleSmsVerified = () => {
-    toast.success("Account verified! 🎉")
+  const handleSmsVerified = async (firebaseUid?: string) => {
     setShowSmsVerification(false)
+    const fullPhone = `${formData.countryCode}${formData.phone.replace(/\D/g, "")}`
+    
+    if (activeTab === "signup") {
+      try {
+        const payload = {
+          phoneNumber: fullPhone,
+          registrationMethod: "phone",
+          firebaseUid,
+          password: formData.password,
+          name: formData.firstName,
+          surname: formData.lastName,
+          role: isBusinessPartner ? "partner" : "client",
+          businessName: isBusinessPartner ? formData.businessName : undefined,
+          businessType: isBusinessPartner ? formData.businessType : undefined,
+        }
+        const res = await api.post("/auth/signup", payload)
+        login(res.data.access_token, { userId: "", phoneNumber: fullPhone, role: payload.role }, redirectTo)
+        toast.success("Account created & verified via Firebase SMS! 🎉")
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Registration failed after phone verification")
+      }
+    } else if (activeTab === "forgot") {
+      onTabChange("reset-verify")
+    }
   }
 
   if (showSmsVerification) {
     return (
       <SmsVerification
         phoneNumber={`${formData.countryCode}${formData.phone}`}
+        confirmationResult={confirmationResult}
         onVerified={handleSmsVerified}
         onBack={() => setShowSmsVerification(false)}
+        onResend={() => triggerPhoneSmsAuth(`${formData.countryCode}${formData.phone.replace(/\D/g, "")}`)}
       />
     )
   }
 
   return (
     <div className="space-y-6">
+      <div id="recaptcha-container" />
       {/* Header */}
       <div>
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">

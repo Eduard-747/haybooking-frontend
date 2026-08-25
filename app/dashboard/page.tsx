@@ -69,7 +69,7 @@ export default function BusinessDashboardPage() {
   }
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [date, setDate] = useState<Date | undefined>(undefined)
+  const [date, setDate] = useState<Date | undefined>(() => new Date())
   const [stats, setStats] = useState({ total: 0, confirmed: 0, cancelled: 0, declined: 0 })
   const [currentPage, setCurrentPage] = useState(1)
 

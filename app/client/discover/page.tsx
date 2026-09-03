@@ -37,6 +37,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=400&fit=crop",
     distance: "0.8 miles away",
     tags: ["landing.catBeautyWellness"],
+    serviceNames: "Lulu Լուլու Haircut Hair Trim Beard Styling" as any,
   },
   {
     id: "2",
@@ -46,6 +47,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=600&h=400&fit=crop",
     distance: "1.2 miles away",
     tags: ["landing.catHealthMedical"],
+    serviceNames: "Teeth Cleaning Whitening Orthodontics Լուլու" as any,
   },
   {
     id: "3",
@@ -55,6 +57,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1632823465306-cdbb2b47bbf1?w=600&h=400&fit=crop",
     distance: "2.5 miles away",
     tags: ["landing.catAutomotive"],
+    serviceNames: "Oil Change Tire Service Diagnostics" as any,
   },
   {
     id: "4",
@@ -64,6 +67,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=400&fit=crop",
     distance: "1.5 miles away",
     tags: ["landing.catBeautyWellness"],
+    serviceNames: "Swedish Massage Facial Sauna Spa Lulu Լուլու" as any,
   },
   {
     id: "5",
@@ -73,6 +77,7 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop",
     distance: "3.1 miles away",
     tags: ["landing.catFitnessSports"],
+    serviceNames: "Personal Training Yoga Pilates Gym" as any,
   },
   {
     id: "6",
@@ -82,10 +87,14 @@ const fallbackBusinesses: BusinessCardData[] = [
     image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=600&h=400&fit=crop",
     distance: "1.1 miles away",
     tags: ["landing.catPetServices"],
+    serviceNames: "Dog Washing Cat Grooming Nail Trimming" as any,
   },
 ]
 
 const ITEMS_PER_PAGE = 9;
+
+import { useMultilingualSearch } from "@/hooks/use-multilingual-search"
+import { matchMultilingualQuery } from "@/lib/search-transliteration"
 
 function DiscoverContent() {
   const { t } = useTranslation()
@@ -94,10 +103,25 @@ function DiscoverContent() {
   const urlQuery = searchParams.get("q") || ""
 
   const [activeCategory, setActiveCategory] = useState(initialCategory)
-  const [searchQuery, setSearchQuery] = useState(urlQuery)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showExpandButton, setShowExpandButton] = useState(false)
   const categoryContainerRef = useRef<HTMLDivElement>(null)
+
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    debouncedQuery,
+    detectedLang,
+    isLoading: isSearchLoading,
+    results: rawServerPartners,
+  } = useMultilingualSearch<any>({
+    endpoint: "/partners",
+    debounceMs: 250,
+    initialQuery: urlQuery,
+    params: {
+      category: activeCategory !== "All" ? activeCategory : undefined,
+    },
+  })
 
   useEffect(() => {
     const checkOverflow = () => {
@@ -111,16 +135,17 @@ function DiscoverContent() {
   }, [])
 
   const [businesses, setBusinesses] = useState<BusinessCardData[]>(fallbackBusinesses)
-  const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pastBookedIds, setPastBookedIds] = useState<Set<string>>(new Set())
   const [showMapModal, setShowMapModal] = useState(false)
   const [mapMarkers, setMapMarkers] = useState<{ id: string; lat: number; lng: number; label: string }[]>([])
   const router = useRouter()
 
-  // Sync with URL query
+  // Sync search input if URL changes
   useEffect(() => {
-    setSearchQuery(urlQuery)
+    if (urlQuery !== searchQuery && urlQuery !== debouncedQuery) {
+      setSearchQuery(urlQuery)
+    }
   }, [urlQuery])
 
   // Reset page when filters change
@@ -128,18 +153,13 @@ function DiscoverContent() {
     setCurrentPage(1)
   }, [searchQuery, activeCategory])
 
+  // Update businesses state whenever rawServerPartners or fallback update
   useEffect(() => {
-    const fetchPartners = async () => {
+    const fetchBranchesAndFormat = async () => {
       try {
-        setIsLoading(true)
-        const [res, branchesRes] = await Promise.all([
-          api.get('/partners'),
-          api.get('/branches').catch(() => ({ data: [] }))
-        ]);
+        const branchesRes = await api.get('/branches').catch(() => ({ data: [] }))
+        const branchesData = branchesRes.data || []
 
-        const branchesData = branchesRes.data;
-
-        // Fetch all branches for the map
         const markers = branchesData
           .filter((b: any) => b.location?.latitude && b.location?.longitude && b.partnerId)
           .map((b: any) => ({
@@ -151,22 +171,23 @@ function DiscoverContent() {
           }))
         setMapMarkers(markers)
 
-        if (res.data && res.data.length > 0) {
-          const formatted: BusinessCardData[] = res.data.map((p: any) => {
+        if (Array.isArray(rawServerPartners) && rawServerPartners.length > 0) {
+          const typeLabels: Record<string, string> = {
+            salon: "landing.catBeautyWellness",
+            medical: "landing.catHealthMedical",
+            fitness: "landing.catFitnessSports",
+            consulting: "landing.catProfessionalServices",
+            restaurant: "landing.catRestaurantHospitality",
+            auto: "landing.catAutomotive",
+            pet: "landing.catPetServices",
+            other: "landing.catOther"
+          };
+
+          const formatted: BusinessCardData[] = rawServerPartners.map((p: any) => {
             const partnerBranches = branchesData.filter((b: any) => b.partnerId && b.partnerId._id === p._id);
             const addresses = partnerBranches.map((b: any) => [b.address?.line1, b.address?.city, b.address?.country, b.address?.zipCode].filter(Boolean).join(" "));
+            const serviceNames = (p.partnerServices || []).map((s: any) => s.name).join(" ");
 
-            const typeLabels: Record<string, string> = {
-              salon: "landing.catBeautyWellness",
-              medical: "landing.catHealthMedical",
-              fitness: "landing.catFitnessSports",
-              consulting: "landing.catProfessionalServices",
-              restaurant: "landing.catRestaurantHospitality",
-              auto: "landing.catAutomotive",
-              pet: "landing.catPetServices",
-              other: "landing.catOther"
-            };
-            
             return {
               id: p._id,
               name: p.businessName,
@@ -175,36 +196,36 @@ function DiscoverContent() {
               image: p.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
               distance: t("common.nearby", "Nearby"),
               tags: [typeLabels[p.businessType] || "landing.catOther"],
-              addresses: addresses.join(" | ")
+              addresses: addresses.join(" | "),
+              serviceNames: serviceNames,
             }
           })
           setBusinesses(formatted)
+        } else if (rawServerPartners && rawServerPartners.length === 0 && debouncedQuery) {
+          setBusinesses([])
         }
-
-        if (localStorage.getItem('access_token')) {
-          try {
-            const bookingsRes = await api.get('/bookings/my');
-            const ids = new Set<string>();
-            bookingsRes.data.forEach((b: any) => {
-              if (b.partnerId && b.partnerId._id) {
-                ids.add(b.partnerId._id);
-              }
-            });
-            setPastBookedIds(ids);
-          } catch (e) {
-            // Silently ignore if user bookings fetch fails
-          }
-        }
-
-        // Map markers are already set above
       } catch (err) {
-        console.error("Failed to fetch partners, using fallback", err)
-        // Keep fallback businesses
-      } finally {
-        setIsLoading(false)
+        console.error("Failed to process partner search results", err)
       }
     }
-    fetchPartners()
+
+    fetchBranchesAndFormat()
+  }, [rawServerPartners])
+
+  useEffect(() => {
+    if (localStorage.getItem('access_token')) {
+      api.get('/bookings/my')
+        .then(bookingsRes => {
+          const ids = new Set<string>();
+          bookingsRes.data.forEach((b: any) => {
+            if (b.partnerId && b.partnerId._id) {
+              ids.add(b.partnerId._id);
+            }
+          });
+          setPastBookedIds(ids);
+        })
+        .catch(() => {})
+    }
   }, [])
 
   // Sort businesses based on past bookings and rating
@@ -212,27 +233,27 @@ function DiscoverContent() {
     const aUsed = pastBookedIds.has(a.id) ? 1 : 0;
     const bUsed = pastBookedIds.has(b.id) ? 1 : 0;
     if (aUsed !== bUsed) {
-      return bUsed - aUsed; // Prioritize already used businesses
+      return bUsed - aUsed;
     }
-    // Fallback sorting by rating/reviews as "activity"
     const aActivity = a.reviews;
     const bActivity = b.reviews;
     return bActivity - aActivity;
   });
 
-  // Filter businesses based on search query and category
+  // Filter businesses based on search query and category with multilingual transliteration fallback
   const filteredBusinesses = sortedBusinesses.filter(business => {
     const safeName = business.name || "";
     const safeTags = Array.isArray(business.tags) ? business.tags : [];
     const safeAddresses = (business as any).addresses || "";
+    const safeServices = (business as any).serviceNames || "";
 
     const matchesCategory = activeCategory === "All" || safeTags.some((tag: string) => (tag || "").toLowerCase().includes(activeCategory.toLowerCase()));
     
-    const query = (searchQuery || "").toLowerCase();
-    const matchesQuery = !query || 
-      safeName.toLowerCase().includes(query) ||
-      safeTags.some((tag: string) => (tag || "").toLowerCase().includes(query)) ||
-      safeAddresses.toLowerCase().includes(query);
+    const matchesQuery = !searchQuery || 
+      matchMultilingualQuery(safeName, searchQuery) ||
+      safeTags.some((tag: string) => matchMultilingualQuery(tag, searchQuery)) ||
+      matchMultilingualQuery(safeAddresses, searchQuery) ||
+      matchMultilingualQuery(safeServices, searchQuery);
     
     return matchesCategory && matchesQuery;
   });
@@ -255,20 +276,35 @@ function DiscoverContent() {
               <p className="text-muted-foreground mt-1 flex items-center gap-2">
                 <SearchIcon className="h-4 w-4" />
                 {t("common.showingResultsFor", "Results for")} &quot;<span className="font-semibold text-foreground">{searchQuery}</span>&quot;
+                {detectedLang !== 'unknown' && (
+                  <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold uppercase">
+                    {detectedLang}
+                  </span>
+                )}
               </p>
             ) : (
               <p className="text-muted-foreground mt-1">{t("landing.browseTopRated", "Browse the top-rated professionals in your area")}</p>
             )}
           </div>
-          <div className="relative w-full sm:w-64 shrink-0">
+          <div className="relative w-full sm:w-72 shrink-0">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder={t("common.search", "Search...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#FF4444] shadow-sm transition-colors"
+              className="w-full pl-9 pr-16 py-2 bg-white border border-border/60 rounded-xl text-sm focus:outline-none focus:border-[#FF4444] shadow-sm transition-colors"
             />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+              {isSearchLoading && (
+                <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              )}
+              {detectedLang !== 'unknown' && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase border border-slate-200">
+                  {detectedLang}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -320,13 +356,13 @@ function DiscoverContent() {
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-6 bg-[#FF4444] rounded-full" />
           <h2 className="text-xl font-bold text-foreground">{t("landing.recommendedForYou", "Recommended for You")}</h2>
-          {!isLoading && (
+          {!isSearchLoading && (
             <span className="text-xs text-muted-foreground ml-auto">
               {businesses.length} {t("landing.businesses", "businesses")}
             </span>
           )}
         </div>
-        {isLoading ? (
+        {isSearchLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm animate-pulse">

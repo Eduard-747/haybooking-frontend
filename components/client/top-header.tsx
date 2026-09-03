@@ -10,12 +10,16 @@ import { ClientNotificationsPopover } from "./client-notifications-popover"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { useTranslation } from "react-i18next"
 
+import { detectLanguage } from "@/lib/search-transliteration"
+
 export function ClientTopHeader() {
   const { t } = useTranslation()
   const { user, logout } = useAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const { setIsOpen } = useMobileNav()
+
+  const detectedLang = detectLanguage(searchQuery)
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -46,8 +50,13 @@ export function ClientTopHeader() {
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearch}
           placeholder={t("common.search", "Search...")} 
-          className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-3 sm:pr-4 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#FF4444]/50"
+          className="w-full h-9 sm:h-10 pl-9 sm:pl-10 pr-12 bg-[#FAFAFA] border-none rounded-md text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#FF4444]/50"
         />
+        {detectedLang !== 'unknown' && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200/80 text-slate-700 uppercase pointer-events-none">
+            {detectedLang}
+          </span>
+        )}
       </div>
 
       {/* Right: Actions */}

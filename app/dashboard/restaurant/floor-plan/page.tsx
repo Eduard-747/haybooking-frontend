@@ -157,6 +157,72 @@ export default function FloorPlanPage() {
     }
   }
 
+  const handleFitScreen = () => {
+    if (!activeFloorId) return
+
+    const activeTables = tables.filter(t => t.floorId === activeFloorId)
+    const activeElements = elements.filter(e => e.floorId === activeFloorId)
+
+    const points: { x: number; y: number }[] = []
+
+    activeTables.forEach(t => {
+      const x = t.position?.x ?? 0
+      const y = t.position?.y ?? 0
+      const w = t.size?.width ?? 80
+      const h = t.size?.height ?? 80
+      points.push({ x, y })
+      points.push({ x: x + w, y: y + h })
+    })
+
+    activeElements.forEach(e => {
+      const x = e.x ?? 0
+      const y = e.y ?? 0
+      const w = e.width ?? 40
+      const h = e.height ?? 40
+      points.push({ x, y })
+      points.push({ x: x + w, y: y + h })
+    })
+
+    const screenW = typeof window !== 'undefined' ? (window.innerWidth > 1024 ? window.innerWidth - 580 : (window.innerWidth > 768 ? window.innerWidth - 280 : window.innerWidth)) : 800
+    const screenH = typeof window !== 'undefined' ? window.innerHeight - 120 : 600
+
+    if (points.length === 0) {
+      setScale(0.9)
+      setPan({ x: Math.max(10, Math.round((screenW - 400) / 2)), y: Math.max(10, Math.round((screenH - 400) / 2)) })
+      return
+    }
+
+    const minX = Math.min(...points.map(p => p.x))
+    const maxX = Math.max(...points.map(p => p.x))
+    const minY = Math.min(...points.map(p => p.y))
+    const maxY = Math.max(...points.map(p => p.y))
+
+    const contentW = Math.max(120, maxX - minX)
+    const contentH = Math.max(120, maxY - minY)
+    const centerX = minX + contentW / 2
+    const centerY = minY + contentH / 2
+
+    const padding = 80
+    const scaleX = (screenW - padding) / contentW
+    const scaleY = (screenH - padding) / contentH
+    const fitScale = Math.min(1.2, Math.max(0.4, Math.min(scaleX, scaleY)))
+
+    const panX = (screenW / 2) - (centerX * fitScale)
+    const panY = (screenH / 2) - (centerY * fitScale)
+
+    setScale(fitScale)
+    setPan({ x: Math.round(panX), y: Math.round(panY) })
+  }
+
+  useEffect(() => {
+    if (activeFloorId && !isLoading) {
+      const timer = setTimeout(() => {
+        handleFitScreen()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [activeFloorId, isLoading])
+
   const saveToHistory = () => {
     const currentState = { floors: JSON.parse(JSON.stringify(floors)), tables: JSON.parse(JSON.stringify(tables)), elements: JSON.parse(JSON.stringify(elements)) }
     const newHistory = history.slice(0, historyIndex + 1)
@@ -311,7 +377,7 @@ export default function FloorPlanPage() {
     }
   }
 
-  const handleAddTable = (shape: string, capacity?: number, presetColor?: string) => {
+  const handleAddTable = (shape: string, capacity?: number, presetColor?: string, customPos?: { x: number; y: number }) => {
     if (!activeFloorId) return toast.error("Please select a floor first")
     
     let size = { width: 80, height: 80 }
@@ -324,8 +390,8 @@ export default function FloorPlanPage() {
     if (shape === "event_table") size = { width: 160, height: 80 }
     if (shape === "private_dining") size = { width: 100, height: 100 }
     
-    const spawnX = Math.round((-pan.x + window.innerWidth / 2) / scale / 20) * 20
-    const spawnY = Math.round((-pan.y + window.innerHeight / 2) / scale / 20) * 20
+    const spawnX = customPos ? customPos.x : Math.round((-pan.x + (typeof window !== 'undefined' ? window.innerWidth / 2 : 400)) / scale / 20) * 20
+    const spawnY = customPos ? customPos.y : Math.round((-pan.y + (typeof window !== 'undefined' ? window.innerHeight / 2 : 400)) / scale / 20) * 20
 
     const newTable = {
       id: `temp_${Date.now()}`,
@@ -337,7 +403,7 @@ export default function FloorPlanPage() {
       isVip: false, color: presetColor, isNew: true
     }
     
-    setTables([...tables, newTable])
+    setTables(prev => [...prev, newTable])
     setSelectedElementIds([newTable.id])
     saveToHistory()
   }
@@ -345,14 +411,22 @@ export default function FloorPlanPage() {
   const handleAddElement = (type: string) => {
     if (!activeFloorId) return toast.error("Please select a floor first")
     
-    const spawnX = Math.round((-pan.x + window.innerWidth / 2) / scale / 20) * 20
-    const spawnY = Math.round((-pan.y + window.innerHeight / 2) / scale / 20) * 20
+    const spawnX = Math.round((-pan.x + (typeof window !== 'undefined' ? window.innerWidth / 2 : 400)) / scale / 20) * 20
+    const spawnY = Math.round((-pan.y + (typeof window !== 'undefined' ? window.innerHeight / 2 : 400)) / scale / 20) * 20
 
     let w = 40, h = 40
     if (type === 'wall') { w = 200; h = 10 }
+    else if (['corner_wall', 'curved_wall'].includes(type)) { w = 80; h = 80 }
+    else if (['divider', 'glass_wall'].includes(type)) { w = 120; h = 10 }
+    else if (['door', 'sliding_door', 'window', 'arch'].includes(type)) { w = 60; h = 20 }
+    else if (['double_door'].includes(type)) { w = 100; h = 20 }
+    else if (['column', 'shaft'].includes(type)) { w = 40; h = 40 }
+    else if (['stairs', 'escalator', 'elevator'].includes(type)) { w = 80; h = 80 }
     else if (['bench', 'sofa', 'waiting_bench', 'cabinet'].includes(type)) { w = 80; h = 40 }
     else if (['cashier'].includes(type)) { w = 60; h = 40 }
-    else if (['buffet'].includes(type)) { w = 120; h = 40 }
+    else if (['buffet', 'stage'].includes(type)) { w = 120; h = 60 }
+    else if (['dj_booth'].includes(type)) { w = 100; h = 60 }
+    else if (['kitchen_area'].includes(type)) { w = 160; h = 120 }
     else if (['reception_desk'].includes(type)) { w = 80; h = 80 }
     else if (['wheelchair', 'sofa_seat'].includes(type)) { w = 60; h = 60 }
     else if (['coat_rack'].includes(type)) { w = 40; h = 40 }
@@ -365,32 +439,60 @@ export default function FloorPlanPage() {
       rotation: 0, color: type === 'plant' ? '#10b981' : '#4b5563'
     }
     
-    setElements([...elements, newElement])
+    setElements(prev => [...prev, newElement])
     setSelectedElementIds([newElement.id])
     saveToHistory()
   }
 
-  const handleDropItem = (payload: any, pos: {x: number, y: number}) => {
+  const handleDropItem = (payload: any, pos?: {x: number, y: number}) => {
     if (!activeFloorId) return
     
+    let placementPos = pos
+    if (!placementPos) {
+      const spawnX = Math.round((-pan.x + (typeof window !== 'undefined' ? window.innerWidth / 2 : 400)) / scale / 20) * 20
+      const spawnY = Math.round((-pan.y + (typeof window !== 'undefined' ? window.innerHeight / 2 : 400)) / scale / 20) * 20
+      placementPos = { x: spawnX, y: spawnY }
+    }
+
     if (payload.category === 'table') {
-      handleAddTable(payload.shape, payload.capacity)
-      // Adjust position of just added table
-      setTables(prev => {
-        const last = prev[prev.length - 1]
-        last.position = pos
-        return [...prev]
-      })
+      handleAddTable(payload.shape, payload.capacity, payload.presetColor, placementPos)
     } else if (payload.category === 'element') {
       const type = payload.type
+      let w = payload.width || 40
+      let h = payload.height || 40
+
+      if (!payload.width) {
+        if (type === 'wall') { w = 200; h = 10 }
+        else if (['corner_wall', 'curved_wall'].includes(type)) { w = 80; h = 80 }
+        else if (['divider', 'glass_wall'].includes(type)) { w = 120; h = 10 }
+        else if (['door', 'sliding_door', 'window', 'arch'].includes(type)) { w = 60; h = 20 }
+        else if (['double_door'].includes(type)) { w = 100; h = 20 }
+        else if (['column', 'shaft'].includes(type)) { w = 40; h = 40 }
+        else if (['stairs', 'escalator', 'elevator'].includes(type)) { w = 80; h = 80 }
+        else if (['bench', 'sofa', 'waiting_bench', 'cabinet'].includes(type)) { w = 80; h = 40 }
+        else if (['cashier'].includes(type)) { w = 60; h = 40 }
+        else if (['buffet', 'stage'].includes(type)) { w = 120; h = 60 }
+        else if (['dj_booth'].includes(type)) { w = 100; h = 60 }
+        else if (['kitchen_area'].includes(type)) { w = 160; h = 120 }
+        else if (['reception_desk'].includes(type)) { w = 80; h = 80 }
+        else if (['wheelchair', 'sofa_seat'].includes(type)) { w = 60; h = 60 }
+        else if (['coat_rack'].includes(type)) { w = 40; h = 40 }
+        else if (['label'].includes(type)) { w = 130; h = 44 }
+      }
+
       const newElement: any = {
-        id: `elem_${Date.now()}`, floorId: activeFloorId, type,
-        x: pos.x, y: pos.y,
-        width: payload.width || (type === 'label' ? 120 : 40), height: payload.height || (type === 'label' ? 40 : 40),
-        rotation: 0, color: payload.color || '#4b5563',
+        id: `elem_${Date.now()}`,
+        floorId: activeFloorId,
+        type,
+        x: placementPos.x,
+        y: placementPos.y,
+        width: w,
+        height: h,
+        rotation: 0,
+        color: payload.color || (type === 'plant' ? '#10b981' : '#4b5563'),
         ...(payload.text ? { text: payload.text } : {})
       }
-      setElements([...elements, newElement])
+      setElements(prev => [...prev, newElement])
       setSelectedElementIds([newElement.id])
       saveToHistory()
     }
@@ -438,7 +540,7 @@ export default function FloorPlanPage() {
         <FloorPlanToolbar
           onZoomIn={() => setScale(s => Math.min(2, s + 0.1))}
           onZoomOut={() => setScale(s => Math.max(0.5, s - 0.1))}
-          onFitScreen={() => { setScale(0.8); setPan({x: 100, y: 100}); }}
+          onFitScreen={handleFitScreen}
           onSave={handleSave}
           isSaving={isSaving}
           onUndo={undo}
@@ -503,7 +605,7 @@ export default function FloorPlanPage() {
             <>
               {/* Left Sidebar Overlay / Desktop Fixed */}
               <div className={`
-                fixed lg:relative inset-y-0 left-0 z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0
+                fixed lg:relative inset-y-0 left-0 z-50 lg:z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0 max-w-[85vw]
                 ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
               `}>
                 {isMobileSidebarOpen && (
@@ -523,6 +625,10 @@ export default function FloorPlanPage() {
                     handleAddElement(type)
                     setIsMobileSidebarOpen(false)
                   }}
+                  onAddItem={(payload) => {
+                    handleDropItem(payload)
+                    setIsMobileSidebarOpen(false)
+                  }}
                   activeColor={activeColor}
                   onColorChange={() => {}}
                 />
@@ -531,7 +637,7 @@ export default function FloorPlanPage() {
               {/* Mobile backdrop overlay */}
               {(isMobileSidebarOpen || isMobilePropertiesOpen) && (
                 <div 
-                  className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-30" 
+                  className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-40" 
                   onClick={() => {
                     setIsMobileSidebarOpen(false)
                     setIsMobilePropertiesOpen(false)
@@ -549,7 +655,11 @@ export default function FloorPlanPage() {
                       setIsMobileSidebarOpen(!isMobileSidebarOpen)
                       setIsMobilePropertiesOpen(false)
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md backdrop-blur-md border border-slate-700 active:scale-95 transition-all"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-md backdrop-blur-md border transition-all active:scale-95 ${
+                      isMobileSidebarOpen
+                        ? "bg-[#FF385C] text-white border-[#FF385C]"
+                        : "bg-slate-900/90 text-white hover:bg-slate-800 border-slate-700"
+                    }`}
                   >
                     <PanelLeftOpen className="w-3.5 h-3.5 text-[#FF385C]" />
                     <span>{t("restaurant.floorPlan.assets", "Assets")}</span>
@@ -560,10 +670,17 @@ export default function FloorPlanPage() {
                       setIsMobilePropertiesOpen(!isMobilePropertiesOpen)
                       setIsMobileSidebarOpen(false)
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md backdrop-blur-md border border-slate-700 active:scale-95 transition-all"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-md backdrop-blur-md border transition-all active:scale-95 ${
+                      isMobilePropertiesOpen || selectedElementIds.length > 0
+                        ? "bg-[#FF385C] text-white border-[#FF385C]"
+                        : "bg-slate-900/90 text-white hover:bg-slate-800 border-slate-700"
+                    }`}
                   >
                     <PanelRightOpen className="w-3.5 h-3.5 text-[#FF385C]" />
                     <span>{t("restaurant.floorPlan.properties", "Properties")}</span>
+                    {selectedElementIds.length > 0 && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    )}
                   </button>
                 </div>
 
@@ -591,6 +708,7 @@ export default function FloorPlanPage() {
                   scale={scale}
                   pan={pan}
                   onPanChange={setPan}
+                  onScaleChange={setScale}
                   onDropItem={handleDropItem}
                   gridEnabled={gridEnabled}
                   snapEnabled={snapEnabled}
@@ -611,7 +729,7 @@ export default function FloorPlanPage() {
 
               {/* Right Properties Panel Overlay / Desktop Fixed */}
               <div className={`
-                fixed lg:relative inset-y-0 right-0 z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0
+                fixed lg:relative inset-y-0 right-0 z-50 lg:z-40 bg-white transition-transform duration-300 shadow-2xl lg:shadow-none h-full shrink-0 max-w-[85vw]
                 ${isMobilePropertiesOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
               `}>
                 {isMobilePropertiesOpen && (

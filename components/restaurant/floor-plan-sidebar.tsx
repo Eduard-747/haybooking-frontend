@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, createContext, useContext } from "react"
 import { useTranslation } from "react-i18next"
 import { 
   ChevronDown, ChevronRight, LayoutPanelTop, Search, 
@@ -9,7 +9,7 @@ import {
   Circle, RectangleHorizontal, Sofa, GlassWater, Martini, PenTool, Armchair, Wine, ConciergeBell, Banknote, Soup, Shirt, Archive,
   ChefHat, Flame, Microwave, Droplet, Snowflake, Waves, LayoutGrid, Table, Bath, User, Accessibility, Wrench, ArrowUpDown,
   Flower2, TreePine, Umbrella, Grid3X3, LayoutDashboard, Sun, Tag,
-  Minus, TrendingUp, XSquare, ArrowUpRight, Pill, Link, MoveHorizontal, FoldHorizontal, Coffee, Users, Baby, PartyPopper
+  Minus, TrendingUp, XSquare, ArrowUpRight, Pill, Link, MoveHorizontal, FoldHorizontal, Coffee, Users, Baby, PartyPopper, Mic, Headphones, Disc, Flag, Utensils, Crown, Cigarette, Clock
 } from "lucide-react"
 import { 
   RoundTableIcon, SquareTableIcon, RectangleTableIcon, OvalTableIcon, CapsuleTableIcon, BarTableIcon, HighTableIcon, BoothIcon, CustomTableIcon,
@@ -24,9 +24,12 @@ import {
 interface Props {
   onAddTable: (shape: string, capacity: number, presetColor?: string) => void
   onAddElement: (type: string) => void
+  onAddItem?: (payload: any) => void
   activeColor: string
   onColorChange: (color: string) => void
 }
+
+const ItemAddContext = createContext<(payload: any) => void>(() => {})
 
 function DragItem({
   label,
@@ -37,22 +40,31 @@ function DragItem({
 }: {
   label: string
   icon?: React.ReactNode
-  payload: object
+  payload: any
   onClick?: () => void
   badge?: string
 }) {
+  const onItemClick = useContext(ItemAddContext)
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick()
+    }
+    onItemClick(payload)
+  }
+
   return (
     <div
       draggable
       onDragStart={(e) => e.dataTransfer.setData("floor-plan-item", JSON.stringify(payload))}
-      onClick={onClick}
-      className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 rounded-lg cursor-grab active:cursor-grabbing transition-colors group"
+      onClick={handleClick}
+      className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer active:scale-98 transition-all group select-none"
     >
       <div className="flex items-center gap-3">
         <div className="w-6 h-6 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
           {icon || <div className="w-2 h-2 rounded-full bg-gray-400 group-hover:bg-blue-500 transition-colors" />}
         </div>
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
       </div>
       {badge && (
         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded text-violet-600 border border-violet-300 bg-violet-50 tracking-wider">
@@ -90,25 +102,36 @@ function Category({ title, icon, defaultOpen = false, children }: { title: strin
   )
 }
 
-export function FloorPlanSidebar({ onAddTable, onAddElement, activeColor, onColorChange }: Props) {
+export function FloorPlanSidebar({ onAddTable, onAddElement, onAddItem, activeColor, onColorChange }: Props) {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
+  const handleAddItem = (payload: any) => {
+    if (onAddItem) {
+      onAddItem(payload)
+    } else if (payload.category === 'table') {
+      onAddTable(payload.shape, payload.capacity, payload.presetColor)
+    } else if (payload.category === 'element') {
+      onAddElement(payload.type)
+    }
+  }
+
   return (
-    <div className="w-[280px] h-full bg-white border-r border-gray-200 flex flex-col z-20 shrink-0 font-sans shadow-sm">
-      {/* Search Header */}
-      <div className="p-4 border-b border-gray-200 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder={t("restaurant.floorPlan.searchAssets", "Search assets...")} 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-          />
+    <ItemAddContext.Provider value={handleAddItem}>
+      <div className="w-[280px] max-w-full h-full bg-white border-r border-gray-200 flex flex-col z-20 shrink-0 font-sans shadow-sm">
+        {/* Search Header */}
+        <div className="p-4 border-b border-gray-200 shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder={t("restaurant.floorPlan.searchAssets", "Search assets...")} 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            />
+          </div>
         </div>
-      </div>
 
       {/* Categories */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -178,6 +201,11 @@ export function FloorPlanSidebar({ onAddTable, onAddElement, activeColor, onColo
           <DragItem label={t("restaurant.assets.eventTable", "Event Table")} icon={<EventTableIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'table', shape: 'event_table', capacity: 12 }} onClick={() => onAddTable('event_table', 12)} />
         </Category>
 
+        <Category title={t("restaurant.assets.stageEntertainment", "Stage & DJ")} icon={<Mic className="w-4 h-4" />}>
+          <DragItem label={t("restaurant.assets.stage", "Stage")} icon={<Mic className="w-4 h-4" />} payload={{ category: 'element', type: 'stage' }} />
+          <DragItem label={t("restaurant.assets.djBooth", "DJ Booth")} icon={<Disc className="w-4 h-4" />} payload={{ category: 'element', type: 'dj_booth' }} />
+        </Category>
+
         <Category title={t("restaurant.assets.chairsSeating", "Chairs & Seating")} icon={<Armchair className="w-4 h-4" />}>
           <DragItem label={t("restaurant.assets.woodenChair", "Wooden Chair")} icon={<WoodenChairIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'wooden_chair' }} />
           <DragItem label={t("restaurant.assets.armchair", "Armchair")} icon={<ArmchairIcon className="w-12 h-12 -ml-2" />} payload={{ category: 'element', type: 'armchair' }} />
@@ -188,6 +216,7 @@ export function FloorPlanSidebar({ onAddTable, onAddElement, activeColor, onColo
         </Category>
 
         <Category title={t("restaurant.assets.decorStorage", "Decor & Storage")} icon={<Archive className="w-4 h-4" />}>
+          <DragItem label={t("restaurant.assets.banner", "Banner")} icon={<Flag className="w-4 h-4" />} payload={{ category: 'element', type: 'banner' }} />
           <DragItem label={t("restaurant.assets.receptionDesk", "Reception Desk")} icon={<ConciergeBell className="w-4 h-4" />} payload={{ category: 'element', type: 'reception_desk' }} />
           <DragItem label={t("restaurant.assets.cashier", "Cashier")} icon={<Banknote className="w-4 h-4" />} payload={{ category: 'element', type: 'cashier' }} />
           <DragItem label={t("restaurant.assets.buffet", "Buffet")} icon={<Soup className="w-4 h-4" />} payload={{ category: 'element', type: 'buffet' }} />
@@ -227,16 +256,18 @@ export function FloorPlanSidebar({ onAddTable, onAddElement, activeColor, onColo
         </Category>
 
         <Category title={t("restaurant.assets.labels", "Labels")} icon={<Tags className="w-4 h-4" />}>
-          <DragItem label={t("restaurant.assets.labelKitchen", "Kitchen")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Kitchen' }} />
-          <DragItem label={t("restaurant.assets.diningArea", "Dining Area")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Dining Area' }} />
-          <DragItem label={t("restaurant.assets.labelVip", "VIP")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'VIP' }} />
-          <DragItem label={t("restaurant.assets.terrace", "Terrace")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Terrace' }} />
-          <DragItem label={t("restaurant.assets.smoking", "Smoking")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Smoking' }} />
-          <DragItem label={t("restaurant.assets.labelBar", "Bar")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Bar' }} />
-          <DragItem label={t("restaurant.assets.waitingArea", "Waiting Area")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Waiting Area' }} />
-          <DragItem label={t("restaurant.assets.privateRoom", "Private Room")} icon={<Tag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Private Room' }} />
+          <DragItem label={t("restaurant.assets.labelBanner", "Banner")} icon={<Flag className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Banner', width: 130, height: 44 }} />
+          <DragItem label={t("restaurant.assets.labelKitchen", "Kitchen")} icon={<ChefHat className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Kitchen', width: 130, height: 44 }} />
+          <DragItem label={t("restaurant.assets.diningArea", "Dining Area")} icon={<Utensils className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Dining Area', width: 140, height: 44 }} />
+          <DragItem label={t("restaurant.assets.labelVip", "VIP")} icon={<Crown className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'VIP', width: 120, height: 44 }} />
+          <DragItem label={t("restaurant.assets.terrace", "Terrace")} icon={<TreePine className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Terrace', width: 130, height: 44 }} />
+          <DragItem label={t("restaurant.assets.smoking", "Smoking")} icon={<Cigarette className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Smoking', width: 140, height: 44 }} />
+          <DragItem label={t("restaurant.assets.labelBar", "Bar")} icon={<Martini className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Bar', width: 120, height: 44 }} />
+          <DragItem label={t("restaurant.assets.waitingArea", "Waiting Area")} icon={<Clock className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Waiting Area', width: 140, height: 44 }} />
+          <DragItem label={t("restaurant.assets.privateRoom", "Private Room")} icon={<DoorOpen className="w-4 h-4" />} payload={{ category: 'element', type: 'label', text: 'Private Room', width: 150, height: 44 }} />
         </Category>
       </div>
     </div>
+    </ItemAddContext.Provider>
   )
 }

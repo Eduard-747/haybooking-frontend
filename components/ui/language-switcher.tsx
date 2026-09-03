@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Globe, ChevronDown, Check } from "lucide-react"
 import {
@@ -18,9 +18,18 @@ const languages = [
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation()
+  const [mounted, setMounted] = useState(false)
 
-  const currentLangCode = (i18n.language || "en").substring(0, 2)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const rawCode = (i18n.language || "en").substring(0, 2)
+  const currentLangCode = rawCode === "hy" ? "am" : rawCode
   const currentLang = languages.find((l) => l.code === currentLangCode) || languages[0]
+
+  const displayLang = mounted ? currentLang : languages[0]
+  const displayLangCode = mounted ? currentLangCode : "en"
 
   const handleLanguageChange = (lng: string) => {
     i18n.changeLanguage(lng)
@@ -32,13 +41,13 @@ export function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-1.5 bg-[#FAFAFA] border border-border/60 hover:border-[#FF4444] rounded-xl text-xs sm:text-sm font-semibold shadow-2xs transition-all focus:outline-none focus:ring-2 focus:ring-[#FF4444]/20 shrink-0">
           <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-          <span className="text-foreground">{currentLang.label}</span>
+          <span className="text-foreground" suppressHydrationWarning>{displayLang.label}</span>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36 rounded-xl p-1.5 border-border/60 shadow-lg bg-white">
         {languages.map((lang) => {
-          const isActive = currentLangCode === lang.code
+          const isActive = displayLangCode === lang.code
           return (
             <DropdownMenuItem
               key={lang.code}

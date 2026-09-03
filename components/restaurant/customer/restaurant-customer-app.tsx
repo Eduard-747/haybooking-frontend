@@ -6,7 +6,8 @@ import { BusinessHero } from "@/components/booking/business-hero"
 import { OverviewTab } from "./tabs/overview-tab"
 import { BookingTab } from "./tabs/booking-tab"
 import { MenuTab } from "./tabs/menu-tab"
-import { Info, Calendar, UtensilsCrossed, Star, MapPin } from "lucide-react"
+import { GalleryTab } from "./tabs/gallery-tab"
+import { Info, Calendar, UtensilsCrossed, Star, MapPin, Image as ImageIcon } from "lucide-react"
 
 export function RestaurantCustomerApp({
   partner,
@@ -30,7 +31,7 @@ export function RestaurantCustomerApp({
   onBookTable
 }: any) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<"overview" | "book" | "menu" | "reviews">("book")
+  const [activeTab, setActiveTab] = useState<"overview" | "book" | "menu" | "gallery" | "reviews">("book")
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
@@ -69,49 +70,60 @@ export function RestaurantCustomerApp({
         )}
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex gap-1 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-border/60 w-full md:w-fit shadow-sm overflow-x-auto custom-scrollbar">
+        <div className="mb-8 flex gap-1.5 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl border border-border/60 w-full sm:w-fit shadow-xs overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab("book")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
               activeTab === "book"
-                ? "bg-[#FF4444] text-white shadow-md scale-105"
+                ? "bg-[#FF4444] text-white shadow-md"
                 : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
             }`}
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4 shrink-0" />
             {t("restaurant.reserve_table", "Reserve Table")}
           </button>
           <button
             onClick={() => setActiveTab("menu")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
               activeTab === "menu"
-                ? "bg-gray-900 text-white shadow-md scale-105"
+                ? "bg-[#FF4444] text-white shadow-md"
                 : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
             }`}
           >
-            <UtensilsCrossed className="h-4 w-4" />
+            <UtensilsCrossed className="h-4 w-4 shrink-0" />
             {t("restaurant.our_menu", "Our Menu")}
           </button>
           <button
-            onClick={() => setActiveTab("overview")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "overview"
-                ? "bg-gray-900 text-white shadow-md scale-105"
+            onClick={() => setActiveTab("gallery")}
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+              activeTab === "gallery"
+                ? "bg-[#FF4444] text-white shadow-md"
                 : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
             }`}
           >
-            <Info className="h-4 w-4" />
+            <ImageIcon className="h-4 w-4 shrink-0" />
+            {t("nav.gallery", "Gallery")}
+          </button>
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+              activeTab === "overview"
+                ? "bg-[#FF4444] text-white shadow-md"
+                : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+            }`}
+          >
+            <Info className="h-4 w-4 shrink-0" />
             {t("restaurant.overview", "Overview")}
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
               activeTab === "reviews"
-                ? "bg-gray-900 text-white shadow-md scale-105"
+                ? "bg-[#FF4444] text-white shadow-md"
                 : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
             }`}
           >
-            <Star className="h-4 w-4" />
+            <Star className="h-4 w-4 shrink-0" />
             {t("restaurant.reviews_count", "Reviews (124)", { count: 124 })}
           </button>
         </div>
@@ -147,6 +159,10 @@ export function RestaurantCustomerApp({
 
           {activeTab === "menu" && (
             <MenuTab partnerId={partner._id} branchId={selectedBranch} />
+          )}
+
+          {activeTab === "gallery" && (
+            <GalleryTab branches={branches} selectedBranch={selectedBranch} />
           )}
 
           {activeTab === "reviews" && (

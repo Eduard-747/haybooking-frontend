@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 import { Logo } from "@/components/ui/logo"
+import { detectLanguage } from "@/lib/search-transliteration"
+
 interface SpecialistsHeaderProps {
   searchQuery: string
   onSearchChange: (query: string) => void
@@ -30,8 +32,13 @@ export function SpecialistsHeader({ searchQuery, onSearchChange }: SpecialistsHe
               placeholder="Search specialists..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary"
+              className="pl-10 pr-12 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary"
             />
+            {detectLanguage(searchQuery) !== 'unknown' && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase pointer-events-none">
+                {detectLanguage(searchQuery)}
+              </span>
+            )}
           </div>
         </div>
 

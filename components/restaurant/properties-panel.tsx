@@ -42,7 +42,7 @@ export function PropertiesPanel({
     const availableTables = activeTables.filter(t => t.status === "available").length
     
     return (
-      <div className="w-[280px] bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
+      <div className="w-[280px] max-w-full bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
         <div className="p-4 border-b border-gray-100 flex items-center gap-2">
           <Info className="w-4 h-4 text-gray-500" />
           <h3 className="font-semibold text-gray-800 text-sm">{t("restaurant.floorPlan.floorInfo", "Floor Information")}</h3>
@@ -56,7 +56,9 @@ export function PropertiesPanel({
           
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t("restaurant.floorPlan.currentFloorLabel", "CURRENT FLOOR")}</label>
-            <div className="text-sm font-medium text-gray-900">{activeFloor?.name || t("restaurant.floorPlan.noFloorSelected", "No Floor Selected")}</div>
+            <div className="text-sm font-medium text-gray-900">
+              {activeFloor ? (activeFloor.name?.match(/^Floor\s+(\d+)$/i) ? t("restaurant.floorPlan.floorNum", "Floor {{num}}", { num: activeFloor.name.match(/^Floor\s+(\d+)$/i)[1] }) : activeFloor.name) : t("restaurant.floorPlan.noFloorSelected", "No Floor Selected")}
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
@@ -99,7 +101,7 @@ export function PropertiesPanel({
     if (!table) return null
 
     return (
-      <div className="w-[280px] bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
+      <div className="w-[280px] max-w-full bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
         <div className="p-4 border-b border-gray-100">
           <h3 className="font-semibold text-gray-800 text-sm">{t("restaurant.floorPlan.tableProperties", "Table Properties")}</h3>
         </div>
@@ -201,7 +203,7 @@ export function PropertiesPanel({
   if (!element) return null
   
   return (
-    <div className="w-[280px] bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
+    <div className="w-[280px] max-w-full bg-white border-l border-gray-200 flex flex-col h-full font-sans shrink-0 shadow-sm z-20">
       <div className="p-4 border-b border-gray-100">
         <h3 className="font-semibold text-gray-800 text-sm capitalize">{element.type.replace('_', ' ')} Properties</h3>
       </div>

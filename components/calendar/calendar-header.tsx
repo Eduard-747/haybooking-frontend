@@ -18,6 +18,7 @@ export function CalendarHeader({
   currentDate,
   onDateChange,
   viewMode,
+  onViewModeChange,
 }: CalendarHeaderProps) {
   const { i18n } = useTranslation()
 

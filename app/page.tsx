@@ -10,11 +10,26 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { ChevronLeft, ChevronRight, Scissors, Heart, Dumbbell, Utensils, Home, PawPrint, Camera, Car, MoreHorizontal } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
+import { useMultilingualSearch } from "@/hooks/use-multilingual-search"
+import { matchMultilingualQuery } from "@/lib/search-transliteration"
+
 const ITEMS_PER_PAGE = 12
 
 const fallbackBusinesses = [
   {
     id: "1",
+    name: "Lusy beauty salon",
+    fullName: "Lusy beauty salon",
+    rating: 5.0,
+    reviews: 10,
+    image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&h=400&fit=crop",
+    services: ["landing.catBeautyWellness"],
+    rawType: "beauty",
+    distance: "3.5 km away",
+    closingTime: "Closes 7 PM",
+  },
+  {
+    id: "2",
     name: "Glamour Studio",
     fullName: "Glamour Studio",
     rating: 4.9,
@@ -26,7 +41,7 @@ const fallbackBusinesses = [
     closingTime: "Closes 8 PM",
   },
   {
-    id: "2",
+    id: "3",
     name: "Zen Spa Retreat",
     fullName: "Zen Spa Retreat",
     rating: 4.8,
@@ -38,7 +53,7 @@ const fallbackBusinesses = [
     closingTime: "Closes 9 PM",
   },
   {
-    id: "3",
+    id: "4",
     name: "The Olive Garden",
     fullName: "The Olive Garden",
     rating: 4.7,
@@ -50,7 +65,7 @@ const fallbackBusinesses = [
     closingTime: "Closes 11 PM",
   },
   {
-    id: "4",
+    id: "5",
     name: "Home Clean Experts",
     fullName: "Home Clean Experts",
     rating: 4.6,
@@ -62,7 +77,7 @@ const fallbackBusinesses = [
     closingTime: "Closes 10 PM",
   },
   {
-    id: "5",
+    id: "6",
     name: "Precision Auto Care",
     fullName: "Precision Auto Care",
     rating: 4.6,
@@ -74,7 +89,7 @@ const fallbackBusinesses = [
     closingTime: "Closes 7 PM",
   },
   {
-    id: "6",
+    id: "7",
     name: "Bright Dental Studio",
     fullName: "Bright Dental Studio",
     rating: 5.0,
@@ -91,10 +106,22 @@ export default function HomePage() {
   const { user } = useAuth()
   const { t } = useTranslation()
   const [businesses, setBusinesses] = useState<any[]>(fallbackBusinesses)
-  const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState("All")
   const [currentPage, setCurrentPage] = useState(1)
   const [pastBookedIds, setPastBookedIds] = useState<Set<string>>(new Set())
+
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    debouncedQuery,
+    results: rawServerPartners,
+  } = useMultilingualSearch<any>({
+    endpoint: "/partners",
+    debounceMs: 250,
+    params: {
+      category: activeCategory !== "All" ? activeCategory : undefined,
+    },
+  })
 
   // Reset page when filters change
   useEffect(() => {
@@ -104,19 +131,10 @@ export default function HomePage() {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const [res, branchesRes] = await Promise.all([
-          api.get('/partners'),
-          api.get('/branches').catch(() => ({ data: [] }))
-        ])
+        const branchesRes = await api.get('/branches').catch(() => ({ data: [] }))
+        const branchesData = branchesRes.data || []
 
-        const branchesData = branchesRes.data
-
-        const formatted = res.data.map((p: any) => {
-          const partnerBranches = branchesData.filter((b: any) => b.partnerId && b.partnerId._id === p._id)
-          const addresses = partnerBranches.map((b: any) =>
-            [b.address?.line1, b.address?.city, b.address?.country, b.address?.zipCode].filter(Boolean).join(" ")
-          )
-
+        if (Array.isArray(rawServerPartners) && rawServerPartners.length > 0) {
           const typeLabels: Record<string, string> = {
             health: "landing.catHealthMedical",
             medical: "landing.catHealthMedical",
@@ -137,20 +155,29 @@ export default function HomePage() {
             other: "landing.catOther"
           }
 
-          return {
-            id: p._id,
-            name: p.businessName,
-            fullName: p.businessName,
-            rating: 5.0,
-            reviews: p.bookingCount || 0,
-            image: p.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
-            services: [typeLabels[p.businessType] || p.businessType || "landing.catOther"],
-            rawType: p.businessType || "other",
-            addresses: addresses.join(" | ")
-          }
-        })
-        if (formatted.length > 0) {
+          const formatted = rawServerPartners.map((p: any) => {
+            const partnerBranches = branchesData.filter((b: any) => b.partnerId && b.partnerId._id === p._id)
+            const addresses = partnerBranches.map((b: any) =>
+              [b.address?.line1, b.address?.city, b.address?.country, b.address?.zipCode].filter(Boolean).join(" ")
+            )
+            const serviceNames = (p.partnerServices || []).map((s: any) => s.name).join(" ")
+
+            return {
+              id: p._id,
+              name: p.businessName,
+              fullName: p.businessName,
+              rating: 5.0,
+              reviews: p.bookingCount || 0,
+              image: p.image || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=400&fit=crop",
+              services: [typeLabels[p.businessType] || p.businessType || "landing.catOther"],
+              rawType: p.businessType || "other",
+              addresses: addresses.join(" | "),
+              serviceNames,
+            }
+          })
           setBusinesses(formatted)
+        } else if (rawServerPartners && rawServerPartners.length === 0 && debouncedQuery) {
+          setBusinesses([])
         }
 
         if (localStorage.getItem('access_token')) {
@@ -172,7 +199,7 @@ export default function HomePage() {
       }
     }
     fetchPartners()
-  }, [])
+  }, [rawServerPartners])
 
   // Dynamically calculate category list & counts from backend business data
   const dynamicCategories = useMemo<CategoryItem[]>(() => {
@@ -215,6 +242,7 @@ export default function HomePage() {
     const safeName = business.name || ""
     const safeServices = Array.isArray(business.services) ? business.services : []
     const safeAddresses = business.addresses || ""
+    const safeServiceNames = business.serviceNames || ""
     const rawType = (business.rawType || "").toLowerCase()
 
     let matchesCategory = activeCategory === "All"
@@ -232,12 +260,12 @@ export default function HomePage() {
         safeServices.some((s: string) => (s || "").toLowerCase().includes(activeLower))
     }
 
-    const query = (searchQuery || "").toLowerCase()
     const matchesQuery =
-      !query ||
-      safeName.toLowerCase().includes(query) ||
-      safeServices.some((s: string) => (s || "").toLowerCase().includes(query)) ||
-      safeAddresses.toLowerCase().includes(query)
+      !searchQuery ||
+      matchMultilingualQuery(safeName, searchQuery) ||
+      safeServices.some((s: string) => matchMultilingualQuery(s, searchQuery)) ||
+      matchMultilingualQuery(safeAddresses, searchQuery) ||
+      matchMultilingualQuery(safeServiceNames, searchQuery)
 
     return matchesCategory && matchesQuery
   })

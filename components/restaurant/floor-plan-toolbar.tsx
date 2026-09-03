@@ -57,13 +57,13 @@ const ToolBtn = ({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`p-1.5 rounded-lg transition-all duration-200 shrink-0 flex items-center justify-center ${
+      className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 shrink-0 flex items-center justify-center ${
         active
           ? activeStyles
           : "text-slate-600 hover:text-slate-900 hover:bg-white hover:shadow-2xs"
       } disabled:opacity-30 disabled:pointer-events-none active:scale-95`}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
     </button>
   )
 }
@@ -82,11 +82,20 @@ export function FloorPlanToolbar({
 
   const activeFloor = floors.find(f => f._id === activeFloorId)
 
-  return (
-    <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/90 px-3 sm:px-4 h-14 flex items-center justify-between shrink-0 shadow-xs z-30 w-full select-none gap-2 overflow-x-auto custom-scrollbar">
+  const getFloorDisplayName = (floor: any) => {
+    if (!floor) return t("restaurant.floorPlan.selectFloor", "Select Floor")
+    const match = floor.name?.match(/^Floor\s+(\d+)$/i)
+    if (match) {
+      return t("restaurant.floorPlan.floorNum", "Floor {{num}}", { num: match[1] })
+    }
+    return floor.name
+  }
 
-      {/* Left Section: Floor Selector & Tool Capsules */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+  return (
+    <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between shrink-0 shadow-2xs z-30 w-full select-none gap-2 px-2.5 py-2 md:py-0 md:px-4 md:h-14 overflow-hidden">
+
+      {/* Top Header Row on Mobile / Left Section on Desktop */}
+      <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-auto">
         
         {/* Floor Selection Pill Dropdown & Quick Add Button */}
         <div className="relative shrink-0 flex items-center gap-1.5 z-50">
@@ -94,11 +103,11 @@ export function FloorPlanToolbar({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 border border-slate-800 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 border border-slate-800 cursor-pointer"
               >
                 <Layers className="w-3.5 h-3.5 text-[#FF385C]" />
-                <span>
-                  {activeFloor ? activeFloor.name : t("restaurant.floorPlan.selectFloor", "Select Floor")}
+                <span className="max-w-[100px] sm:max-w-[140px] truncate">
+                  {getFloorDisplayName(activeFloor)}
                 </span>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showFloorDropdown ? "rotate-180" : ""}`} />
               </button>
@@ -128,7 +137,7 @@ export function FloorPlanToolbar({
                     {activeFloorId === floor._id && (
                       <span className="w-1.5 h-1.5 rounded-full bg-[#FF385C] shrink-0" />
                     )}
-                    <span className="truncate">{floor.name}</span>
+                    <span className="truncate">{getFloorDisplayName(floor)}</span>
                   </button>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -182,49 +191,70 @@ export function FloorPlanToolbar({
             type="button"
             onClick={onAddFloor}
             title={t("restaurant.floorPlan.addFloor", "Add Floor")}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#FF385C] border border-rose-200 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 shrink-0 cursor-pointer"
+            className="flex items-center justify-center p-1.5 sm:px-3 sm:py-1.5 bg-rose-50 hover:bg-rose-100 text-[#FF385C] border border-rose-200 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 shrink-0 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t("restaurant.floorPlan.addFloor", "Add Floor")}</span>
+            <span className="hidden sm:inline ml-1">{t("restaurant.floorPlan.addFloor", "Add Floor")}</span>
           </button>
         </div>
 
-        {/* Capsule 1: Edit History & Actions */}
-        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
-          <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title={`${t("restaurant.floorPlan.undo", "Undo")} (Ctrl+Z)`} />
-          <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title={`${t("restaurant.floorPlan.redo", "Redo")} (Ctrl+Y)`} />
-          <div className="h-4 w-px bg-slate-200/80 mx-0.5 shrink-0" />
-          <ToolBtn icon={Copy} onClick={onCopy} title={`${t("restaurant.floorPlan.copy", "Copy")} (Ctrl+C)`} />
-          <ToolBtn icon={ClipboardPaste} onClick={onPaste} title={`${t("restaurant.floorPlan.paste", "Paste")} (Ctrl+V)`} />
-          <ToolBtn icon={CopyPlus} onClick={onDuplicate} title={`${t("restaurant.floorPlan.duplicate", "Duplicate")} (Ctrl+D)`} />
-          <ToolBtn icon={Trash2} onClick={onDelete} title={`${t("restaurant.floorPlan.delete", "Delete")} (Del)`} />
+        {/* Action Buttons on Mobile (AI & Save) */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          {/* AI Generator Button */}
+          <button
+            onClick={onOpenAiModal}
+            title="AI Generate Floor Plan"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-[#FF385C] rounded-xl hover:opacity-95 transition-all shrink-0 shadow-2xs active:scale-95 border border-white/20"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+            <span className="bg-black/30 text-amber-300 text-[10px] font-extrabold px-1 rounded border border-white/20">$0.99</span>
+          </button>
+
+          {/* Main Coral Save Button */}
+          <button
+            onClick={onSave}
+            disabled={isSaving}
+            className="flex items-center gap-1 px-3 py-1.5 bg-[#FF385C] hover:bg-[#E0304F] text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-2xs active:scale-95 shrink-0"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{isSaving ? "..." : t("restaurant.floorPlan.saveLayout", "Save")}</span>
+          </button>
         </div>
 
-        {/* Capsule 2: Interactive Mode Tools */}
-        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
-          <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} activeVariant="coral" title={`${t("restaurant.floorPlan.selectTool", "Selection Tool")} (V)`} />
-          <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} activeVariant="coral" title={`${t("restaurant.floorPlan.panTool", "Pan Tool")} (Space)`} />
-          <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} activeVariant="coral" title={t("restaurant.floorPlan.drawWall", "Draw Wall")} />
-          <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} activeVariant="coral" title={t("restaurant.floorPlan.drawRoom", "Draw Room")} />
-          <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} activeVariant="coral" title={t("restaurant.floorPlan.addLabel", "Add Label")} />
-        </div>
-
-        {/* Capsule 3: Canvas View & Toggles */}
-        <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200/70 shrink-0 shadow-2xs">
-          <ToolBtn icon={ZoomOut} onClick={onZoomOut} title="Zoom Out (-)" />
-          <ToolBtn icon={ZoomIn} onClick={onZoomIn} title="Zoom In (+)" />
-          <ToolBtn icon={Maximize} onClick={onFitScreen} title="Fit Screen (Shift+1)" />
-          <div className="h-4 w-px bg-slate-200/80 mx-0.5 shrink-0" />
-          <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleGrid", "Toggle Grid")} />
-          <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleSnap", "Toggle Snap")} />
-          <ToolBtn icon={Ruler} onClick={() => setMeasurementEnabled?.(!measurementEnabled)} active={measurementEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleMeasurements", "Toggle Measurements")} />
-          <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} activeVariant="dark" title={t("restaurant.floorPlan.previewMode", "Preview Mode")} />
-        </div>
       </div>
 
-      {/* Right Section: AI Generator, Quick Search & Save */}
-      <div className="flex items-center gap-2.5 shrink-0">
+      {/* Tools Ribbon (Unified Horizontally Scrollable Bar on Mobile) */}
+      <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 shadow-2xs overflow-x-auto no-scrollbar w-full md:w-auto shrink-0">
+        <ToolBtn icon={Undo} onClick={onUndo} disabled={!canUndo} title={`${t("restaurant.floorPlan.undo", "Undo")} (Ctrl+Z)`} />
+        <ToolBtn icon={Redo} onClick={onRedo} disabled={!canRedo} title={`${t("restaurant.floorPlan.redo", "Redo")} (Ctrl+Y)`} />
         
+        <div className="h-4 w-px bg-slate-300/80 mx-0.5 shrink-0" />
+        
+        <ToolBtn icon={Copy} onClick={onCopy} title={`${t("restaurant.floorPlan.copy", "Copy")} (Ctrl+C)`} />
+        <ToolBtn icon={ClipboardPaste} onClick={onPaste} title={`${t("restaurant.floorPlan.paste", "Paste")} (Ctrl+V)`} />
+        <ToolBtn icon={CopyPlus} onClick={onDuplicate} title={`${t("restaurant.floorPlan.duplicate", "Duplicate")} (Ctrl+D)`} />
+        <ToolBtn icon={Trash2} onClick={onDelete} title={`${t("restaurant.floorPlan.delete", "Delete")} (Del)`} />
+        
+        <div className="h-4 w-px bg-slate-300/80 mx-0.5 shrink-0" />
+        
+        <ToolBtn icon={MousePointer2} onClick={() => setMode?.("select")} active={mode === "select"} activeVariant="coral" title={`${t("restaurant.floorPlan.selectTool", "Selection Tool")} (V)`} />
+        <ToolBtn icon={Hand} onClick={() => setMode?.("pan")} active={mode === "pan"} activeVariant="coral" title={`${t("restaurant.floorPlan.panTool", "Pan Tool")} (Space)`} />
+        <ToolBtn icon={SquarePen} onClick={() => setMode?.("draw_wall")} active={mode === "draw_wall"} activeVariant="coral" title={t("restaurant.floorPlan.drawWall", "Draw Wall")} />
+        <ToolBtn icon={BoxSelect} onClick={() => setMode?.("draw_room")} active={mode === "draw_room"} activeVariant="coral" title={t("restaurant.floorPlan.drawRoom", "Draw Room")} />
+        <ToolBtn icon={Type} onClick={() => setMode?.("add_label")} active={mode === "add_label"} activeVariant="coral" title={t("restaurant.floorPlan.addLabel", "Add Label")} />
+        
+        <div className="h-4 w-px bg-slate-300/80 mx-0.5 shrink-0" />
+        
+        <ToolBtn icon={ZoomOut} onClick={onZoomOut} title="Zoom Out (-)" />
+        <ToolBtn icon={ZoomIn} onClick={onZoomIn} title="Zoom In (+)" />
+        <ToolBtn icon={Maximize} onClick={onFitScreen} title="Fit Screen (Shift+1)" />
+        <ToolBtn icon={Grid} onClick={() => setGridEnabled?.(!gridEnabled)} active={gridEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleGrid", "Toggle Grid")} />
+        <ToolBtn icon={Magnet} onClick={() => setSnapEnabled?.(!snapEnabled)} active={snapEnabled} activeVariant="dark" title={t("restaurant.floorPlan.toggleSnap", "Toggle Snap")} />
+        <ToolBtn icon={Eye} onClick={() => setPreviewMode?.(!previewMode)} active={previewMode} activeVariant="dark" title={t("restaurant.floorPlan.previewMode", "Preview Mode")} />
+      </div>
+
+      {/* Right Section on Desktop: AI Generator & Save Button */}
+      <div className="hidden md:flex items-center gap-2.5 shrink-0">
         {/* AI Generator Button */}
         <button
           onClick={onOpenAiModal}
@@ -232,31 +262,11 @@ export function FloorPlanToolbar({
           className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-[#FF385C] rounded-xl hover:opacity-95 transition-all shrink-0 shadow-md shadow-indigo-500/20 active:scale-95 border border-white/20"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-          <span className="hidden sm:inline">{t("restaurant.floorPlan.aiGenerate", "AI Generate")}</span>
+          <span>{t("restaurant.floorPlan.aiGenerate", "AI Generate")}</span>
           <span className="bg-black/30 text-amber-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ml-0.5 border border-white/20">$0.99</span>
         </button>
 
-        {/* Quick Tool Search Input */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-          <input 
-            type="text" 
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder={t("restaurant.floorPlan.searchTools", "Search tools...")} 
-            className="w-36 lg:w-44 pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-200/90 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF385C]/20 focus:border-[#FF385C] transition-all"
-          />
-          {searchFilter && (
-            <button
-              onClick={() => setSearchFilter("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-
-        {/* Main Coral-Red Save Layout Button */}
+        {/* Main Coral Save Layout Button */}
         <button
           onClick={onSave}
           disabled={isSaving}

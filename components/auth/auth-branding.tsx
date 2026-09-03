@@ -3,128 +3,302 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useTranslation } from "react-i18next"
-import { Star, ShieldCheck, Clock, Sparkles, CheckCircle2, Scissors, Dumbbell, HeartPulse, Utensils, Briefcase } from "lucide-react"
+import { Star, ShieldCheck, Clock, Sparkles, CheckCircle2, Scissors, Dumbbell, HeartPulse, Utensils, Briefcase, Car, Smile, GraduationCap, PawPrint, Camera, Zap } from "lucide-react"
 
 const BACKGROUND_SLIDES = [
   {
-    id: "barbershop",
-    badgeKey: "auth.badgeBarbershop",
-    badgeDefault: "BARBERSHOP & GROOMING",
-    headlineKey: "auth.headlineBarbershop",
-    headlineDefault: "Book master barbers & beard stylists in seconds.",
-    subcopyKey: "auth.subcopyBarbershop",
-    subcopyDefault: "Discover top-rated barbershops, precision haircuts, and hot towel beard shaves near you.",
-    serviceKey: "auth.serviceBarbershop",
-    serviceDefault: "Gentleman Haircut & Beard Trim",
-    clientNameKey: "auth.clientAlex",
-    clientNameDefault: "Alexandre M.",
-    clientAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    relTimeKey: "auth.relTime2m",
-    relTimeDefault: "2m ago",
-    locationKey: "auth.locationBarbershop",
-    locationDefault: "Luxury Barbershop Lounge • Yerevan",
-    image: "/gen-barbershop.png",
-    icon: Scissors,
-  },
-  {
-    id: "beauty",
-    badgeKey: "auth.badgeBeauty",
-    badgeDefault: "BEAUTY & SALON SERVICES",
-    headlineKey: "auth.headlineBeauty",
-    headlineDefault: "Book top hair stylists & makeup artists in seconds.",
-    subcopyKey: "auth.subcopyBeauty",
-    subcopyDefault: "Reserve luxury balayage, facial glam, bridal styling, and manicure appointments instantly.",
-    serviceKey: "auth.serviceBeauty",
-    serviceDefault: "Full Beauty & Makeup Styling",
-    clientNameKey: "auth.clientElena",
-    clientNameDefault: "Elena S.",
-    clientAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-    relTimeKey: "auth.relTimeJustNow",
-    relTimeDefault: "Just now",
-    locationKey: "auth.locationBeauty",
-    locationDefault: "Central Beauty Salon • Yerevan",
-    image: "/gen-beauty.png",
-    icon: Sparkles,
-  },
-  {
-    id: "spa",
-    badgeKey: "auth.badgeSpa",
-    badgeDefault: "SPA & HEALTH CLINICS",
-    headlineKey: "auth.headlineSpa",
-    headlineDefault: "Book luxury spa treatments & massage therapists in seconds.",
-    subcopyKey: "auth.subcopySpa",
-    subcopyDefault: "Relax with therapeutic deep-tissue massages, organic facials, and wellness rituals.",
-    serviceKey: "auth.serviceSpa",
-    serviceDefault: "Therapeutic Facial & Massage",
-    clientNameKey: "auth.clientSofia",
-    clientNameDefault: "Sofia K.",
-    clientAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    relTimeKey: "auth.relTime5m",
-    relTimeDefault: "5m ago",
-    locationKey: "auth.locationSpa",
-    locationDefault: "Luxury Spa Sanctuary • Yerevan",
-    image: "/gen-spa.png",
-    icon: HeartPulse,
-  },
-  {
-    id: "fitness",
+    id: "fitness-1",
     badgeKey: "auth.badgeFitness",
-    badgeDefault: "FITNESS & WELLNESS STUDIO",
+    badgeDefault: "ՖԻԹՆԵՍ ԵՎ ԱՌՈՂՋՈՒԹՅՈՒՆ",
     headlineKey: "auth.headlineFitness",
-    headlineDefault: "Book personal trainers & yoga sessions in seconds.",
+    headlineDefault: "Ամրագրեք անհատական մարզիչներին և յոգայի դասընթացները:",
     subcopyKey: "auth.subcopyFitness",
-    subcopyDefault: "Join group sunset pilates, 1-on-1 fitness coaching, and holistic wellness classes.",
+    subcopyDefault: "Միացեք յոգայի, պիլատեսի և անհատական ֆիթնես մարզումներին:",
     serviceKey: "auth.serviceFitness",
-    serviceDefault: "Group Yoga & Sunset Meditation",
-    clientNameKey: "auth.clientDavid",
-    clientNameDefault: "David H.",
-    clientAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+    serviceDefault: "Յոգա և Մեդիտացիա",
+    clientNameKey: "auth.clientDavit",
+    clientNameDefault: "Դավիթ Հ.",
+    initials: "ԴՀ",
+    clientAvatar: null, // No image - displays initials avatar
     relTimeKey: "auth.relTime1m",
-    relTimeDefault: "1m ago",
+    relTimeDefault: "1ր առաջ",
     locationKey: "auth.locationFitness",
-    locationDefault: "Wellness Sanctuary • Yerevan",
+    locationDefault: "Երևան • Ֆիթնես Ստուդիա",
     image: "/gen-fitness.png",
     icon: Dumbbell,
   },
   {
-    id: "consulting",
-    badgeKey: "auth.badgeConsulting",
-    badgeDefault: "SPECIALISTS & CONSULTING",
-    headlineKey: "auth.headlineConsulting",
-    headlineDefault: "Book executive consultants & legal pros in seconds.",
-    subcopyKey: "auth.subcopyConsulting",
-    subcopyDefault: "Schedule strategic business consultations, tax advisory, and professional executive meetings.",
-    serviceKey: "auth.serviceConsulting",
-    serviceDefault: "Business & Legal Consultation",
+    id: "beauty-1",
+    badgeKey: "auth.badgeBeauty",
+    badgeDefault: "ԳԵՂԵՑԿՈՒԹՅՈՒՆ ԵՎ ՍԱԼՈՆ",
+    headlineKey: "auth.headlineBeauty",
+    headlineDefault: "Ամրագրեք վարսահարդարման և դիմահարդարման մասնագետներին:",
+    subcopyKey: "auth.subcopyBeauty",
+    subcopyDefault: "Գտնեք լավագույն սրահները, մատնահարդարման և խնամքի ծառայությունները:",
+    serviceKey: "auth.serviceBeauty",
+    serviceDefault: "Մազերի Ներկում և Բալայաժ",
+    clientNameKey: "auth.clientElena",
+    clientNameDefault: "Elena Smith",
+    initials: "ES",
+    clientAvatar: null, // No image - displays initials avatar
+    relTimeKey: "auth.relTimeJustNow",
+    relTimeDefault: "Հենց նոր",
+    locationKey: "auth.locationBeauty",
+    locationDefault: "Երևան • Գեղեցկության Սրահ",
+    image: "/gen-beauty.png",
+    icon: Sparkles,
+  },
+  {
+    id: "barbershop-1",
+    badgeKey: "auth.badgeBarbershop",
+    badgeDefault: "ՎԱՐՍԱՎԻՐԱՆՈՑ ԵՎ ԽՆԱՄՔ",
+    headlineKey: "auth.headlineBarbershop",
+    headlineDefault: "Ամրագրեք տղամարդկանց վարսավիրներին վայրկյաններում:",
+    subcopyKey: "auth.subcopyBarbershop",
+    subcopyDefault: "Ժամանակակից կտրվածքներ, մորուքի ձևավորում և խնամք:",
+    serviceKey: "auth.serviceBarbershop",
+    serviceDefault: "Տղամարդու Վարսահարդարում",
     clientNameKey: "auth.clientArmen",
-    clientNameDefault: "Armen B.",
-    clientAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+    clientNameDefault: "Արմեն Գ.",
+    initials: "ԱԳ",
+    clientAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
     relTimeKey: "auth.relTime3m",
-    relTimeDefault: "3m ago",
+    relTimeDefault: "3ր առաջ",
+    locationKey: "auth.locationBarbershop",
+    locationDefault: "Երևան • Վարսավիրանոց",
+    image: "/gen-barbershop.png",
+    icon: Scissors,
+  },
+  {
+    id: "spa-1",
+    badgeKey: "auth.badgeSpa",
+    badgeDefault: "ՍՊԱ ԵՎ ՄԵՐՍՈՒՄ",
+    headlineKey: "auth.headlineSpa",
+    headlineDefault: "Ամրագրեք մերսման և սպա թերապիայի սեանսներ:",
+    subcopyKey: "auth.subcopySpa",
+    subcopyDefault: "Վայելեք լիցքաթափող մերսումներ, դեմքի խնամք և սպա արարողություններ:",
+    serviceKey: "auth.serviceSpa",
+    serviceDefault: "Թերապևտիկ Մերսում",
+    clientNameKey: "auth.clientSophia",
+    clientNameDefault: "Sophia Taylor",
+    initials: "ST",
+    clientAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime4m",
+    relTimeDefault: "4ր առաջ",
+    locationKey: "auth.locationSpa",
+    locationDefault: "Երևան • Սպա Կենտրոն",
+    image: "/gen-spa.png",
+    icon: HeartPulse,
+  },
+  {
+    id: "dental-1",
+    badgeKey: "auth.badgeDental",
+    badgeDefault: "ԱՏԱՄՆԱԲՈՒԺՈՒԹՅՈՒՆ",
+    headlineKey: "auth.headlineDental",
+    headlineDefault: "Ամրագրեք ատամնաբույժի այցելություններ:",
+    subcopyKey: "auth.subcopyDental",
+    subcopyDefault: "Պրոֆեսիոնալ ատամնաբուժական խնամք, սպիտակեցում և մաքրում:",
+    serviceKey: "auth.serviceDental",
+    serviceDefault: "Ատամների Մաքրում և Սպիտակեցում",
+    clientNameKey: "auth.clientNarek",
+    clientNameDefault: "Նարեկ Ս.",
+    initials: "ՆՍ",
+    clientAvatar: null, // No image - displays initials avatar
+    relTimeKey: "auth.relTime7m",
+    relTimeDefault: "7ր առաջ",
+    locationKey: "auth.locationDental",
+    locationDefault: "Երևան • Ատամնաբուժարան",
+    image: "/gen-spa.png",
+    icon: Smile,
+  },
+  {
+    id: "nails-1",
+    badgeKey: "auth.badgeNails",
+    badgeDefault: "ՄԱՏՆԱՀԱՐԴԱՐՈՒՄ",
+    headlineKey: "auth.headlineNails",
+    headlineDefault: "Ամրագրեք մատնահարդարման մասնագետներին:",
+    subcopyKey: "auth.subcopyNails",
+    subcopyDefault: "Գել-լաք, ոտնահարդարում և եղունգների խնամք:",
+    serviceKey: "auth.serviceNails",
+    serviceDefault: "Մատնահարդարում Գել-լաքով",
+    clientNameKey: "auth.clientLilit",
+    clientNameDefault: "Lilit Hovhannisyan",
+    initials: "LH",
+    clientAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime2m",
+    relTimeDefault: "2ր առաջ",
+    locationKey: "auth.locationNails",
+    locationDefault: "Երևան • Մատնահարդարման Սրահ",
+    image: "/gen-beauty.png",
+    icon: Sparkles,
+  },
+  {
+    id: "auto-1",
+    badgeKey: "auth.badgeAuto",
+    badgeDefault: "ԱՎՏՈՍՊԱ ԵՎ ԼՎԱՑՈՒՄ",
+    headlineKey: "auth.headlineAuto",
+    headlineDefault: "Ամրագրեք ավտոլվացման և դեթեյլինգի ծառայություններ:",
+    subcopyKey: "auth.subcopyAuto",
+    subcopyDefault: "Անհատական ավտոսպա, քիմմաքրում և փայլեցում:",
+    serviceKey: "auth.serviceAuto",
+    serviceDefault: "Ավտոմեքենայի Դեթեյլինգ Լվացում",
+    clientNameKey: "auth.clientHayk",
+    clientNameDefault: "Hayk Davtyan",
+    initials: "HD",
+    clientAvatar: null, // No image - displays initials avatar
+    relTimeKey: "auth.relTime5m",
+    relTimeDefault: "5ր առաջ",
+    locationKey: "auth.locationAuto",
+    locationDefault: "Երևան • Ավտոսպա",
+    image: "/gen-barbershop.png",
+    icon: Car,
+  },
+  {
+    id: "aesthetic-1",
+    badgeKey: "auth.badgeAesthetic",
+    badgeDefault: "ԷՍԹԵՏԻԿ ԲԺՇԿՈՒԹՅՈՒՆ",
+    headlineKey: "auth.headlineAesthetic",
+    headlineDefault: "Ամրագրեք դեմքի խնամքի և պրոցեդուրաների մասնագետներին:",
+    subcopyKey: "auth.subcopyAesthetic",
+    subcopyDefault: "Ժամանակակից էսթետիկ բժշկություն և երիտասարդացնող խնամք:",
+    serviceKey: "auth.serviceAesthetic",
+    serviceDefault: "Դեմքի Խնամք և Էսթետիկա",
+    clientNameKey: "auth.clientAnahit",
+    clientNameDefault: "Անահիտ Տ.",
+    initials: "ԱՏ",
+    clientAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime6m",
+    relTimeDefault: "6ր առաջ",
+    locationKey: "auth.locationAesthetic",
+    locationDefault: "Երևան • Էսթետիկ Կենտրոն",
+    image: "/gen-beauty.png",
+    icon: HeartPulse,
+  },
+  {
+    id: "gym-1",
+    badgeKey: "auth.badgeGym",
+    badgeDefault: "ԱՆՀԱՏԱԿԱՆ ՄԱՐԶՈՒՄՆԵՐ",
+    headlineKey: "auth.headlineGym",
+    headlineDefault: "Ամրագրեք անհատական ֆիթնես մարզիչներին:",
+    subcopyKey: "auth.subcopyGym",
+    subcopyDefault: "Ուժային մարզումներ, կարդիո և սպորտային ծրագրեր:",
+    serviceKey: "auth.serviceGym",
+    serviceDefault: "Անհատական Ֆիթնես Մարզում",
+    clientNameKey: "auth.clientAlexandre",
+    clientNameDefault: "Alexandre M.",
+    initials: "AM",
+    clientAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime8m",
+    relTimeDefault: "8ր առաջ",
+    locationKey: "auth.locationGym",
+    locationDefault: "Երևան • Մարզասրահ",
+    image: "/gen-fitness.png",
+    icon: Dumbbell,
+  },
+  {
+    id: "dining-1",
+    badgeKey: "auth.badgeDining",
+    badgeDefault: "ՌԵՍՏՈՐԱՆՆԵՐ ԵՎ ՍՐՃԱՐԱՆՆԵՐ",
+    headlineKey: "auth.headlineDining",
+    headlineDefault: "Ամրագրեք ՎԻՊ սեղաններ լավագույն ռեստորաններում:",
+    subcopyKey: "auth.subcopyDining",
+    subcopyDefault: "Բարձրակարգ խոհանոց, հարմարավետ միջավայր և սեղանի ամրագրում:",
+    serviceKey: "auth.serviceDining",
+    serviceDefault: "ՎԻՊ Սեղանի Ամրագրում",
+    clientNameKey: "auth.clientMariam",
+    clientNameDefault: "Մարիամ Խ.",
+    initials: "ՄԽ",
+    clientAvatar: null, // No image - displays initials avatar
+    relTimeKey: "auth.relTime10m",
+    relTimeDefault: "10ր առաջ",
+    locationKey: "auth.locationDining",
+    locationDefault: "Երևան • Ռեստորան",
+    image: "/gen-dining.png",
+    icon: Utensils,
+  },
+  {
+    id: "consulting-1",
+    badgeKey: "auth.badgeConsulting",
+    badgeDefault: "ԽՈՐՀՐԴԱՏՎՈՒԹՅՈՒՆ ԵՎ ԲԻԶՆԵՍ",
+    headlineKey: "auth.headlineConsulting",
+    headlineDefault: "Ամրագրեք բիզնես և իրավաբանական խորհրդատուներին:",
+    subcopyKey: "auth.subcopyConsulting",
+    subcopyDefault: "Ռազմավարական խորհրդատվություն, հարկային և իրավական աջակցություն:",
+    serviceKey: "auth.serviceConsulting",
+    serviceDefault: "Իրավաբանական Խորհրդատվություն",
+    clientNameKey: "auth.clientAram",
+    clientNameDefault: "Aram Rustamyan",
+    initials: "AR",
+    clientAvatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime12m",
+    relTimeDefault: "12ր առաջ",
     locationKey: "auth.locationConsulting",
-    locationDefault: "Executive Sky Suite • Yerevan",
+    locationDefault: "Երևան • Բիզնես Կենտրոն",
     image: "/gen-consulting.png",
     icon: Briefcase,
   },
   {
-    id: "dining",
-    badgeKey: "auth.badgeDining",
-    badgeDefault: "RESTAURANTS & CAFES",
-    headlineKey: "auth.headlineDining",
-    headlineDefault: "Reserve VIP restaurant tables & fine dining in seconds.",
-    subcopyKey: "auth.subcopyDining",
-    subcopyDefault: "Discover gourmet dining lounges, chef tasting menus, and romantic dinner reservations.",
-    serviceKey: "auth.serviceDining",
-    serviceDefault: "VIP Table Reservation & Dining",
-    clientNameKey: "auth.clientAni",
-    clientNameDefault: "Ani G.",
-    clientAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
-    relTimeKey: "auth.relTimeJustNow",
-    relTimeDefault: "Just now",
-    locationKey: "auth.locationDining",
-    locationDefault: "Gourmet Lounge • Yerevan",
-    image: "/gen-dining.png",
-    icon: Utensils,
+    id: "pet-1",
+    badgeKey: "auth.badgePet",
+    badgeDefault: "ԿԵՆԴԱՆԻՆԵՐԻ ԽՆԱՄՔ",
+    headlineKey: "auth.headlinePet",
+    headlineDefault: "Ամրագրեք կենդանիների խնամքի և լվացման մասնագետներին:",
+    subcopyKey: "auth.subcopyPet",
+    subcopyDefault: "Շների և կատուների խնամք, մազերի կտրում և հիգիենա:",
+    serviceKey: "auth.servicePet",
+    serviceDefault: "Կենդանիների Խնամք և Սպա",
+    clientNameKey: "auth.clientSona",
+    clientNameDefault: "Սոնա Վ.",
+    initials: "ՍՎ",
+    clientAvatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime15m",
+    relTimeDefault: "15ր առաջ",
+    locationKey: "auth.locationPet",
+    locationDefault: "Երևան • Կենդանիների Սրահ",
+    image: "/gen-beauty.png",
+    icon: PawPrint,
+  },
+  {
+    id: "laser-1",
+    badgeKey: "auth.badgeLaser",
+    badgeDefault: "ԼԱԶԵՐԱՅԻՆ ԷՊԻԼՅԱՑԻԱ",
+    headlineKey: "auth.headlineLaser",
+    headlineDefault: "Ամրագրեք լազերային էպիլյացիայի սեանսներ:",
+    subcopyKey: "auth.subcopyLaser",
+    subcopyDefault: "Անվտանգ և արդյունավետ մազահեռացում ժամանակակից սարքավորումներով:",
+    serviceKey: "auth.serviceLaser",
+    serviceDefault: "Լազերային Էպիլյացիա",
+    clientNameKey: "auth.clientDavidM",
+    clientNameDefault: "David Miller",
+    initials: "DM",
+    clientAvatar: null, // No image - displays initials avatar
+    relTimeKey: "auth.relTime18m",
+    relTimeDefault: "18ր առաջ",
+    locationKey: "auth.locationLaser",
+    locationDefault: "Երևան • Բժշկական Կենտրոն",
+    image: "/gen-spa.png",
+    icon: Zap,
+  },
+  {
+    id: "bridal-1",
+    badgeKey: "auth.badgeBridal",
+    badgeDefault: "ՀԱՐՍԱՆԵԿԱՆ ԴԻՄԱՀԱՐԴԱՐՈՒՄ",
+    headlineKey: "auth.headlineBridal",
+    headlineDefault: "Ամրագրեք հարսանեկան դիմահարդարման և սանրվածքի մասնագետներին:",
+    subcopyKey: "auth.subcopyBridal",
+    subcopyDefault: "Էլեգանտ հարսանեկան կերպարներ և փորձնական դիմահարդարում:",
+    serviceKey: "auth.serviceBridal",
+    serviceDefault: "Հարսանեկան Դիմահարդարում",
+    clientNameKey: "auth.clientElen",
+    clientNameDefault: "Էլեն Կ.",
+    initials: "ԷԿ",
+    clientAvatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop",
+    relTimeKey: "auth.relTime20m",
+    relTimeDefault: "20ր առաջ",
+    locationKey: "auth.locationBridal",
+    locationDefault: "Երևան • Գեղեցկության Ստուդիա",
+    image: "/gen-beauty.png",
+    icon: Sparkles,
   },
 ]
 
@@ -135,7 +309,7 @@ export function AuthBranding() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % BACKGROUND_SLIDES.length)
-    }, 5000)
+    }, 4500)
     return () => clearInterval(timer)
   }, [])
 
@@ -172,13 +346,13 @@ export function AuthBranding() {
       <div className="absolute inset-y-0 left-0 w-44 bg-gradient-to-r from-white via-white/95 to-transparent pointer-events-none z-20" />
 
       {/* Slide Navigation Indicator Pills */}
-      <div className="absolute top-6 right-6 z-30 flex items-center gap-1.5 bg-white/85 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/80 shadow-xs">
+      <div className="absolute top-6 right-6 z-30 flex items-center gap-1 bg-white/85 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-slate-200/80 shadow-xs max-w-[200px] overflow-x-auto scrollbar-hide">
         {BACKGROUND_SLIDES.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentSlide(idx)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              idx === currentSlide ? "w-6 bg-[#FF385C]" : "w-2 bg-slate-300 hover:bg-slate-400"
+            className={`h-1.5 rounded-full transition-all duration-300 shrink-0 ${
+              idx === currentSlide ? "w-4 bg-[#FF385C]" : "w-1.5 bg-slate-300 hover:bg-slate-400"
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
@@ -214,28 +388,34 @@ export function AuthBranding() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF385C] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF385C]"></span>
                 </span>
-                {t("auth.liveActivity", "LIVE ACTIVITY")}
+                {t("auth.liveActivity", "ՈՒՂԻՂ ԵԹԵՐ")}
               </span>
               <span className="text-[11px] font-bold text-emerald-700 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {t("auth.justBooked", "Just Booked")}
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {t("auth.justBooked", "Նոր ամրագրված")}
               </span>
             </div>
 
             {/* Real-Time Client Action Ticker Item */}
             <div className="flex items-center gap-3 pt-0.5">
               <div className="relative shrink-0">
-                <img
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-xs"
-                  src={active.clientAvatar}
-                  alt={t(active.clientNameKey, active.clientNameDefault)}
-                />
+                {active.clientAvatar ? (
+                  <img
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-xs"
+                    src={active.clientAvatar}
+                    alt={t(active.clientNameKey, active.clientNameDefault)}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF385C] to-[#E0304F] text-white flex items-center justify-center font-extrabold text-xs shadow-xs ring-2 ring-white">
+                    {active.initials}
+                  </div>
+                )}
                 <div className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-[#FFF0F3] text-[#FF385C] flex items-center justify-center border border-white shadow-2xs">
                   <ActiveIcon className="w-2.5 h-2.5" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-900 truncate">
-                  {t(active.clientNameKey, active.clientNameDefault)} <span className="font-normal text-slate-600">{t("auth.bookedVerb", "booked")}</span> {t(active.serviceKey, active.serviceDefault)}
+                  {t(active.clientNameKey, active.clientNameDefault)} <span className="font-normal text-slate-600">{t("auth.bookedVerb", "ամրագրեց")}</span> {t(active.serviceKey, active.serviceDefault)}
                 </p>
                 <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5 truncate">
                   <span className="text-[#FF385C] font-semibold">{t(active.relTimeKey, active.relTimeDefault)}</span>

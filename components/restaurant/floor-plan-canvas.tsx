@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Users, ChefHat, Utensils, Crown, TreePine, Cigarette, Martini, Clock, DoorOpen, Coffee } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Users, ChefHat, Utensils, Crown, TreePine, Cigarette, Martini, Clock, DoorOpen, Coffee, Flag } from "lucide-react"
 
 interface Point { x: number; y: number }
 
@@ -20,11 +21,13 @@ interface FloorPlanCanvasProps {
   pan?: Point
   onPanChange?: (pan: Point) => void
   readOnly?: boolean
+  showDimensions?: boolean
   mode?: "select" | "pan" | "draw_wall" | "draw_room" | "add_table" | "add_label"
   drawingPoints?: Point[]
   onDropItem?: (payload: any, pos: Point) => void
   gridEnabled?: boolean
   snapEnabled?: boolean
+  onScaleChange?: (scale: number) => void
   onMouseMove?: (pos: Point) => void
 }
 
@@ -52,7 +55,9 @@ export function FloorPlanCanvas({
   scale = 1,
   pan = { x: 0, y: 0 },
   onPanChange,
+  onScaleChange,
   readOnly = false,
+  showDimensions,
   mode = "select",
   drawingPoints = [],
   onDropItem,
@@ -60,6 +65,8 @@ export function FloorPlanCanvas({
   snapEnabled = true,
   onMouseMove
 }: FloorPlanCanvasProps) {
+  const { t } = useTranslation()
+  const displayDimensions = showDimensions !== undefined ? showDimensions : !readOnly
   const svgRef = useRef<SVGSVGElement>(null)
 
   // Dragging State
@@ -76,6 +83,103 @@ export function FloorPlanCanvas({
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 })
   const [isPanning, setIsPanning] = useState(false)
   const panStart = useRef<Point>({ x: 0, y: 0 })
+
+  const panRef = useRef(pan)
+  panRef.current = pan
+  const scaleRef = useRef(scale)
+  scaleRef.current = scale
+
+  // Native non-passive touch listeners for mobile fast pan & pinch zoom
+  useEffect(() => {
+    const svgEl = svgRef.current
+    if (!svgEl) return
+
+    let lastTouchPos: Point | null = null
+    let touchStartDist: number | null = null
+    let touchStartScale = scaleRef.current
+    let isTouchPanning = false
+
+    // Speed multiplier for mobile touch panning (1.4x speed for fast, agile movement)
+    const SPEED_MULTIPLIER = 1.4
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        const t1 = e.touches[0]
+        const t2 = e.touches[1]
+        touchStartDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY)
+        touchStartScale = scaleRef.current
+        lastTouchPos = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 }
+        isTouchPanning = true
+      } else if (e.touches.length === 1 && (mode === "pan" || e.target === svgEl)) {
+        e.preventDefault()
+        const t = e.touches[0]
+        isTouchPanning = true
+        setIsPanning(true)
+        lastTouchPos = { x: t.clientX, y: t.clientY }
+      }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && touchStartDist !== null && lastTouchPos !== null) {
+        e.preventDefault()
+        const t1 = e.touches[0]
+        const t2 = e.touches[1]
+        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY)
+        const midX = (t1.clientX + t2.clientX) / 2
+        const midY = (t1.clientY + t2.clientY) / 2
+
+        const dx = (midX - lastTouchPos.x) * SPEED_MULTIPLIER
+        const dy = (midY - lastTouchPos.y) * SPEED_MULTIPLIER
+        lastTouchPos = { x: midX, y: midY }
+
+        const zoomFactor = dist / touchStartDist
+        if (Math.abs(zoomFactor - 1) > 0.01) {
+          const newScale = Math.min(3, Math.max(0.2, touchStartScale * zoomFactor))
+          onScaleChange?.(newScale)
+        }
+
+        onPanChange?.({
+          x: panRef.current.x + dx,
+          y: panRef.current.y + dy
+        })
+      } else if (e.touches.length === 1 && isTouchPanning && lastTouchPos !== null) {
+        e.preventDefault()
+        const t = e.touches[0]
+        const dx = (t.clientX - lastTouchPos.x) * SPEED_MULTIPLIER
+        const dy = (t.clientY - lastTouchPos.y) * SPEED_MULTIPLIER
+        lastTouchPos = { x: t.clientX, y: t.clientY }
+
+        onPanChange?.({
+          x: panRef.current.x + dx,
+          y: panRef.current.y + dy
+        })
+      }
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        touchStartDist = null
+      }
+      if (e.touches.length === 0) {
+        lastTouchPos = null
+        isTouchPanning = false
+        setIsPanning(false)
+      }
+    }
+
+    svgEl.addEventListener('touchstart', onTouchStart, { passive: false })
+    svgEl.addEventListener('touchmove', onTouchMove, { passive: false })
+    svgEl.addEventListener('touchend', onTouchEnd, { passive: false })
+    svgEl.addEventListener('touchcancel', onTouchEnd, { passive: false })
+
+    return () => {
+      svgEl.removeEventListener('touchstart', onTouchStart)
+      svgEl.removeEventListener('touchmove', onTouchMove)
+      svgEl.removeEventListener('touchend', onTouchEnd)
+      svgEl.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [mode, onPanChange, onScaleChange])
 
   // Lasso Selection State
   const [lassoStart, setLassoStart] = useState<Point | null>(null)
@@ -328,6 +432,7 @@ export function FloorPlanCanvas({
   }
 
   const startDrag = (e: React.PointerEvent, id: string, type: 'table' | 'area' | 'element', elementPos: Point) => {
+    if (mode === "pan") return
     e.stopPropagation()
     if (readOnly) {
       onSelectElement(id, e.shiftKey)
@@ -353,7 +458,7 @@ export function FloorPlanCanvas({
   }
 
   const startVertexDrag = (e: React.PointerEvent, id: string, index: number) => {
-    if (readOnly || mode !== "select") return
+    if (mode === "pan" || readOnly || mode !== "select") return
     e.stopPropagation()
     onSelectElement(id)
     setInteractionState({ id, type: 'area', action: 'vertex', index, startPos: getWorkspacePos(e) })
@@ -361,14 +466,14 @@ export function FloorPlanCanvas({
   }
 
   const startRotate = (e: React.PointerEvent, id: string, type: 'table' | 'element', centerPos: Point) => {
-    if (readOnly || mode !== "select") return
+    if (mode === "pan" || readOnly || mode !== "select") return
     e.stopPropagation()
     setInteractionState({ id, type, action: 'rotate', startPos: getWorkspacePos(e), centerPos })
     svgRef.current?.setPointerCapture(e.pointerId)
   }
 
   const startResize = (e: React.PointerEvent, id: string, type: 'table' | 'element', originalSize: { w: number, h: number }, originalAngle: number) => {
-    if (readOnly || mode !== "select") return
+    if (mode === "pan" || readOnly || mode !== "select") return
     e.stopPropagation()
     setInteractionState({ id, type, action: 'resize', startPos: getWorkspacePos(e), originalSize, originalAngle })
     svgRef.current?.setPointerCapture(e.pointerId)
@@ -509,12 +614,12 @@ export function FloorPlanCanvas({
   }
 
   return (
-    <div className="flex-1 w-full h-full overflow-hidden bg-white relative select-none">
+    <div className="flex-1 w-full h-full overflow-hidden bg-white relative select-none touch-none" style={{ touchAction: 'none' }}>
       <svg
         ref={svgRef}
         width="100%"
         height="100%"
-        style={{ width: '100%', height: '100%', display: 'block', minHeight: '100%' }}
+        style={{ width: '100%', height: '100%', display: 'block', minHeight: '100%', touchAction: 'none' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -872,7 +977,7 @@ export function FloorPlanCanvas({
                 {table.isVip && (
                   <g transform={`translate(${w - 15}, -15)`}>
                     <rect width="30" height="16" rx="8" fill="#fbbf24" stroke="#d97706" strokeWidth="1" />
-                    <text x="15" y="11" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#78350f" className="pointer-events-none">VIP</text>
+                    <text x="15" y="11" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#78350f" className="pointer-events-none">{t("restaurant.assets.labelVip", "VIP")}</text>
                   </g>
                 )}
 
@@ -909,13 +1014,15 @@ export function FloorPlanCanvas({
                   <g>
                     <rect width={w} height={h} fill="#334155" />
                     <rect x={1} y={1} width={w - 2} height={h - 2} fill="#475569" />
-                    <g transform={`translate(0, ${-20})`}>
-                      <path d={`M 0 0 L ${w} 0`} fill="none" stroke="#9ca3af" strokeWidth={1} strokeDasharray="3,3" />
-                      <path d={`M 0 -3 L 0 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
-                      <path d={`M ${w} -3 L ${w} 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
-                      <rect x={w / 2 - 15} y={-8} width={30} height={16} fill="white" />
-                      <text x={w / 2} y={3} fontSize={10} fill="#4b5563" textAnchor="middle" fontWeight="500">{Math.floor(w / 10)}' {Math.round(w % 10)}"</text>
-                    </g>
+                    {displayDimensions && (
+                      <g transform={`translate(0, ${-20})`}>
+                        <path d={`M 0 0 L ${w} 0`} fill="none" stroke="#9ca3af" strokeWidth={1} strokeDasharray="3,3" />
+                        <path d={`M 0 -3 L 0 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                        <path d={`M ${w} -3 L ${w} 3`} fill="none" stroke="#9ca3af" strokeWidth={1} />
+                        <rect x={w / 2 - 15} y={-8} width={30} height={16} fill="white" />
+                        <text x={w / 2} y={3} fontSize={10} fill="#4b5563" textAnchor="middle" fontWeight="500">{Math.floor(w / 10)}' {Math.round(w % 10)}"</text>
+                      </g>
+                    )}
                   </g>
                 )}
                 {element.type === 'corner_wall' && (
@@ -1148,6 +1255,91 @@ export function FloorPlanCanvas({
                     <rect x={2} y={2} width={w - 4} height={h - 4} fill="url(#wine-grid)" />
                   </g>
                 )}
+                {element.type === 'stage' && (
+                  <g filter="url(#drop-shadow)">
+                    {/* Elevated Stage Platform */}
+                    <rect width={w} height={h} rx={6} fill="#0f172a" stroke="#7c3aed" strokeWidth="2" />
+                    <rect x={3} y={3} width={w - 6} height={h - 6} rx={4} fill="#1e1b4b" stroke="rgba(168, 85, 247, 0.4)" strokeWidth="1" />
+                    
+                    {/* Spotlight Beams */}
+                    <path d={`M ${w * 0.1} 0 L ${w * 0.4} ${h - 4} L ${w * 0.2} ${h - 4} Z`} fill="rgba(234, 179, 8, 0.15)" />
+                    <path d={`M ${w * 0.9} 0 L ${w * 0.6} ${h - 4} L ${w * 0.8} ${h - 4} Z`} fill="rgba(168, 85, 247, 0.15)" />
+                    
+                    {/* Stage Front Ledge */}
+                    <rect x={0} y={h - 6} width={w} height={6} rx={2} fill="#eab308" />
+                    
+                    {/* Stage Center Label */}
+                    <text
+                      x={w / 2}
+                      y={h / 2}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="#fef08a"
+                      fontSize={Math.min(14, Math.max(10, w / 6))}
+                      fontWeight="bold"
+                      letterSpacing="1"
+                      className="pointer-events-none"
+                    >
+                      {t("restaurant.assets.stage", "Stage").toUpperCase()}
+                    </text>
+                  </g>
+                )}
+                {element.type === 'dj_booth' && (
+                  <g filter="url(#drop-shadow)">
+                    {/* DJ Console Desk */}
+                    <rect width={w} height={h} rx={6} fill="#090d16" stroke="#06b6d4" strokeWidth="2" />
+                    <rect x={3} y={3} width={w - 6} height={h - 6} rx={4} fill="#0f172a" stroke="rgba(6, 182, 212, 0.4)" strokeWidth="1" />
+                    
+                    {/* Left Turntable */}
+                    <g transform={`translate(${Math.max(12, w * 0.25)}, ${h / 2})`}>
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.3} fill="#1e293b" stroke="#06b6d4" strokeWidth="1.5" />
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.2} fill="#020617" />
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.06} fill="#06b6d4" />
+                    </g>
+
+                    {/* Right Turntable */}
+                    <g transform={`translate(${Math.min(w - 12, w * 0.75)}, ${h / 2})`}>
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.3} fill="#1e293b" stroke="#06b6d4" strokeWidth="1.5" />
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.2} fill="#020617" />
+                      <circle cx={0} cy={0} r={Math.min(w, h) * 0.06} fill="#06b6d4" />
+                    </g>
+
+                    {/* Center Mixer LED meters */}
+                    <g transform={`translate(${w / 2 - 8}, ${h / 2 - 10})`}>
+                      <rect width={16} height={20} rx={2} fill="#020617" stroke="#334155" strokeWidth="1" />
+                      <rect x={3} y={3} width={4} height={4} fill="#22c55e" />
+                      <rect x={3} y={8} width={4} height={4} fill="#eab308" />
+                      <rect x={3} y={13} width={4} height={4} fill="#ef4444" />
+                      <rect x={9} y={3} width={4} height={4} fill="#22c55e" />
+                      <rect x={9} y={8} width={4} height={4} fill="#eab308" />
+                      <rect x={9} y={13} width={4} height={4} fill="#ef4444" />
+                    </g>
+                  </g>
+                )}
+                {element.type === 'banner' && (
+                  <g filter="url(#drop-shadow)">
+                    {/* Stand poles on sides */}
+                    <line x1={4} y1={0} x2={4} y2={h} stroke="#334155" strokeWidth="3" />
+                    <line x1={w - 4} y1={0} x2={w - 4} y2={h} stroke="#334155" strokeWidth="3" />
+                    {/* Banner canvas */}
+                    <rect x={6} y={2} width={w - 12} height={h - 4} rx={2} fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <path d={`M 6 2 L ${w / 2} ${h / 2} L 6 ${h - 2} Z`} fill="rgba(59, 130, 246, 0.08)" />
+                    {/* Banner Text */}
+                    <text
+                      x={w / 2}
+                      y={h / 2}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="#1d4ed8"
+                      fontSize={Math.min(13, Math.max(9, w / 7))}
+                      fontWeight="bold"
+                      letterSpacing="0.5"
+                      className="pointer-events-none"
+                    >
+                      {t("restaurant.assets.banner", "Banner").toUpperCase()}
+                    </text>
+                  </g>
+                )}
                 {element.type === 'cabinet' && (
                   <g filter="url(#drop-shadow-sm)">
                     {/* Cabinet body */}
@@ -1170,7 +1362,9 @@ export function FloorPlanCanvas({
                       <rect width="10" height="10" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="0.5" />
                     </pattern>
                     <rect width={w} height={h} fill="url(#tile-pat)" stroke="#94a3b8" strokeWidth="2" strokeDasharray="5,5" />
-                    <text x={w / 2} y={h / 2} fontSize="14" fill="#94a3b8" textAnchor="middle" dominantBaseline="central" className="pointer-events-none">Kitchen Zone</text>
+                    <text x={w / 2} y={h / 2} fontSize="14" fill="#94a3b8" textAnchor="middle" dominantBaseline="central" className="pointer-events-none">
+                      {t("restaurant.assets.kitchenArea", "Kitchen Area")}
+                    </text>
                   </g>
                 )}
                 {element.type === 'prep_table' && (
@@ -1440,8 +1634,21 @@ export function FloorPlanCanvas({
 
                 {/* LABEL */}
                 {element.type === 'label' && (() => {
-                  const text = element.text || 'Label';
-                  const lowerText = text.toLowerCase();
+                  const rawText = element.text || 'Label';
+                  const lowerText = rawText.toLowerCase();
+
+                  let text = rawText;
+                  if (lowerText === 'kitchen') text = t("restaurant.assets.labelKitchen", rawText);
+                  else if (lowerText.includes('dining')) text = t("restaurant.assets.diningArea", rawText);
+                  else if (lowerText === 'vip') text = t("restaurant.assets.labelVip", rawText);
+                  else if (lowerText === 'terrace') text = t("restaurant.assets.terrace", rawText);
+                  else if (lowerText === 'smoking') text = t("restaurant.assets.smoking", rawText);
+                  else if (lowerText === 'bar') text = t("restaurant.assets.labelBar", rawText);
+                  else if (lowerText.includes('waiting')) text = t("restaurant.assets.waitingArea", rawText);
+                  else if (lowerText.includes('private')) text = t("restaurant.assets.privateRoom", rawText);
+                  else if (lowerText === 'stage' || lowerText === 'բեմ' || lowerText === 'сцена') text = t("restaurant.assets.stage", rawText);
+                  else if (lowerText === 'dj' || lowerText === 'dj booth') text = t("restaurant.assets.labelDj", rawText);
+                  else if (lowerText.includes('banner') || lowerText === 'բաններ' || lowerText === 'баннер') text = t("restaurant.assets.labelBanner", rawText);
 
                   let bgColor = "rgba(255,255,255,0.95)";
                   let borderColor = "#cbd5e1";
@@ -1466,34 +1673,42 @@ export function FloorPlanCanvas({
                     bgColor = "#fdf4ff"; borderColor = "#f5d0fe"; textColor = "#a21caf"; Icon = DoorOpen;
                   } else if (lowerText.includes('cafe') || lowerText.includes('coffee')) {
                     bgColor = "#fffbeb"; borderColor = "#fde68a"; textColor = "#b45309"; Icon = Coffee;
+                  } else if (lowerText.includes('banner')) {
+                    bgColor = "#eff6ff"; borderColor = "#bfdbfe"; textColor = "#1d4ed8"; Icon = Flag;
                   }
 
-                  const iconSize = Math.min(20, h * 0.4);
-                  const maxTextWidth = w - (Icon ? iconSize + 24 : 16);
-                  let fontSize = 14;
-                  if (text.length * 8 > maxTextWidth) {
-                    fontSize = Math.max(10, (maxTextWidth / text.length) * 1.5);
+                  const iconSize = Math.min(18, h * 0.45);
+                  const iconGap = Icon ? iconSize + 8 : 0;
+                  
+                  // Auto-expand boxWidth if text is longer than default container to guarantee zero text overflow
+                  const estimatedWidthNeeded = iconGap + (text.length * 8.5) + 20;
+                  const boxWidth = Math.max(w, estimatedWidthNeeded);
+                  
+                  const availableTextWidth = boxWidth - iconGap - 16;
+                  let fontSize = 13;
+                  if (text.length * 9 > availableTextWidth) {
+                    fontSize = Math.max(10, Math.floor((availableTextWidth / text.length) * 1.2));
                   }
 
-                  const textWidth = text.length * (fontSize * 0.55);
-                  const totalWidth = (Icon ? iconSize + 6 : 0) + textWidth;
-                  const startX = (w - totalWidth) / 2;
+                  const estTextWidth = text.length * (fontSize * 0.6);
+                  const totalWidth = iconGap + estTextWidth;
+                  const startX = Math.max(8, (boxWidth - totalWidth) / 2);
 
                   return (
                     <g filter="url(#drop-shadow-sm)">
-                      <rect width={w} height={h} fill={bgColor} stroke={borderColor} strokeWidth="1.5" rx={6} />
+                      <rect width={boxWidth} height={h} fill={bgColor} stroke={borderColor} strokeWidth="1.5" rx={8} />
                       {Icon && (
                         <Icon x={startX} y={(h - iconSize) / 2} size={iconSize} color={textColor} />
                       )}
                       <text
-                        x={startX + (Icon ? iconSize + 6 : 0) + (textWidth / 2)}
-                        y={h / 2}
+                        x={startX + iconGap}
+                        y={h / 2 + 1}
                         fontSize={fontSize}
                         fill={textColor}
-                        fontWeight="600"
-                        textAnchor="middle"
+                        fontWeight="700"
+                        textAnchor="start"
                         dominantBaseline="central"
-                        letterSpacing="0.5"
+                        letterSpacing="0.2"
                       >
                         {text}
                       </text>
@@ -1502,7 +1717,7 @@ export function FloorPlanCanvas({
                 })()}
 
                 {/* Fallback for unhandled elements */}
-                {!['wall', 'corner_wall', 'curved_wall', 'divider', 'glass_wall', 'door', 'double_door', 'sliding_door', 'window', 'arch', 'column', 'stairs', 'escalator', 'sofa', 'bench', 'lounge_chair', 'wooden_chair', 'armchair', 'sofa_seat', 'bar_stool', 'baby_chair', 'bar_counter', 'reception_desk', 'cashier', 'buffet', 'waiting_bench', 'coat_rack', 'wine_rack', 'cabinet', 'kitchen_area', 'prep_table', 'sink', 'grill', 'oven', 'refrigerator', 'dishwasher', 'storage_shelf', 'restroom', 'mens_toilet', 'womens_toilet', 'accessible_toilet', 'utility_room', 'elevator', 'wheelchair', 'ramp', 'shaft', 'emergency_exit', 'plant', 'tree', 'umbrella', 'fence', 'patio', 'terrace_furniture', 'label'].includes(element.type) && (
+                {!['wall', 'corner_wall', 'curved_wall', 'divider', 'glass_wall', 'door', 'double_door', 'sliding_door', 'window', 'arch', 'column', 'stairs', 'escalator', 'sofa', 'bench', 'lounge_chair', 'wooden_chair', 'armchair', 'sofa_seat', 'bar_stool', 'baby_chair', 'bar_counter', 'reception_desk', 'cashier', 'buffet', 'waiting_bench', 'coat_rack', 'wine_rack', 'cabinet', 'stage', 'dj_booth', 'banner', 'kitchen_area', 'prep_table', 'sink', 'grill', 'oven', 'refrigerator', 'dishwasher', 'storage_shelf', 'restroom', 'mens_toilet', 'womens_toilet', 'accessible_toilet', 'utility_room', 'elevator', 'wheelchair', 'ramp', 'shaft', 'emergency_exit', 'plant', 'tree', 'umbrella', 'fence', 'patio', 'terrace_furniture', 'label'].includes(element.type) && (
                   <rect width={w} height={h} rx={4} fill={color} stroke="#334155" strokeWidth={1} filter="url(#drop-shadow-sm)" />
                 )}
 

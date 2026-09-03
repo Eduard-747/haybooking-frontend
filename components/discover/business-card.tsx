@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, Star, MapPin, ChevronRight, Info } from "lucide-react"
+import { Heart, Star, MapPin, ChevronRight, Info, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 

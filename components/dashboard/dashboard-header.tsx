@@ -25,24 +25,24 @@ export function DashboardHeader() {
   const { setIsOpen } = useMobileNav()
 
   return (
-    <header className="h-14 sm:h-16 border-b border-border/40 bg-white flex items-center justify-between px-3 sm:px-6 sticky top-0 z-40">
+    <header className="h-16 border-b border-slate-100 bg-white flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40 shadow-2xs">
       
-      {/* Left: Hamburger + Business Name & Branch Selector */}
-      <div className="flex-1 flex items-center gap-2 sm:gap-4 min-w-0">
+      {/* Left: Hamburger + Business Name */}
+      <div className="flex-1 flex items-center gap-3 min-w-0">
         {/* Mobile hamburger */}
         <button
           onClick={() => setIsOpen(true)}
-          className="lg:hidden p-1.5 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+          className="lg:hidden p-2 -ml-1 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shrink-0"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         <div className="flex items-center min-w-0">
-          <Link href="/dashboard" className="text-sm font-semibold text-foreground truncate hover:text-[#FF4444] transition-colors cursor-pointer">
+          <Link href="/dashboard" className="text-sm sm:text-base font-extrabold text-slate-900 truncate hover:text-[#FF3B30] transition-colors cursor-pointer tracking-tight">
             {partner?.businessName || "La Bohem"}
           </Link>
           {partner?.verified && (
-            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+            <span className="ml-2.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
               ✓ Verified
             </span>
           )}
@@ -50,7 +50,7 @@ export function DashboardHeader() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
         
         {/* Language Selector */}
         <LanguageSwitcher />
@@ -58,16 +58,11 @@ export function DashboardHeader() {
         {/* Notifications */}
         <NotificationsPopover />
         
-        {/* Business Image / Avatar */}
+        {/* Profile Avatar Badge */}
         <Link href="/dashboard/settings">
-          <Avatar className="h-9 w-9 rounded-full border border-border cursor-pointer bg-[#FF4444]/20 hover:ring-2 hover:ring-[#FF4444]/50 transition-all flex items-center justify-center">
-            {partner?.image ? (
-              <AvatarImage src={partner.image} alt={partner.businessName} className="object-cover rounded-full" />
-            ) : null}
-            <AvatarFallback className="text-[#FF4444] font-semibold text-xs rounded-full flex items-center justify-center">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <div className="w-9 h-9 rounded-full bg-[#FFEAEA] text-[#FF3B30] font-extrabold text-xs flex items-center justify-center border border-rose-100 cursor-pointer hover:ring-2 hover:ring-[#FF3B30]/30 transition-all">
+            {initials}
+          </div>
         </Link>
       </div>
 

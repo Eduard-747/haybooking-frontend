@@ -15,6 +15,8 @@ export interface BusinessCardData {
   image: string
   distance: string
   tags: string[]
+  addresses?: string
+  serviceNames?: string
 }
 
 interface ClientBusinessCardProps {

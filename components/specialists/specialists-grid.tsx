@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EditSpecialistModal } from "./edit-specialist-modal"
+import { matchMultilingualQuery } from "@/lib/search-transliteration"
 
 interface Specialist {
   id: string
@@ -74,8 +75,8 @@ export function SpecialistsGrid({ searchQuery }: SpecialistsGridProps) {
   }
 
   const filteredSpecialists = specialists.filter((specialist) =>
-    specialist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    specialist.services.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    matchMultilingualQuery(specialist.name, searchQuery) ||
+    specialist.services.some((s) => matchMultilingualQuery(s, searchQuery))
   )
 
   return (

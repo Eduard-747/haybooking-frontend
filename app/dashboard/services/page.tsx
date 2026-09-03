@@ -12,6 +12,7 @@ import { useBranchContext } from "@/components/dashboard/branch-context"
 import { formatPrice } from "@/lib/currency"
 import { useTranslation } from "react-i18next"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { matchMultilingualQuery, detectLanguage } from "@/lib/search-transliteration"
 
 interface Service {
   _id: string
@@ -21,6 +22,7 @@ interface Service {
   price: number
   assignedBranches: string[]
   image?: string
+  description?: string
 }
 
 export default function ManageServicesPage() {
@@ -94,9 +96,12 @@ export default function ManageServicesPage() {
         s.assignedBranches?.some((b: any) => b._id === selectedBranchId)
       )
     }
-    
     if (searchQuery) {
-      result = result.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      result = result.filter(s => 
+        matchMultilingualQuery(s.name, searchQuery) ||
+        matchMultilingualQuery(s.category || "", searchQuery) ||
+        matchMultilingualQuery(s.description || "", searchQuery)
+      )
     }
     
     if (selectedCategory !== "All") {

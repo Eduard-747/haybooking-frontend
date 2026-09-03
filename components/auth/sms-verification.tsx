@@ -2,20 +2,23 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Phone, RefreshCw } from "lucide-react"
+import { ArrowLeft, Phone, Mail, RefreshCw } from "lucide-react"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import type { ConfirmationResult } from "firebase/auth"
 
+import { validateOtpCode } from "@/lib/countries"
+
 interface SmsVerificationProps {
-  phoneNumber: string
+  phoneNumber?: string
+  email?: string
   confirmationResult?: ConfirmationResult | null
   onVerified: (firebaseUid?: string) => void
   onBack: () => void
   onResend?: () => Promise<void>
 }
 
-export function SmsVerification({ phoneNumber, confirmationResult, onVerified, onBack, onResend }: SmsVerificationProps) {
+export function SmsVerification({ phoneNumber = "", email, confirmationResult, onVerified, onBack, onResend }: SmsVerificationProps) {
   const [code, setCode] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
   const [resendTimer, setResendTimer] = useState(60)
@@ -75,15 +78,25 @@ export function SmsVerification({ phoneNumber, confirmationResult, onVerified, o
   }
 
   const handleVerify = async (codeStr: string) => {
+    const { isValid, error, cleanCode } = validateOtpCode(codeStr)
+    if (!isValid) {
+      toast.error(error || "Please enter a valid 6-digit verification code.")
+      return
+    }
     setIsVerifying(true)
     try {
       if (confirmationResult) {
-        const userCredential = await confirmationResult.confirm(codeStr)
+        const userCredential = await confirmationResult.confirm(cleanCode)
         const firebaseUid = userCredential.user.uid
         toast.success("Phone verified successfully!")
         onVerified(firebaseUid)
+      } else if (email) {
+        await api.post("/auth/verify-email-otp", { email, code: cleanCode })
+        toast.success("Email verified successfully!")
+        onVerified()
       } else {
-        await api.post("/auth/verify-sms", { phoneNumber, code: codeStr })
+        await api.post("/auth/verify-sms", { phoneNumber, code: cleanCode })
+        toast.success("Phone verified!")
         onVerified()
       }
     } catch (err: any) {
@@ -111,15 +124,17 @@ export function SmsVerification({ phoneNumber, confirmationResult, onVerified, o
     try {
       if (onResend) {
         await onResend()
+      } else if (email) {
+        await api.post("/auth/send-email-otp", { email })
       }
       toast.success("Verification code resent!")
     } catch (err: any) {
-      toast.error(err.message || "Failed to resend code")
+      toast.error(err.response?.data?.message || err.message || "Failed to resend code")
     }
   }
 
   // Mask phone number for display
-  const maskedPhone = phoneNumber.length > 4
+  const maskedPhone = phoneNumber && phoneNumber.length > 4
     ? phoneNumber.slice(0, -4).replace(/./g, "•") + phoneNumber.slice(-4)
     : phoneNumber
 
@@ -137,12 +152,14 @@ export function SmsVerification({ phoneNumber, confirmationResult, onVerified, o
       {/* Header */}
       <div className="text-center space-y-3">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#FEF2F2]">
-          <Phone className="h-7 w-7 text-[#FF4444]" />
+          {email ? <Mail className="h-7 w-7 text-[#FF4444]" /> : <Phone className="h-7 w-7 text-[#FF4444]" />}
         </div>
-        <h2 className="text-2xl font-semibold text-foreground">Verify your phone</h2>
+        <h2 className="text-2xl font-semibold text-foreground">
+          {email ? "Verify your email" : "Verify your phone"}
+        </h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
           We sent a 6-digit code to{" "}
-          <span className="font-medium text-foreground">{maskedPhone}</span>
+          <span className="font-medium text-foreground">{email ? email : maskedPhone}</span>
         </p>
       </div>
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { usePartner } from "@/hooks/usePartner"
+import { matchMultilingualQuery } from "@/lib/search-transliteration"
 import { useBranchContext } from "@/components/dashboard/branch-context"
 import api from "@/lib/api"
 import { toast } from "sonner"
@@ -34,6 +35,7 @@ interface MenuFile {
   format: 'pdf' | 'image' | 'document' | 'spreadsheet' | 'presentation' | 'structured'
   size: string
   fileData?: string
+  description?: string
   createdAt: string
 }
 
@@ -209,7 +211,11 @@ export default function ManageMenuPage() {
     let result = [...menus]
     
     if (searchQuery) {
-      result = result.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      result = result.filter(m => 
+        matchMultilingualQuery(m.name, searchQuery) ||
+        matchMultilingualQuery(m.description || "", searchQuery) ||
+        matchMultilingualQuery(m.type || "", searchQuery)
+      )
     }
     if (selectedType !== "All") {
       result = result.filter(m => m.type === selectedType)
@@ -228,7 +234,7 @@ export default function ManageMenuPage() {
   }, [menus, searchQuery, selectedType, sortBy])
 
   const handleDelete = async (id: string) => {
-    if(!confirm("Are you sure you want to delete this menu?")) return
+    if(!confirm(t("restaurant.menu.confirmDelete", "Are you sure you want to delete this menu?"))) return
     try {
       await api.delete(`/restaurant/menu-file/${id}`)
       setMenus(menus.filter(m => m._id !== id))
@@ -262,7 +268,7 @@ export default function ManageMenuPage() {
           <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center">
              <div className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4">
                <Loader2 className="w-10 h-10 text-[#FF4444] animate-spin" />
-               <p className="font-bold text-foreground">Uploading file...</p>
+               <p className="font-bold text-foreground">{t("restaurant.menu.uploadingFile", "Uploading file...")}</p>
              </div>
           </div>
         )}
@@ -279,7 +285,7 @@ export default function ManageMenuPage() {
           {isDragging && (
             <div className="absolute inset-0 z-40 bg-[#FF4444]/10 backdrop-blur-[2px] border-4 border-dashed border-[#FF4444] rounded-2xl m-6 lg:m-8 flex flex-col items-center justify-center">
               <CloudUpload className="w-20 h-20 text-[#FF4444] animate-bounce mb-4" />
-              <h2 className="text-3xl font-bold text-[#FF4444]">Drop files to upload your menu</h2>
+              <h2 className="text-3xl font-bold text-[#FF4444]">{t("restaurant.menu.dropFiles", "Drop files to upload your menu")}</h2>
             </div>
           )}
 
@@ -418,11 +424,11 @@ export default function ManageMenuPage() {
                               <div className="flex items-center gap-3 mb-1">
                                 <button onClick={() => handleView(menu)} className="font-bold text-foreground hover:text-[#FF4444] transition-colors text-left text-base">{menu.name}</button>
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${config.badge}`}>
-                                  {menu.type}
+                                  {t(`restaurant.menu.type.${menu.type.toLowerCase()}`, menu.type)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
-                                <span>Uploaded on {formatDate(menu.createdAt || new Date().toISOString(), i18n.language)}</span>
+                                <span>{t("restaurant.menu.uploadedOn", "Uploaded on")} {formatDate(menu.createdAt || new Date().toISOString(), i18n.language)}</span>
                                 <span className="w-1 h-1 rounded-full bg-border/80"></span>
                                 <span>{menu.size}</span>
                               </div>
@@ -433,15 +439,15 @@ export default function ManageMenuPage() {
                             {menu.fileData && (
                               <>
                                 <button onClick={() => handleView(menu)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 text-xs font-semibold text-foreground hover:bg-muted/50 bg-white shadow-sm transition-colors">
-                                  <Eye className="w-3.5 h-3.5" /> View
+                                  <Eye className="w-3.5 h-3.5" /> {t("common.view", "View")}
                                 </button>
                                 <a href={menu.fileData} download={menu.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 text-xs font-semibold text-foreground hover:bg-muted/50 bg-white shadow-sm transition-colors">
-                                  <Download className="w-3.5 h-3.5" /> Download
+                                  <Download className="w-3.5 h-3.5" /> {t("common.download", "Download")}
                                 </a>
                               </>
                             )}
                             <button onClick={() => handleDelete(menu._id)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 bg-white shadow-sm transition-colors">
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                              <Trash2 className="w-3.5 h-3.5" /> {t("common.delete", "Delete")}
                             </button>
                           </div>
                         </div>

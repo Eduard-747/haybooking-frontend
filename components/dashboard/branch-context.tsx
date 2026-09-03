@@ -6,6 +6,7 @@ import api from "@/lib/api"
 
 export interface Branch {
   _id: string
+  name?: string
   address: {
     line1: string
     city: string

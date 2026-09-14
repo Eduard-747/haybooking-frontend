@@ -148,38 +148,12 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
   const triggerPhoneSmsAuth = async (phoneNumberStr: string) => {
     try {
-      const verifier = getOrCreateRecaptcha()
-      if (!verifier) {
-        throw new Error("Could not initialize reCAPTCHA container.")
-      }
-
-      const confirmation = await signInWithPhoneNumber(auth, phoneNumberStr, verifier)
-      setConfirmationResult(confirmation)
+      await api.post("/auth/send-sms", { phoneNumber: phoneNumberStr })
       setShowSmsVerification(true)
-      toast.success("SMS verification code sent to your phone!")
+      toast.success("Verification code sent to your phone via SMS!")
     } catch (err: any) {
-      if (typeof window !== "undefined" && (window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear()
-        } catch {}
-        ;(window as any).recaptchaVerifier = null
-      }
-      const container = document.getElementById("recaptcha-container")
-      if (container) container.innerHTML = ""
-
-      console.error("Firebase SMS Auth Error:", err)
-
-      let msg = err?.message || "Failed to send SMS"
-      if (err?.code === "auth/invalid-app-credential") {
-        msg = "Firebase Auth Error: Invalid App Credential. Make sure you access via http://localhost:3000 (or add your local IP to Firebase Console > Authentication > Settings > Authorized Domains)."
-      } else if (err?.code === "auth/too-many-requests") {
-        msg = "Too many SMS requests sent to this number. Please wait a few minutes or try another phone number."
-      } else if (err?.code === "auth/billing-not-enabled") {
-        msg = "Firebase Auth: Billing not enabled. Please ensure Blaze Plan is active in Firebase Console."
-      } else if (err?.code === "auth/operation-not-allowed") {
-        msg = "Firebase Auth: SMS/Region not allowed. Please check SMS Region Policy in Firebase Console."
-      }
-      toast.error(msg)
+      console.error("Dexatel SMS Send Error:", err)
+      toast.error(err?.response?.data?.message || err?.message || "Failed to send SMS verification code")
       throw err
     }
   }
@@ -493,11 +467,11 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" suppressHydrationWarning>
       <div id="recaptcha-container" className="flex justify-center my-3" />
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight" suppressHydrationWarning>
           {activeTab === "signup" ? (
             <>
               {t("auth.createPrefix", "Create")}{" "}
@@ -514,7 +488,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
             </>
           )}
         </h2>
-        <p className="mt-1.5 text-sm text-slate-500 font-medium">
+        <p className="mt-1.5 text-sm text-slate-500 font-medium" suppressHydrationWarning>
           {activeTab === "signup"
             ? t("auth.createAccountDesc", "Join Haybooking and discover the best local services.")
             : activeTab === "forgot"
@@ -529,7 +503,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
       {/* Tab Switcher */}
       {(activeTab !== "forgot" && activeTab !== "reset-verify") && (
-        <div className="flex border-b border-slate-200">
+        <div className="flex border-b border-slate-200" suppressHydrationWarning>
           <button
             type="button"
             onClick={() => onTabChange("signup")}
@@ -538,6 +512,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
                 ? "text-[#FF385C]"
                 : "text-slate-400 hover:text-slate-600"
             }`}
+            suppressHydrationWarning
           >
             {t("auth.signUp", "Sign Up")}
             {activeTab === "signup" && (
@@ -552,6 +527,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
                 ? "text-[#FF385C]"
                 : "text-slate-400 hover:text-slate-600"
             }`}
+            suppressHydrationWarning
           >
             {t("auth.signIn", "Sign In")}
             {activeTab === "signin" && (
@@ -602,7 +578,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
           className="w-full bg-[#FF385C] hover:bg-[#E0304F] text-white h-12 sm:h-13 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold shadow-md shadow-[#FF385C]/25 transition-all hover:shadow-lg active:scale-98 mt-2 flex items-center justify-center gap-2"
           disabled={loading}
         >
-          <span>
+          <span suppressHydrationWarning>
             {loading
               ? t("auth.processing")
               : activeTab === "signup"
@@ -622,6 +598,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
               type="button"
               onClick={() => onTabChange("signin")}
               className="text-xs sm:text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors"
+              suppressHydrationWarning
             >
               {t("auth.backToSignIn", "Back to sign in")}
             </button>
@@ -630,7 +607,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
 
         {(activeTab !== "forgot" && activeTab !== "reset-verify") && (
           <div className="text-center pt-3">
-            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            <p className="text-xs sm:text-sm text-slate-500 font-medium" suppressHydrationWarning>
               {activeTab === "signup" ? (
                 <>
                   {t("auth.hasAccount", "Already have an account?")}{" "}
@@ -638,6 +615,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
                     type="button"
                     onClick={() => onTabChange("signin")}
                     className="font-bold text-[#FF385C] underline hover:text-[#E0304F] ml-1"
+                    suppressHydrationWarning
                   >
                     {t("auth.signIn", "Sign In")}
                   </button>
@@ -649,6 +627,7 @@ export function AuthForm({ activeTab, onTabChange, pendingBookingSlug }: AuthFor
                     type="button"
                     onClick={() => onTabChange("signup")}
                     className="font-bold text-[#FF385C] underline hover:text-[#E0304F] ml-1"
+                    suppressHydrationWarning
                   >
                     {t("auth.signUp", "Sign Up")}
                   </button>

@@ -19,16 +19,17 @@ import {
   Utensils,
   Image,
   ChevronDown,
-  Check
+  Check,
+  LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 import { useMobileNav } from "@/components/mobile-nav-context"
 import { useRestaurant } from "@/hooks/useRestaurant"
+import { useAuth } from "@/components/auth/auth-provider"
 
 import { Logo } from "@/components/ui/logo"
 import { useBranchContext } from "@/components/dashboard/branch-context"
-import { usePartner } from "@/hooks/usePartner"
 
 interface DashboardSidebarProps {
   activePath?: string
@@ -111,14 +112,10 @@ function SidebarContent({ activePath }: { activePath?: string }) {
   const pathname = usePathname()
   const { t } = useTranslation()
   const { setIsOpen } = useMobileNav()
+  const { logout } = useAuth()
   const currentPath = activePath || pathname
 
   const { isRestaurant } = useRestaurant()
-  const { partner } = usePartner()
-
-  const initials = partner?.businessName
-    ? partner.businessName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
-    : "LB"
 
   const navItems = isRestaurant ? [
     { label: t("nav.dashboard", "Dashboard"), href: "/dashboard", icon: Home },
@@ -179,24 +176,19 @@ function SidebarContent({ activePath }: { activePath?: string }) {
         </ul>
       </nav>
 
-      {/* Bottom Profile Card */}
-      <div className="p-4 border-t border-slate-100">
-        <div className="bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl p-2.5 flex items-center justify-between gap-3 shadow-2xs transition-all cursor-pointer">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-[#FFEAEA] text-[#FF3B30] font-extrabold text-xs flex items-center justify-center shrink-0 border border-rose-100">
-              {initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-bold text-slate-900 truncate">
-                {partner?.businessName || "La Bohem"}
-              </h4>
-              <p className="text-[11px] font-medium text-slate-400 truncate">
-                {t("dashboard.administrator", "Administrator")}
-              </p>
-            </div>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
-        </div>
+      {/* Footer Sign Out */}
+      <div className="p-3.5 border-t border-slate-100 mt-auto">
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(false)
+            logout()
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-rose-600 hover:bg-rose-50 border border-rose-100/80 transition-colors cursor-pointer"
+        >
+          <LogOut className="h-4.5 w-4.5 text-rose-500 shrink-0" />
+          <span>{t("nav.signOut", "Sign Out")}</span>
+        </button>
       </div>
     </div>
   )

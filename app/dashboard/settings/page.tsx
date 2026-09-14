@@ -175,17 +175,18 @@ export default function SettingsPage() {
           <div className="max-w-3xl mx-auto">
             
             {/* Header */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{t("nav.settings", "Settings")}</h1>
-                <p className="text-muted-foreground mt-1">{t("dashboard.settingsDesc", "Manage your business and account settings.")}</p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{t("nav.settings", "Settings")}</h1>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1">{t("dashboard.settingsDesc", "Manage your business and account settings.")}</p>
               </div>
               <button
+                type="button"
                 onClick={() => logout()}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 font-semibold rounded-lg transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100/80 text-[#FF3B30] active:scale-95 font-extrabold text-xs sm:text-sm rounded-xl border border-rose-100 shadow-2xs transition-all whitespace-nowrap cursor-pointer shrink-0 self-start sm:self-auto"
               >
-                <LogOut className="h-4 w-4" />
-                {t("nav.signOut", "Sign Out")}
+                <LogOut className="h-4 w-4 shrink-0" />
+                <span>{t("nav.signOut", "Sign Out")}</span>
               </button>
             </div>
 

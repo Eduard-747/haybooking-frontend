@@ -126,6 +126,8 @@ export function SmsVerification({ phoneNumber = "", email, confirmationResult, o
         await onResend()
       } else if (email) {
         await api.post("/auth/send-email-otp", { email })
+      } else if (phoneNumber) {
+        await api.post("/auth/send-sms", { phoneNumber })
       }
       toast.success("Verification code resent!")
     } catch (err: any) {

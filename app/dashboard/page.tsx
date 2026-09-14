@@ -5,7 +5,7 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import Link from "next/link"
 import { Calendar } from "@/components/ui/calendar"
-import { Clock, User, Phone, Mail, Loader2, CheckCircle, XCircle, CalendarIcon, ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { Clock, User, Phone, Mail, Loader2, CheckCircle, XCircle, CalendarIcon, ChevronLeft, ChevronRight, Plus, MapPin } from "lucide-react"
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import { useRestaurant } from "@/hooks/useRestaurant"
 import { RestaurantDashboard } from "@/components/restaurant/restaurant-dashboard"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 interface Booking {
   _id: string
@@ -35,12 +36,12 @@ interface Booking {
 const ITEMS_PER_PAGE = 5;
 
 const statusColors: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-600 border border-amber-100",
-  confirmed: "bg-emerald-50 text-emerald-600 border border-emerald-100",
-  declined: "bg-red-50 text-red-500 border border-red-100",
-  cancelled: "bg-gray-50 text-gray-400 border border-gray-200",
-  completed: "bg-blue-50 text-blue-600 border border-blue-100",
-  "no-show": "bg-purple-50 text-purple-600 border border-purple-100",
+  pending: "bg-amber-50 text-amber-700 border-amber-200/80 hover:bg-amber-100/60",
+  confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/60",
+  declined: "bg-rose-50 text-rose-700 border-rose-200/80 hover:bg-rose-100/60",
+  cancelled: "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/60",
+  completed: "bg-blue-50 text-blue-700 border-blue-200/80 hover:bg-blue-100/60",
+  "no-show": "bg-purple-50 text-purple-700 border-purple-200/80 hover:bg-purple-100/60",
 }
 
 function formatTime(iso: string) {
@@ -200,7 +201,7 @@ export default function BusinessDashboardPage() {
       <DashboardSidebar activePath="/dashboard" />
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <DashboardHeader />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto">
           {setupStatus.isLoaded && !branchesLoading && (branches.length === 0 || setupStatus.services === 0 || setupStatus.specialists === 0) ? (
             <div className="flex-1 overflow-y-auto pb-8">
               <OnboardingGuide
@@ -214,27 +215,34 @@ export default function BusinessDashboardPage() {
 
               {/* Left Column: Bookings */}
               <div className="flex-1 min-w-0 flex flex-col">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-6 shrink-0">
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground">{t("nav.bookings", "Bookings")} {date ? `- ${getLocalizedDate(date)}` : ""}</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">{filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}</p>
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                      {t("nav.bookings", "Bookings")} {date ? `- ${getLocalizedDate(date)}` : ""}
+                    </h1>
+                    <p className="text-xs sm:text-sm font-medium text-slate-500 mt-0.5">
+                      {filteredBookings.length} {t("dashboard.totalBookings", "total bookings")}
+                    </p>
                   </div>
-                  <Link href="/dashboard/book" className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#FF4444] hover:bg-[#BCAAA4] text-white text-sm font-bold rounded-xl shadow-sm transition-colors self-start sm:self-auto">
+                  <Link
+                    href="/dashboard/book"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#FF3B30] hover:bg-[#E03838] active:scale-[0.98] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                  >
                     <Plus className="h-4 w-4" /> {t("nav.createBooking", "Create Booking")}
                   </Link>
                 </div>
 
                 {(isLoading || partnerLoading) ? (
                   <div className="flex items-center justify-center py-24">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
+                    <Loader2 className="h-8 w-8 animate-spin text-[#FF3B30]" />
                   </div>
                 ) : bookings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
-                    <p className="text-muted-foreground text-sm">{t("dashboard.noBookings", "No bookings yet. Share your booking link to get started.")}</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
+                    <p className="text-slate-500 text-sm font-medium">{t("dashboard.noBookings", "No bookings yet. Share your booking link to get started.")}</p>
                   </div>
                 ) : filteredBookings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-xl border border-border/40">
-                    <p className="text-muted-foreground text-sm">{t("dashboard.noBookingsForDate", "No bookings scheduled for {{date}}.", { date: getLocalizedDate(date) })}</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
+                    <p className="text-slate-500 text-sm font-medium">{t("dashboard.noBookingsForDate", "No bookings scheduled for {{date}}.", { date: getLocalizedDate(date) })}</p>
                   </div>
                 ) : (
                   <div className="space-y-4 pb-4">
@@ -256,28 +264,35 @@ export default function BusinessDashboardPage() {
                         : booking.serviceId?.price || 0
                       const price = totalPrice ? formatPrice(totalPrice, partner?.currency) : "—"
 
-                      const isEnded = new Date(booking.endTime).getTime() < new Date().getTime();
-                      const canAccept = booking.status !== "confirmed" && booking.status !== "completed" && !isEnded;
-
                       return (
-                        <div key={booking._id} className="bg-white rounded-xl border border-[#FF4444]/30 shadow-sm p-5 hover:shadow-md transition-shadow">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-border/40 gap-3">
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-3 text-sm font-semibold text-foreground">
-                                <span className="flex items-center gap-1.5"><CalendarIcon className="w-4 h-4 text-[#FF4444]" /> {formatDate(booking.startTime, i18n.language)}</span>
-                                <span className="text-border/60">|</span>
-                                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#FF4444]" /> {formatTime(booking.startTime)} – {formatTime(booking.endTime)}</span>
-                              </div>
-                              <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${statusColors[booking.status] || "bg-gray-50 text-gray-400 border border-gray-200"}`}>
-                                {t(`common.${booking.status}` as any, booking.status)}
+                        <div
+                          key={booking._id}
+                          className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-200 p-4 sm:p-5"
+                        >
+                          {/* Card Header: Date/Time pills + Interactive Status Select */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 mb-3.5 border-b border-slate-100">
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                              <span className="inline-flex items-center gap-1.5 bg-[#FFF0F0] text-[#FF3B30] px-2.5 py-1 rounded-lg font-extrabold">
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                {formatDate(booking.startTime, i18n.language)}
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 bg-slate-100/90 text-slate-700 px-2.5 py-1 rounded-lg font-bold">
+                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                {formatTime(booking.startTime)} – {formatTime(booking.endTime)}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 self-start sm:self-auto">
+
+                            <div className="self-start sm:self-auto shrink-0">
                               <Select value={booking.status} onValueChange={(value) => updateStatus(booking._id, value)}>
-                                <SelectTrigger className="h-8 w-[130px] px-3 py-1.5 text-xs font-semibold rounded-lg border border-border/60 bg-white text-foreground focus:ring-[#FF4444]/20 transition-colors">
+                                <SelectTrigger
+                                  className={cn(
+                                    "h-8 px-3 py-1 text-xs font-bold rounded-xl border transition-colors outline-none focus:ring-2 focus:ring-[#FF3B30]/20 cursor-pointer shadow-2xs",
+                                    statusColors[booking.status] || "bg-slate-50 text-slate-600 border-slate-200"
+                                  )}
+                                >
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent align="end" className="rounded-xl shadow-xl border-slate-200 p-1">
                                   <SelectItem value="pending">{t("common.pending", "Pending")}</SelectItem>
                                   <SelectItem value="confirmed">{t("common.confirmed", "Confirmed")}</SelectItem>
                                   <SelectItem value="completed">{t("common.completed", "Completed")}</SelectItem>
@@ -289,37 +304,61 @@ export default function BusinessDashboardPage() {
                             </div>
                           </div>
 
-                          <div className="mb-4 space-y-2">
-                            <div className="flex items-center gap-2 font-bold text-foreground text-sm">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              {userName}
+                          {/* Customer & Service Info */}
+                          <div className="mb-3.5 space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-rose-50 text-[#FF3B30] flex items-center justify-center shrink-0 border border-rose-100 font-extrabold text-xs">
+                                  <User className="w-4 h-4 text-[#FF3B30]" />
+                                </div>
+                                <span className="font-extrabold text-slate-900 text-sm sm:text-base truncate">
+                                  {userName}
+                                </span>
+                              </div>
+                              {price !== "—" && (
+                                <span className="font-extrabold text-[#FF3B30] text-xs sm:text-sm shrink-0 bg-[#FFF0F0] px-2.5 py-1 rounded-lg border border-rose-100">
+                                  {price}
+                                </span>
+                              )}
                             </div>
-                            <p className="text-xs text-muted-foreground pl-6">{t("common.service")}: {serviceName}</p>
-                            {booking.specialistId?.name && (
-                              <p className="text-xs text-muted-foreground pl-6">{t("common.specialist")}: <span className="font-medium text-foreground">{booking.specialistId.name}</span></p>
-                            )}
+
+                            <div className="space-y-1 pl-10 text-xs sm:text-sm">
+                              <div className="flex items-start gap-1.5">
+                                <span className="font-semibold text-slate-400 shrink-0">{t("common.service")}:</span>
+                                <span className="font-medium text-slate-800 leading-snug">{serviceName}</span>
+                              </div>
+                              {booking.specialistId?.name && (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-semibold text-slate-400 shrink-0">{t("common.specialist")}:</span>
+                                  <span className="font-bold text-slate-900">{booking.specialistId.name}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-                            {branchAddress && (
-                              <div className="flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                {branchAddress}
-                              </div>
-                            )}
-                            {userPhone && (
-                              <div className="flex items-center gap-1.5">
-                                <Phone className="w-3.5 h-3.5" />
-                                {userPhone}
-                              </div>
-                            )}
-                            {booking.userId?.email && (
-                              <div className="flex items-center gap-1.5">
-                                <Mail className="w-3.5 h-3.5" />
-                                {booking.userId.email}
-                              </div>
-                            )}
-                          </div>
+                          {/* Contact & Location Footer */}
+                          {(branchAddress || userPhone || booking.userId?.email) && (
+                            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-4 text-xs text-slate-500">
+                              {branchAddress && (
+                                <div className="flex items-center gap-1.5 min-w-0 max-w-full">
+                                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="truncate">{branchAddress}</span>
+                                </div>
+                              )}
+                              {userPhone && (
+                                <a href={`tel:${userPhone}`} className="flex items-center gap-1.5 hover:text-[#FF3B30] transition-colors font-medium">
+                                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span>{userPhone}</span>
+                                </a>
+                              )}
+                              {booking.userId?.email && (
+                                <a href={`mailto:${booking.userId.email}`} className="flex items-center gap-1.5 hover:text-[#FF3B30] transition-colors truncate max-w-full font-medium">
+                                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="truncate">{booking.userId.email}</span>
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )
                     })}
@@ -330,9 +369,9 @@ export default function BusinessDashboardPage() {
                         <button
                           onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                           disabled={currentPage === 1}
-                          className="p-2 rounded-lg border border-border/60 hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
+                          className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-2xs cursor-pointer"
                         >
-                          <ChevronLeft className="h-4 w-4 text-foreground" />
+                          <ChevronLeft className="h-4 w-4 text-slate-700" />
                         </button>
 
                         <div className="flex items-center gap-1 mx-1">
@@ -340,9 +379,9 @@ export default function BusinessDashboardPage() {
                             <button
                               key={i}
                               onClick={() => setCurrentPage(i + 1)}
-                              className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${currentPage === i + 1
-                                  ? "bg-[#FF4444] text-white shadow-sm"
-                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground bg-white border border-border/60"
+                              className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${currentPage === i + 1
+                                  ? "bg-[#FF3B30] text-white shadow-2xs"
+                                  : "text-slate-600 hover:bg-slate-100 bg-white border border-slate-200"
                                 }`}
                             >
                               {i + 1}
@@ -353,9 +392,9 @@ export default function BusinessDashboardPage() {
                         <button
                           onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                           disabled={currentPage === totalPages}
-                          className="p-2 rounded-lg border border-border/60 hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm"
+                          className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-2xs cursor-pointer"
                         >
-                          <ChevronRight className="h-4 w-4 text-foreground" />
+                          <ChevronRight className="h-4 w-4 text-slate-700" />
                         </button>
                       </div>
                     )}
@@ -364,62 +403,63 @@ export default function BusinessDashboardPage() {
               </div>
 
               {/* Right Column: Widgets */}
-              <div className="w-full xl:w-80 shrink-0 space-y-6 pb-4">
-                <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-4 shadow-inner">
-                  <div className="flex items-center justify-between mb-4 px-2">
-                    <h2 className="text-xl font-bold text-foreground">{t("nav.calendar", "Calendar")}</h2>
+              <div className="w-full xl:w-80 shrink-0 space-y-5 pb-4">
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-2xs">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-base sm:text-lg font-extrabold text-slate-900">{t("nav.calendar", "Calendar")}</h2>
                     <button
+                      type="button"
                       onClick={() => setDate(undefined)}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${!date ? "bg-[#FF4444] text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"}`}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${!date ? "bg-[#FF3B30] text-white shadow-2xs" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                     >
                       {t("dashboard.allDays", "All Days")}
                     </button>
                   </div>
-                  <div className="bg-white rounded-xl shadow-sm border border-border/40 p-2 flex justify-center">
+                  <div className="bg-slate-50/70 rounded-xl border border-slate-100 p-1.5 flex justify-center overflow-x-auto">
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
                       className="rounded-md"
                       classNames={{
-                        day_selected: "bg-[#FF4444] text-white hover:bg-[#FF4444] hover:text-white rounded-full",
-                        day_today: "bg-accent text-accent-foreground rounded-full",
-                        day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-muted rounded-full transition-colors",
-                        head_cell: "text-muted-foreground font-semibold text-[10px] tracking-wider uppercase w-9",
+                        day_selected: "bg-[#FF3B30] text-white hover:bg-[#FF3B30] hover:text-white rounded-full font-bold",
+                        day_today: "bg-rose-100 text-[#FF3B30] font-bold rounded-full",
+                        day: "h-8 w-8 sm:h-9 sm:w-9 p-0 font-medium aria-selected:opacity-100 hover:bg-slate-200/70 rounded-full transition-colors text-xs sm:text-sm",
+                        head_cell: "text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase w-8 sm:w-9",
                       }}
                     />
                   </div>
                 </div>
 
-                <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-6 shadow-inner">
-                  <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.topSpecialists", "Top Specialists")}</h2>
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-2xs">
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mb-4">{t("dashboard.topSpecialists", "Top Specialists")}</h2>
                   {topSpecialists.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {topSpecialists.map(({ name, count }) => (
-                        <div key={name} className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-foreground">{name}</span>
-                          <span className="text-xs font-bold text-[#FF4444] bg-[#FF4444]/10 px-2 py-1 rounded-md">{count} {t("dashboard.completedBookings", "completed")}</span>
+                        <div key={name} className="flex items-center justify-between text-xs sm:text-sm bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                          <span className="font-semibold text-slate-800">{name}</span>
+                          <span className="font-extrabold text-[#FF3B30] bg-[#FFF0F0] px-2.5 py-1 rounded-lg text-xs">{count} {t("dashboard.completedBookings", "completed")}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
+                    <p className="text-xs sm:text-sm text-slate-400 italic">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
                   )}
                 </div>
 
-                <div className="bg-[#FAFAFA] rounded-2xl border border-border/60 p-6 shadow-inner">
-                  <h2 className="text-xl font-bold text-foreground mb-5">{t("dashboard.topServices", "Top Services")}</h2>
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-2xs">
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 mb-4">{t("dashboard.topServices", "Top Services")}</h2>
                   {topServices.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {topServices.map(({ name, count }) => (
-                        <div key={name} className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-foreground line-clamp-1 pr-2">{name}</span>
-                          <span className="text-xs font-bold text-[#FF4444] bg-[#FF4444]/10 px-2 py-1 rounded-md shrink-0">{count} {t("dashboard.completedBookings", "completed")}</span>
+                        <div key={name} className="flex items-center justify-between text-xs sm:text-sm bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                          <span className="font-semibold text-slate-800 truncate pr-2">{name}</span>
+                          <span className="font-extrabold text-[#FF3B30] bg-[#FFF0F0] px-2.5 py-1 rounded-lg text-xs shrink-0">{count} {t("dashboard.completedBookings", "completed")}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
+                    <p className="text-xs sm:text-sm text-slate-400 italic">{t("dashboard.noCompletedBookings", "No completed bookings yet.")}</p>
                   )}
                 </div>
               </div>

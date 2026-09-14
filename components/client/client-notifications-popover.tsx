@@ -82,6 +82,7 @@ export function ClientNotificationsPopover() {
       case "Booking Declined": return t("dashboard.bookingDeclined", { defaultValue: "Booking Declined" })
       case "Booking Cancelled": return t("dashboard.bookingCancelled", { defaultValue: "Booking Cancelled" })
       case "Booking Submitted": return t("dashboard.bookingSubmitted", { defaultValue: "Booking Submitted" })
+      case "Table Reassigned": return t("dashboard.tableReassigned", { defaultValue: "Table Reassigned" })
       default: return title
     }
   }
@@ -89,7 +90,11 @@ export function ClientNotificationsPopover() {
   const getTranslatedMessage = (msg: string) => {
     if (!msg) return ""
 
-    if (msg === "A client has requested a new appointment.") {
+    if (msg.includes("has requested a new appointment.")) {
+      const name = msg.replace("has requested a new appointment.", "").trim()
+      if (name && name !== "A client") {
+        return t("dashboard.userRequestedNew", { name, defaultValue: "{{name}} has requested a new appointment." })
+      }
       return t("dashboard.clientRequestedNew", { defaultValue: "A client has requested a new appointment." })
     }
     if (msg === "Your reservation has been submitted to the restaurant and is pending confirmation.") {
@@ -117,7 +122,7 @@ export function ClientNotificationsPopover() {
       return t("dashboard.bookingCancelledMsg", { defaultValue: "Your booking has been cancelled." })
     }
     if (msg.includes("has cancelled their appointment.")) {
-      const name = msg.split(" ")[0]
+      const name = msg.replace("has cancelled their appointment.", "").trim()
       return t("dashboard.userCancelledAppointment", { name, defaultValue: "{{name}} has cancelled their appointment." })
     }
     if (msg.toLowerCase().includes("a new reservation request has been submitted for")) {

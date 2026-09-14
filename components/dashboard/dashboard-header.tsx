@@ -25,10 +25,10 @@ export function DashboardHeader() {
   const { setIsOpen } = useMobileNav()
 
   return (
-    <header className="h-16 border-b border-slate-100 bg-white flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40 shadow-2xs">
+    <header className="h-16 border-b border-slate-100 bg-white flex items-center justify-between px-3.5 sm:px-8 sticky top-0 z-40 shadow-2xs">
       
       {/* Left: Hamburger + Business Name */}
-      <div className="flex-1 flex items-center gap-3 min-w-0">
+      <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
         {/* Mobile hamburger */}
         <button
           onClick={() => setIsOpen(true)}
@@ -42,7 +42,7 @@ export function DashboardHeader() {
             {partner?.businessName || "La Bohem"}
           </Link>
           {partner?.verified && (
-            <span className="ml-2.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
               ✓ Verified
             </span>
           )}
@@ -50,7 +50,7 @@ export function DashboardHeader() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         
         {/* Language Selector */}
         <LanguageSwitcher />
@@ -60,7 +60,7 @@ export function DashboardHeader() {
         
         {/* Profile Avatar Badge */}
         <Link href="/dashboard/settings">
-          <div className="w-9 h-9 rounded-full bg-[#FFEAEA] text-[#FF3B30] font-extrabold text-xs flex items-center justify-center border border-rose-100 cursor-pointer hover:ring-2 hover:ring-[#FF3B30]/30 transition-all">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FFEAEA] text-[#FF3B30] font-extrabold text-xs flex items-center justify-center border border-rose-100 cursor-pointer hover:ring-2 hover:ring-[#FF3B30]/30 transition-all shrink-0">
             {initials}
           </div>
         </Link>

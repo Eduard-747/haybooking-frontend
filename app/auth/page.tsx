@@ -47,6 +47,7 @@ function AuthPageContent() {
           <button
             onClick={() => setActiveTab((prev) => (prev === "signin" ? "signup" : "signin"))}
             className="px-3 sm:px-6 py-1.5 sm:py-2.5 bg-[#FF385C] hover:bg-[#E0304F] active:scale-95 text-white rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs whitespace-nowrap shrink-0 flex items-center justify-center"
+            suppressHydrationWarning
           >
             {activeTab === "signin" ? t("auth.signUp", "Sign up") : t("auth.signIn", "Sign in")}
           </button>

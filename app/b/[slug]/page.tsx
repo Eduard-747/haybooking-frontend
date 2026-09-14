@@ -145,9 +145,9 @@ export default function PublicBookingPage() {
         if (!partnerRes?.data) {
           try {
             partnerRes = await api.get(`/partners/${slug}`)
-          } catch {}
+          } catch { }
         }
-        
+
         if (!partnerRes?.data) { setNotFound(true); return }
         setPartner(partnerRes.data)
 
@@ -158,18 +158,18 @@ export default function PublicBookingPage() {
           api.get(`/specialists?partnerId=${partnerId}`),
           partnerRes.data.category === "Restaurant" ? api.get(`/restaurant/menu?partnerId=${partnerId}`) : Promise.resolve({ data: [] })
         ])
-        
+
         setBranches(bRes.data || [])
         // Map _id to id for legacy components (ServiceSelection, SpecialistSelection)
         setAllServices((sRes.data || []).map((s: any) => ({ ...s, id: s._id })))
-        setAllSpecialists((spRes.data || []).map((s: any) => ({ 
-          ...s, 
+        setAllSpecialists((spRes.data || []).map((s: any) => ({
+          ...s,
           id: s._id,
           role: "Specialist",
           image: s.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=FF4444&color=fff&size=200`
         })))
         setMenuItems(mRes.data || [])
-        
+
         // Auto-select branch
         if (initialBranchId && bRes.data?.some((b: any) => b._id === initialBranchId)) {
           setSelectedBranch(initialBranchId)
@@ -213,7 +213,7 @@ export default function PublicBookingPage() {
       }
       try {
         const dateStr = format(selectedDate, 'yyyy-MM-dd')
-        
+
         if (partner?.businessType === "restaurant" || partner?.category === "Restaurant") {
           const [fRes, tRes, rRes] = await Promise.all([
             api.get(`/restaurant/floors?branchId=${selectedBranch}`),
@@ -260,7 +260,7 @@ export default function PublicBookingPage() {
 
     // Check services assignment
     if (selectedServices.length > 0) {
-      const canDoAllServices = selectedServices.every(sId => 
+      const canDoAllServices = selectedServices.every(sId =>
         sp.assignedServices?.some((s: any) => s._id === sId || s === sId)
       )
       if (!canDoAllServices) return false
@@ -304,7 +304,7 @@ export default function PublicBookingPage() {
 
   const handleConfirm = async (tableId?: string) => {
     const finalTableId = tableId || selectedTableId;
-    
+
     if (branches.length > 0 && !selectedBranch) {
       toast.error("Please select a branch location")
       return
@@ -344,7 +344,7 @@ export default function PublicBookingPage() {
         parseInt(mm, 10),
         0
       )
-      
+
       let endTime: Date;
       if (isRestaurant && selectedEndTime) {
         const [ehh, emm] = selectedEndTime.split(':')
@@ -363,7 +363,7 @@ export default function PublicBookingPage() {
       let userId = "000000000000000000000000"
       let userProfile: any = user
       try {
-        if (!userProfile) {
+        if (!userProfile && typeof window !== 'undefined' && localStorage.getItem('access_token')) {
           const profileRes = await api.get('/auth/profile')
           userProfile = profileRes?.data
         }
@@ -437,15 +437,16 @@ export default function PublicBookingPage() {
       toast.error("Please fill in all details")
       return
     }
-    
+
     setIsSubmitting(true)
     try {
-      await api.post('/auth/send-sms', { phoneNumber: `${guestDetails.countryCode}${guestDetails.phone}` })
-      setGuestStep("verify")
-      toast.success("Verification code sent!")
+      await submitBooking({
+        name: `${guestDetails.firstName} ${guestDetails.lastName}`,
+        email: guestDetails.email,
+        phone: `${guestDetails.countryCode}${guestDetails.phone}`
+      })
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to send code")
-    } finally {
+      toast.error(err.response?.data?.message || "Failed to submit booking")
       setIsSubmitting(false)
     }
   }
@@ -459,18 +460,18 @@ export default function PublicBookingPage() {
 
     setIsSubmitting(true)
     try {
-      await api.post('/auth/verify-sms', { 
+      await api.post('/auth/verify-sms', {
         phoneNumber: `${guestDetails.countryCode}${guestDetails.phone}`,
-        code: smsCode 
+        code: smsCode
       })
-      
+
       // Submit booking now that phone is verified
       await submitBooking({
         name: `${guestDetails.firstName} ${guestDetails.lastName}`,
         email: guestDetails.email,
         phone: `${guestDetails.countryCode}${guestDetails.phone}`
       })
-      
+
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Invalid verification code")
       setIsSubmitting(false)
@@ -500,19 +501,19 @@ export default function PublicBookingPage() {
       <div className="min-h-screen bg-white flex flex-col relative">
         <BookingHeader />
         <main className="flex-1 w-full flex flex-col items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-500">
-           <div className="bg-emerald-50 rounded-full p-4 mb-6">
-             <CheckSquare className="h-12 w-12 text-emerald-500" />
-           </div>
-           <h1 className="text-3xl font-bold text-foreground mb-3 text-center">{t("restaurant.reservation_submitted", "Reservation Submitted!")}</h1>
-           <p className="text-muted-foreground text-center max-w-md mb-8">
-             {t("restaurant.reservation_submitted_desc", "Your request has been sent successfully. You will receive a confirmation once the business approves your booking.")}
-           </p>
-           <button 
-             onClick={() => window.location.reload()}
-             className="px-6 py-3 bg-[#FF4444] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
-           >
-             {t("restaurant.make_another_booking", "Make Another Booking")}
-           </button>
+          <div className="bg-emerald-50 rounded-full p-4 mb-6">
+            <CheckSquare className="h-12 w-12 text-emerald-500" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-3 text-center">{t("restaurant.reservation_submitted", "Reservation Submitted!")}</h1>
+          <p className="text-muted-foreground text-center max-w-md mb-8">
+            {t("restaurant.reservation_submitted_desc", "Your request has been sent successfully. You will receive a confirmation once the business approves your booking.")}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-[#FF4444] text-white rounded-xl font-bold hover:bg-[#D4444D] transition-colors shadow-sm"
+          >
+            {t("restaurant.make_another_booking", "Make Another Booking")}
+          </button>
         </main>
       </div>
     )
@@ -521,7 +522,7 @@ export default function PublicBookingPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col relative">
       <BookingHeader />
-      
+
       <main className="flex-1 w-full flex flex-col items-center">
         {isRestaurant ? (
           (branches.length > 1 && !selectedBranch) ? (
@@ -588,47 +589,43 @@ export default function PublicBookingPage() {
                   <div className="flex gap-1 p-1 bg-white rounded-xl border border-border/60 w-fit">
                     <button
                       onClick={() => setActiveTab("book")}
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                        activeTab === "book"
-                          ? "bg-[#FF4444] text-white shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                      }`}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === "book"
+                        ? "bg-[#FF4444] text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                        }`}
                     >
                       <Calendar className="h-4 w-4" />
                       {isRestaurant ? t("restaurant.reserve_table", "Book Table") : t("role.customerDesc", "Book Appointment")}
                     </button>
                     <button
                       onClick={() => setActiveTab("about")}
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                        activeTab === "about"
-                          ? "bg-[#FF4444] text-white shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                      }`}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === "about"
+                        ? "bg-[#FF4444] text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                        }`}
                     >
                       <Info className="h-4 w-4" />
                       {t("book.businessInfo", "Business Information")}
                     </button>
-                    
+
                     {isRestaurant && (
                       <>
                         <button
                           onClick={() => setActiveTab("menu")}
-                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                            activeTab === "menu"
-                              ? "bg-[#FF4444] text-white shadow-sm"
-                              : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                          }`}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === "menu"
+                            ? "bg-[#FF4444] text-white shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                            }`}
                         >
                           <Info className="h-4 w-4" />
                           {t("restaurant.our_menu", "Menu")}
                         </button>
                         <button
                           onClick={() => setActiveTab("gallery")}
-                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                            activeTab === "gallery"
-                              ? "bg-[#FF4444] text-white shadow-sm"
-                              : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
-                          }`}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === "gallery"
+                            ? "bg-[#FF4444] text-white shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-gray-50"
+                            }`}
                         >
                           <Info className="h-4 w-4" />
                           {t("nav.gallery", "Gallery")}
@@ -636,13 +633,13 @@ export default function PublicBookingPage() {
                       </>
                     )}
                   </div>
-                  
+
                   {branches.length > 1 && (
-                    <button 
+                    <button
                       onClick={() => {
                         setSelectedBranch(null);
                         setActiveTab("book");
-                      }} 
+                      }}
                       className="text-sm font-medium text-[#FF4444] hover:underline"
                     >
                       {t("book.changeLocation", "Change Location")}
@@ -653,346 +650,346 @@ export default function PublicBookingPage() {
                 {activeTab === "book" && (
                   <div className="space-y-10">
 
-            {/* Services Section (Hidden for Restaurants) */}
-            {!isRestaurant && (!branches.length || selectedBranch) && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
-                    {branches.length > 0 ? "2" : "1"}
-                  </div>
-                  <h2 className="text-lg font-bold text-foreground">{t("book.selectServices")}</h2>
-                </div>
-                <ServiceSelection
-                  services={branchServices as any}
-                  selectedServices={selectedServices}
-                  onToggle={toggleService}
-                  currency={partner?.currency}
-                />
-              </div>
-            )}
-
-            {/* Specialist Section (Hidden for Restaurants) */}
-            {!isRestaurant && selectedServices.length > 0 && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
-                    {branches.length > 0 ? "3" : "2"}
-                  </div>
-                  <h2 className="text-lg font-bold text-foreground">{t("book.selectSpecialist")}</h2>
-                </div>
-                <SpecialistSelection
-                  specialists={filteredSpecialists as any}
-                  selectedSpecialist={selectedSpecialist}
-                  onSelect={setSelectedSpecialist}
-                />
-              </div>
-            )}
-
-            {/* Date & Time Section */}
-            {(isRestaurant || selectedSpecialist) && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold shrink-0 mt-0.5">
-                    {branches.length > 0 ? (isRestaurant ? "2" : "4") : (isRestaurant ? "1" : "3")}
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-foreground">{t("book.dateAndTime", "Date & Time")}</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {t("book.slotsRealtime", "Available slots are updated in real-time based on your specialist choice.")}
-                    </p>
-                  </div>
-                </div>
-                <DateTimePicker
-                  selectedDate={selectedDate}
-                  onDateChange={(d) => d && setSelectedDate(d)}
-                  selectedTime={selectedTime}
-                  onTimeChange={setSelectedTime}
-                  bookedSlots={bookedSlots}
-                  workingHours={branches.find(b => b._id === selectedBranch)?.workingHours || []}
-                  breaks={branches.find(b => b._id === selectedBranch)?.breaks || []}
-                  totalDuration={totalDuration}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* About Us Tab */}
-        {activeTab === "about" && viewMode === "list" && (
-          <div className="mt-8 space-y-10 animate-in fade-in duration-500">
-            <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-foreground mb-4">{t("book.businessInfo", "Business Information")}</h2>
-              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {partner.publicDescription || t("book.aboutUsDefault", "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible.")}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">{t("book.locations", "Our Locations")}</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {branches.map(b => (
-                  <div key={b._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-2">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-[#FEF2F2] flex items-center justify-center shrink-0 mt-0.5">
-                        <MapPin className="h-5 w-5 text-[#FF4444]" />
+                    {/* Services Section (Hidden for Restaurants) */}
+                    {!isRestaurant && (!branches.length || selectedBranch) && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
+                            {branches.length > 0 ? "2" : "1"}
+                          </div>
+                          <h2 className="text-lg font-bold text-foreground">{t("book.selectServices")}</h2>
+                        </div>
+                        <ServiceSelection
+                          services={branchServices as any}
+                          selectedServices={selectedServices}
+                          onToggle={toggleService}
+                          currency={partner?.currency}
+                        />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{b.address.line1}</h3>
-                        <p className="text-sm text-muted-foreground">{b.address.city}, {b.address.country}</p>
+                    )}
+
+                    {/* Specialist Section (Hidden for Restaurants) */}
+                    {!isRestaurant && selectedServices.length > 0 && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold">
+                            {branches.length > 0 ? "3" : "2"}
+                          </div>
+                          <h2 className="text-lg font-bold text-foreground">{t("book.selectSpecialist")}</h2>
+                        </div>
+                        <SpecialistSelection
+                          specialists={filteredSpecialists as any}
+                          selectedSpecialist={selectedSpecialist}
+                          onSelect={setSelectedSpecialist}
+                        />
+                      </div>
+                    )}
+
+                    {/* Date & Time Section */}
+                    {(isRestaurant || selectedSpecialist) && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-start gap-3">
+                          <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#FEF2F2] text-[#FF4444] text-xs font-bold shrink-0 mt-0.5">
+                            {branches.length > 0 ? (isRestaurant ? "2" : "4") : (isRestaurant ? "1" : "3")}
+                          </div>
+                          <div>
+                            <h2 className="text-lg font-bold text-foreground">{t("book.dateAndTime", "Date & Time")}</h2>
+                            <p className="text-sm text-muted-foreground mt-0.5">
+                              {t("book.slotsRealtime", "Available slots are updated in real-time based on your specialist choice.")}
+                            </p>
+                          </div>
+                        </div>
+                        <DateTimePicker
+                          selectedDate={selectedDate}
+                          onDateChange={(d) => d && setSelectedDate(d)}
+                          selectedTime={selectedTime}
+                          onTimeChange={setSelectedTime}
+                          bookedSlots={bookedSlots}
+                          workingHours={branches.find(b => b._id === selectedBranch)?.workingHours || []}
+                          breaks={branches.find(b => b._id === selectedBranch)?.breaks || []}
+                          totalDuration={totalDuration}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* About Us Tab */}
+                {activeTab === "about" && viewMode === "list" && (
+                  <div className="mt-8 space-y-10 animate-in fade-in duration-500">
+                    <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm">
+                      <h2 className="text-xl font-bold text-foreground mb-4">{t("book.businessInfo", "Business Information")}</h2>
+                      <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                        {partner.publicDescription || t("book.aboutUsDefault", "Welcome to our business! We are dedicated to providing excellent services and ensuring you have the best experience possible.")}
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h2 className="text-xl font-bold text-foreground">{t("book.locations", "Our Locations")}</h2>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {branches.map(b => (
+                          <div key={b._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-2">
+                            <div className="flex items-start gap-3">
+                              <div className="h-10 w-10 rounded-lg bg-[#FEF2F2] flex items-center justify-center shrink-0 mt-0.5">
+                                <MapPin className="h-5 w-5 text-[#FF4444]" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-foreground">{b.address.line1}</h3>
+                                <p className="text-sm text-muted-foreground">{b.address.city}, {b.address.country}</p>
+                              </div>
+                            </div>
+                            <div className="mt-2 space-y-1">
+                              {(b.phoneNumbers || (b.phoneNumber ? [b.phoneNumber] : [])).map((phone, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Phone className="h-4 w-4 shrink-0" />
+                                  <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
+                                </div>
+                              ))}
+                              {b.workingHours && b.workingHours.length > 0 && (
+                                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <Clock className="h-4 w-4 shrink-0 mt-0.5" />
+                                  <div className="flex flex-col">
+                                    <span>{t("book.workingHours", "Open today")}: {b.workingHours[0].openTime} - {b.workingHours[0].closeTime}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {b.breaks && b.breaks.length > 0 && (
+                                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <Coffee className="h-4 w-4 shrink-0 mt-0.5" />
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-xs">{t("book.breakTimes", "Break Times")}:</span>
+                                    {Array.from(new Set(b.breaks.map((br: any) => `${br.startTime} - ${br.endTime}`))).map((timeStr: any, i: number) => (
+                                      <span key={i} className="text-xs">{timeStr}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
+                                {(() => {
+                                  const branchServices = allServices.filter(s => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
+                                  const branchSpecialists = allSpecialists.filter(sp => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
+                                  return (
+                                    <>
+                                      {branchServices.length > 0 && (
+                                        <div>
+                                          <span className="text-xs font-bold text-foreground block mb-1">{t("book.availableServices", "Available Services:")}</span>
+                                          <p className="text-xs text-muted-foreground leading-relaxed">{branchServices.map(s => s.name).join(', ')}</p>
+                                        </div>
+                                      )}
+                                      {branchSpecialists.length > 0 && (
+                                        <div>
+                                          <span className="text-xs font-bold text-foreground block mb-1">{t("specialistsPage.specialists", "Specialists")}:</span>
+                                          <p className="text-xs text-muted-foreground leading-relaxed">{branchSpecialists.map(sp => sp.name).join(', ')}</p>
+                                        </div>
+                                      )}
+                                    </>
+                                  )
+                                })()}
+                              </div>
+
+                              {b.location?.latitude && b.location?.longitude && (
+                                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/40">
+                                  <a
+                                    href={`https://www.google.com/maps/dir/?api=1&destination=${b.location.latitude},${b.location.longitude}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
+                                  >
+                                    <Map className="h-3.5 w-3.5" />
+                                    {t("book.googleMaps", "Google Maps")}
+                                  </a>
+                                  <a
+                                    href={`https://yandex.com/maps/?rtext=~${b.location.latitude},${b.location.longitude}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
+                                  >
+                                    <Map className="h-3.5 w-3.5" />
+                                    {t("book.yandexMaps", "Yandex Maps")}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        {branches.length === 0 && <p className="text-muted-foreground">{t("book.noLocations", "No locations available.")}</p>}
                       </div>
                     </div>
-                    <div className="mt-2 space-y-1">
-                      {(b.phoneNumbers || (b.phoneNumber ? [b.phoneNumber] : [])).map((phone, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Phone className="h-4 w-4 shrink-0" />
-                          <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
-                        </div>
-                      ))}
-                      {b.workingHours && b.workingHours.length > 0 && (
-                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4 shrink-0 mt-0.5" />
-                          <div className="flex flex-col">
-                            <span>{t("book.workingHours", "Open today")}: {b.workingHours[0].openTime} - {b.workingHours[0].closeTime}</span>
-                          </div>
-                        </div>
-                      )}
 
-                      {b.breaks && b.breaks.length > 0 && (
-                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <Coffee className="h-4 w-4 shrink-0 mt-0.5" />
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-xs">{t("book.breakTimes", "Break Times")}:</span>
-                            {Array.from(new Set(b.breaks.map((br: any) => `${br.startTime} - ${br.endTime}`))).map((timeStr: any, i: number) => (
-                              <span key={i} className="text-xs">{timeStr}</span>
-                            ))}
+                    <div className="space-y-4">
+                      <h2 className="text-xl font-bold text-foreground">{t("book.ourServices", "Our Services")}</h2>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {allServices.map(s => (
+                          <div key={s._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col justify-between">
+                            <div className="flex gap-4">
+                              {s.image ? (
+                                <img src={s.image} alt={s.name} className="h-16 w-16 rounded-lg object-cover border border-border/60 shrink-0" />
+                              ) : (
+                                <div className="h-16 w-16 rounded-lg bg-[#FEF2F2] flex items-center justify-center border border-border/60 shrink-0">
+                                  <CheckSquare className="h-6 w-6 text-[#FF4444]" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-foreground">{s.name}</h3>
+                                {s.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{s.description}</p>}
+                              </div>
+                            </div>
+
+                            <div className="mt-4 space-y-2 flex-1">
+                              {(() => {
+                                const serviceBranches = branches.filter(b => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
+                                const serviceSpecialists = allSpecialists.filter(sp => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
+                                return (
+                                  <>
+                                    {serviceBranches.length > 0 && (
+                                      <div>
+                                        <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.availableAt", "Available at:")}</span>
+                                        <p className="text-xs text-muted-foreground line-clamp-1">{serviceBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
+                                      </div>
+                                    )}
+                                    {serviceSpecialists.length > 0 && (
+                                      <div>
+                                        <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.performedBy", "Performed by:")}</span>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">{serviceSpecialists.map(sp => sp.name).join(', ')}</p>
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()}
+                            </div>
+
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
+                              <span className="text-sm font-medium text-foreground">{formatPrice(s.price, partner?.currency)}</span>
+                              <span className="text-sm text-muted-foreground">{s.duration} min</span>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
+                        ))}
+                        {allServices.length === 0 && <p className="text-muted-foreground">{t("book.noServices", "No services listed.")}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h2 className="text-xl font-bold text-foreground">{t("book.ourSpecialists", "Our Specialists")}</h2>
+                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                        {allSpecialists.map(sp => (
+                          <div key={sp._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-4">
+                            <div className="flex items-center gap-4">
+                              <img src={sp.image} alt={sp.name} className="h-12 w-12 rounded-full object-cover border border-border" />
+                              <div>
+                                <h3 className="font-semibold text-foreground">{sp.name}</h3>
+                                <p className="text-xs text-muted-foreground">{sp.role}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 pt-3 border-t border-border/40">
+                              {(() => {
+                                const spBranches = branches.filter(b => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
+                                const spServices = allServices.filter(s => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
+                                return (
+                                  <>
+                                    {spBranches.length > 0 && (
+                                      <div>
+                                        <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.worksAt", "Works at:")}</span>
+                                        <p className="text-xs text-muted-foreground line-clamp-1">{spBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
+                                      </div>
+                                    )}
+                                    {spServices.length > 0 && (
+                                      <div>
+                                        <span className="text-xs font-bold text-foreground block mb-0.5">{t("common.services", "Services:")}</span>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">{spServices.map(s => s.name).join(', ')}</p>
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()}
+                            </div>
+                          </div>
+                        ))}
+                        {allSpecialists.length === 0 && <p className="text-muted-foreground">{t("book.noSpecialists", "No specialists listed.")}</p>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isRestaurant && activeTab === "menu" && viewMode === "list" && (
+                  <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h2 className="text-xl font-bold text-foreground">Our Menu</h2>
+                    {branches.length > 0 && !selectedBranch ? (
+                      <p className="text-muted-foreground">Please select a branch first to view the menu.</p>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                         {(() => {
-                          const branchServices = allServices.filter(s => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
-                          const branchSpecialists = allSpecialists.filter(sp => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
-                          return (
-                            <>
-                              {branchServices.length > 0 && (
-                                <div>
-                                  <span className="text-xs font-bold text-foreground block mb-1">{t("book.availableServices", "Available Services:")}</span>
-                                  <p className="text-xs text-muted-foreground leading-relaxed">{branchServices.map(s => s.name).join(', ')}</p>
+                          const branchMenu = menuItems.filter(m => !m.branchId || m.branchId === selectedBranch || m.branchId?._id === selectedBranch)
+
+                          if (branchMenu.length === 0) {
+                            return <p className="text-muted-foreground col-span-full">No menu items available for this branch.</p>
+                          }
+
+                          return branchMenu.map((item: any) => (
+                            <div key={item._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-3">
+                              <div className="flex gap-4">
+                                {item.image ? (
+                                  <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-[#FAFAFA] border border-border/60">
+                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="w-16 h-16 shrink-0 rounded-lg bg-[#FAFAFA] border border-border/60 flex items-center justify-center">
+                                    <Info className="w-6 h-6 text-muted-foreground/30" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-bold text-foreground text-sm truncate">{item.name}</h3>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF4444]">{item.category}</span>
+                                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                                 </div>
-                              )}
-                              {branchSpecialists.length > 0 && (
-                                <div>
-                                  <span className="text-xs font-bold text-foreground block mb-1">{t("specialistsPage.specialists", "Specialists")}:</span>
-                                  <p className="text-xs text-muted-foreground leading-relaxed">{branchSpecialists.map(sp => sp.name).join(', ')}</p>
-                                </div>
-                              )}
-                            </>
-                          )
+                              </div>
+                              <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
+                                <span className="text-sm font-bold text-foreground">{formatPrice(item.price, partner?.currency)}</span>
+                                {!item.isAvailable && (
+                                  <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded">Sold Out</span>
+                                )}
+                              </div>
+                            </div>
+                          ))
                         })()}
                       </div>
-
-                      {b.location?.latitude && b.location?.longitude && (
-                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/40">
-                          <a 
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${b.location.latitude},${b.location.longitude}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
-                          >
-                            <Map className="h-3.5 w-3.5" />
-                            {t("book.googleMaps", "Google Maps")}
-                          </a>
-                          <a 
-                            href={`https://yandex.com/maps/?rtext=~${b.location.latitude},${b.location.longitude}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FAFAFA] border border-border/60 rounded-lg text-xs font-semibold hover:bg-gray-100 transition-colors"
-                          >
-                            <Map className="h-3.5 w-3.5" />
-                            {t("book.yandexMaps", "Yandex Maps")}
-                          </a>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
-                ))}
-                {branches.length === 0 && <p className="text-muted-foreground">{t("book.noLocations", "No locations available.")}</p>}
-              </div>
-            </div>
+                )}
 
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">{t("book.ourServices", "Our Services")}</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {allServices.map(s => (
-                  <div key={s._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col justify-between">
-                    <div className="flex gap-4">
-                      {s.image ? (
-                        <img src={s.image} alt={s.name} className="h-16 w-16 rounded-lg object-cover border border-border/60 shrink-0" />
-                      ) : (
-                        <div className="h-16 w-16 rounded-lg bg-[#FEF2F2] flex items-center justify-center border border-border/60 shrink-0">
-                          <CheckSquare className="h-6 w-6 text-[#FF4444]" />
+                {isRestaurant && activeTab === "gallery" && viewMode === "list" && (
+                  <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h2 className="text-xl font-bold text-foreground">Gallery</h2>
+                    {(() => {
+                      const branchToDisplay = selectedBranch
+                        ? branches.find(b => b._id === selectedBranch)
+                        : branches[0]
+
+                      const gallery = branchToDisplay?.gallery || []
+
+                      if (gallery.length === 0) {
+                        return <p className="text-muted-foreground">No photos available for this location.</p>
+                      }
+
+                      return (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {gallery.map((img: any, idx: number) => (
+                            <div key={idx} className="group relative aspect-square bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                              <img src={img.url} alt={`Gallery image ${idx}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                                <span className="bg-white/90 backdrop-blur-sm text-black text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider capitalize w-fit">
+                                  {img.category}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{s.name}</h3>
-                        {s.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{s.description}</p>}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 space-y-2 flex-1">
-                      {(() => {
-                        const serviceBranches = branches.filter(b => !s.assignedBranches?.length || s.assignedBranches.includes(b._id))
-                        const serviceSpecialists = allSpecialists.filter(sp => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
-                        return (
-                          <>
-                            {serviceBranches.length > 0 && (
-                              <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.availableAt", "Available at:")}</span>
-                                <p className="text-xs text-muted-foreground line-clamp-1">{serviceBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
-                              </div>
-                            )}
-                            {serviceSpecialists.length > 0 && (
-                              <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.performedBy", "Performed by:")}</span>
-                                <p className="text-xs text-muted-foreground line-clamp-2">{serviceSpecialists.map(sp => sp.name).join(', ')}</p>
-                              </div>
-                            )}
-                          </>
-                        )
-                      })()}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
-                      <span className="text-sm font-medium text-foreground">{formatPrice(s.price, partner?.currency)}</span>
-                      <span className="text-sm text-muted-foreground">{s.duration} min</span>
-                    </div>
+                      )
+                    })()}
                   </div>
-                ))}
-                {allServices.length === 0 && <p className="text-muted-foreground">{t("book.noServices", "No services listed.")}</p>}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">{t("book.ourSpecialists", "Our Specialists")}</h2>
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {allSpecialists.map(sp => (
-                  <div key={sp._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
-                      <img src={sp.image} alt={sp.name} className="h-12 w-12 rounded-full object-cover border border-border" />
-                      <div>
-                        <h3 className="font-semibold text-foreground">{sp.name}</h3>
-                        <p className="text-xs text-muted-foreground">{sp.role}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2 pt-3 border-t border-border/40">
-                      {(() => {
-                        const spBranches = branches.filter(b => sp.assignedBranches?.some((ab: any) => ab._id === b._id || ab === b._id))
-                        const spServices = allServices.filter(s => sp.assignedServices?.some((as: any) => as._id === s._id || as === s._id))
-                        return (
-                          <>
-                            {spBranches.length > 0 && (
-                              <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("book.worksAt", "Works at:")}</span>
-                                <p className="text-xs text-muted-foreground line-clamp-1">{spBranches.map(b => b.address.line1 || b.address.city).join(', ')}</p>
-                              </div>
-                            )}
-                            {spServices.length > 0 && (
-                              <div>
-                                <span className="text-xs font-bold text-foreground block mb-0.5">{t("common.services", "Services:")}</span>
-                                <p className="text-xs text-muted-foreground line-clamp-2">{spServices.map(s => s.name).join(', ')}</p>
-                              </div>
-                            )}
-                          </>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                ))}
-                {allSpecialists.length === 0 && <p className="text-muted-foreground">{t("book.noSpecialists", "No specialists listed.")}</p>}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {isRestaurant && activeTab === "menu" && viewMode === "list" && (
-          <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-xl font-bold text-foreground">Our Menu</h2>
-            {branches.length > 0 && !selectedBranch ? (
-              <p className="text-muted-foreground">Please select a branch first to view the menu.</p>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {(() => {
-                  const branchMenu = menuItems.filter(m => !m.branchId || m.branchId === selectedBranch || m.branchId?._id === selectedBranch)
-                  
-                  if (branchMenu.length === 0) {
-                    return <p className="text-muted-foreground col-span-full">No menu items available for this branch.</p>
-                  }
-
-                  return branchMenu.map((item: any) => (
-                    <div key={item._id} className="p-4 rounded-xl border border-border/60 bg-white shadow-sm flex flex-col gap-3">
-                      <div className="flex gap-4">
-                        {item.image ? (
-                          <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-[#FAFAFA] border border-border/60">
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-16 h-16 shrink-0 rounded-lg bg-[#FAFAFA] border border-border/60 flex items-center justify-center">
-                            <Info className="w-6 h-6 text-muted-foreground/30" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground text-sm truncate">{item.name}</h3>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF4444]">{item.category}</span>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
-                        </div>
-                      </div>
-                      <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
-                        <span className="text-sm font-bold text-foreground">{formatPrice(item.price, partner?.currency)}</span>
-                        {!item.isAvailable && (
-                          <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded">Sold Out</span>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                })()}
-              </div>
-            )}
-          </div>
-        )}
-
-        {isRestaurant && activeTab === "gallery" && viewMode === "list" && (
-          <div className="mt-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-xl font-bold text-foreground">Gallery</h2>
-            {(() => {
-              const branchToDisplay = selectedBranch 
-                ? branches.find(b => b._id === selectedBranch) 
-                : branches[0]
-              
-              const gallery = branchToDisplay?.gallery || []
-              
-              if (gallery.length === 0) {
-                return <p className="text-muted-foreground">No photos available for this location.</p>
-              }
-
-              return (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {gallery.map((img: any, idx: number) => (
-                    <div key={idx} className="group relative aspect-square bg-white rounded-xl border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all">
-                      <img src={img.url} alt={`Gallery image ${idx}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-                        <span className="bg-white/90 backdrop-blur-sm text-black text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider capitalize w-fit">
-                          {img.category}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            })()}
-          </div>
-        )}
+                )}
               </>
             )}
           </div>
@@ -1015,22 +1012,22 @@ export default function PublicBookingPage() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-border/60 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
               <h2 className="text-lg font-bold text-foreground">{t("book.guestCheckout", "Guest Checkout")}</h2>
-              <button 
+              <button
                 onClick={() => setShowGuestModal(false)}
                 className="text-muted-foreground hover:text-foreground p-1"
               >
                 ✕
               </button>
             </div>
-            
+
             <div className="p-6">
               {guestStep === "details" ? (
                 <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-foreground">{t("common.firstName", "First Name")}</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         className="w-full px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm"
                         value={guestDetails.firstName}
@@ -1039,8 +1036,8 @@ export default function PublicBookingPage() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-foreground">{t("common.lastName", "Last Name")}</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         className="w-full px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm"
                         value={guestDetails.lastName}
@@ -1048,11 +1045,11 @@ export default function PublicBookingPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-foreground">{t("common.phone", "Phone Number")}</label>
                     <div className="flex gap-2">
-                      <select 
+                      <select
                         className="w-24 px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm font-medium"
                         value={guestDetails.countryCode}
                         onChange={e => setGuestDetails(prev => ({ ...prev, countryCode: e.target.value }))}
@@ -1063,8 +1060,8 @@ export default function PublicBookingPage() {
                           </option>
                         ))}
                       </select>
-                      <input 
-                        type="tel" 
+                      <input
+                        type="tel"
                         required
                         className="flex-1 px-3 py-2 bg-[#FAFAFA] border border-border rounded-lg text-sm"
                         placeholder={getPhonePlaceholder(guestDetails.countryCode, countryCodesList)}
@@ -1073,14 +1070,14 @@ export default function PublicBookingPage() {
                       />
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full mt-6 py-2.5 bg-[#FF4444] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
-                    {t("book.nextVerify", "Continue")}
+                    {t("book.confirmBooking", "Confirm Booking")}
                   </button>
                 </form>
               ) : (
@@ -1089,8 +1086,8 @@ export default function PublicBookingPage() {
                     {t("book.enterVerificationCode", "Enter the verification code sent to")} <br />
                     <span className="font-bold text-foreground">{guestDetails.countryCode} {guestDetails.phone}</span>
                   </p>
-                  
-                  <input 
+
+                  <input
                     type="text"
                     required
                     maxLength={6}
@@ -1099,8 +1096,8 @@ export default function PublicBookingPage() {
                     value={smsCode}
                     onChange={e => setSmsCode(e.target.value)}
                   />
-                  
-                  <button 
+
+                  <button
                     type="submit"
                     disabled={isSubmitting || smsCode.length < 4}
                     className="w-full mt-6 py-2.5 bg-[#FF4444] text-white rounded-lg font-bold text-sm hover:bg-[#d64c54] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
@@ -1108,8 +1105,8 @@ export default function PublicBookingPage() {
                     {isSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : null}
                     {t("book.confirmBooking", "Confirm Booking")}
                   </button>
-                  
-                  <button 
+
+                  <button
                     type="button"
                     onClick={() => setGuestStep("details")}
                     className="w-full mt-2 py-2 text-muted-foreground font-semibold text-xs hover:text-foreground"
@@ -1125,3 +1122,4 @@ export default function PublicBookingPage() {
     </div>
   )
 }
+

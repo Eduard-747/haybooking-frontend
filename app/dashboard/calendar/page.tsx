@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Loader2, Calendar as CalendarIcon, Clock, Plus } from "lucide-react"
 import api from "@/lib/api"
 import { usePartner } from "@/hooks/usePartner"
 import { useBranchContext } from "@/components/dashboard/branch-context"
@@ -29,12 +29,12 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 8) // 8am - 8pm
 
 const statusColors: Record<string, string> = {
-  pending: "bg-amber-100 border-amber-300 text-amber-700",
-  confirmed: "bg-emerald-100 border-emerald-300 text-emerald-700",
-  declined: "bg-red-100 border-red-300 text-red-700",
-  cancelled: "bg-gray-100 border-gray-300 text-gray-500",
-  completed: "bg-blue-100 border-blue-300 text-blue-700",
-  "no-show": "bg-slate-100 border-slate-300 text-slate-700",
+  pending: "bg-amber-50 text-amber-700 border-amber-200/80 hover:bg-amber-100/70",
+  confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/70",
+  declined: "bg-rose-50 text-rose-700 border-rose-200/80 hover:bg-rose-100/70",
+  cancelled: "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70",
+  completed: "bg-blue-50 text-blue-700 border-blue-200/80 hover:bg-blue-100/70",
+  "no-show": "bg-purple-50 text-purple-700 border-purple-200/80 hover:bg-purple-100/70",
 }
 
 export default function CalendarPage() {
@@ -139,64 +139,95 @@ export default function CalendarPage() {
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <DashboardHeader />
 
-        <main className="flex-1 p-4 md:p-6 flex flex-col lg:flex-row gap-6 overflow-hidden">
+        <main className="flex-1 p-3.5 sm:p-6 flex flex-col lg:flex-row gap-6 overflow-x-hidden">
 
-          {/* Calendar Grid */}
-          <div className="flex-1 min-w-0 bg-white rounded-2xl border border-border/60 shadow-sm overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
-              <div className="flex items-center gap-3">
-                <button onClick={() => nav(-1)} className="p-1.5 hover:bg-[#FAFAFA] rounded-lg transition-colors">
-                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+          {/* Calendar Main Grid Container */}
+          <div className="flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col">
+            
+            {/* Header / Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:px-6 sm:py-4 border-b border-slate-100 bg-white">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => nav(-1)}
+                  className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-600 active:scale-95 cursor-pointer"
+                >
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-                <h2 className="text-lg font-bold text-foreground">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight text-center sm:text-left min-w-[140px]">
                   {t(`calendar.${MONTHS[currentDate.getMonth()].toLowerCase()}`)} {currentDate.getFullYear()}
                 </h2>
-                <button onClick={() => nav(1)} className="p-1.5 hover:bg-[#FAFAFA] rounded-lg transition-colors">
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <button
+                  type="button"
+                  onClick={() => nav(1)}
+                  className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-600 active:scale-95 cursor-pointer"
+                >
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
-              <div className="flex items-center gap-1 bg-[#FAFAFA] rounded-lg p-1 border border-border/40">
+
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
                 <button
-                  onClick={() => setViewMode("Week")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Week" ? "bg-[#FF4444] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
+                  type="button"
+                  onClick={() => setCurrentDate(new Date())}
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                 >
-                  {t("calendar.week", "Week")}
+                  {t("calendar.today", "Today")}
                 </button>
-                <button
-                  onClick={() => setViewMode("Day")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${viewMode === "Day" ? "bg-[#FF4444] text-white shadow-sm" : "text-muted-foreground hover:bg-gray-100"}`}
-                >
-                  {t("calendar.day", "Day")}
-                </button>
+
+                <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/60">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("Week")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      viewMode === "Week" ? "bg-[#FF3B30] text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {t("calendar.week", "Week")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("Day")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      viewMode === "Day" ? "bg-[#FF3B30] text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {t("calendar.day", "Day")}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Calendar Grid & Day View */}
             {isLoading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[#FF4444]" />
+              <div className="flex-1 flex items-center justify-center py-24">
+                <Loader2 className="h-8 w-8 animate-spin text-[#FF3B30]" />
               </div>
             ) : viewMode === "Week" ? (
-              <div className="flex-1 overflow-auto">
-                <div className="grid" style={{ gridTemplateColumns: `60px repeat(${activeDays.length}, 1fr)` }}>
+              <div className="flex-1 overflow-x-auto custom-scrollbar">
+                <div className="grid min-w-[650px] sm:min-w-0 w-full" style={{ gridTemplateColumns: `54px repeat(${activeDays.length}, 1fr)` }}>
+                  {/* Empty top-left time header cell */}
+                  <div className="border-b border-slate-200/80 bg-slate-50/80 sticky left-0 z-20" />
+                  
                   {/* Day headers */}
-                  <div className="border-b border-border/40 bg-[#FAFAFA]" />
                   {activeDays.map((day, i) => {
                     const isToday = day.toDateString() === new Date().toDateString()
                     return (
                       <button
                         key={i}
+                        type="button"
                         onClick={() => {
                           setCurrentDate(day);
                           setViewMode("Day");
                         }}
-                        className="border-b border-l border-border/40 bg-[#FAFAFA] py-3 text-center hover:bg-gray-50 transition-colors w-full flex flex-col items-center justify-center cursor-pointer"
+                        className="border-b border-l border-slate-200/80 bg-slate-50/80 py-2.5 px-1 text-center hover:bg-slate-100/60 transition-colors w-full flex flex-col items-center justify-center cursor-pointer"
                       >
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t(`calendar.${DAYS[day.getDay()].toLowerCase()}`)}</p>
-                        <p className={`text-base font-bold mt-0.5 ${isToday ? "w-8 h-8 bg-[#FF4444] text-white rounded-full flex items-center justify-center mx-auto" : "text-foreground"}`}>
+                        <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-tight truncate w-full text-center">
+                          {t(`calendar.${DAYS[day.getDay()].toLowerCase()}`)}
+                        </span>
+                        <span className={`text-xs sm:text-sm font-extrabold mt-0.5 ${isToday ? "w-6 h-6 sm:w-7 sm:h-7 bg-[#FF3B30] text-white rounded-full flex items-center justify-center mx-auto" : "text-slate-900"}`}>
                           {day.getDate()}
-                        </p>
+                        </span>
                       </button>
                     )
                   })}
@@ -204,22 +235,36 @@ export default function CalendarPage() {
                   {/* Time rows */}
                   {HOURS.map(hour => (
                     <React.Fragment key={`row-${hour}`}>
-                      <div className="border-t border-border/20 pt-2 px-2 text-[10px] text-muted-foreground font-medium text-right">
+                      <div className="border-t border-slate-100 py-2 px-1 text-[10px] sm:text-xs font-bold text-slate-400 text-right bg-slate-50/40 sticky left-0 z-20">
                         {hour}:00
                       </div>
                       {activeDays.map((day, di) => {
                         const slotBookings = getBookingsForSlot(day, hour)
                         const isBreak = isBreakSlot(day, hour)
                         return (
-                          <div key={`${di}-${hour}`} onClick={() => { setCurrentDate(day); setViewMode("Day"); }} className={`border-t border-l border-border/20 min-h-[52px] p-1 relative cursor-pointer transition-colors ${isBreak ? 'bg-slate-100/60 hover:bg-slate-200/50' : 'hover:bg-gray-50/50'}`}>
+                          <div
+                            key={`${di}-${hour}`}
+                            onClick={() => { setCurrentDate(day); setViewMode("Day"); }}
+                            className={`border-t border-l border-slate-100 min-h-[54px] p-1 relative cursor-pointer transition-colors ${
+                              isBreak ? 'bg-slate-100/70 hover:bg-slate-200/50' : 'hover:bg-slate-50/60'
+                            }`}
+                          >
                             {isBreak && slotBookings.length === 0 && (
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest rotate-[-45deg]">{t("calendar.break")}</span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest rotate-[-30deg]">
+                                  {t("calendar.break", "Break")}
+                                </span>
                               </div>
                             )}
-                            <div className="relative z-10">
+                            <div className="relative z-10 space-y-1">
                               {slotBookings.map(b => (
-                                <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-[10px] font-semibold px-1.5 py-1 rounded border mb-0.5 truncate cursor-pointer transition-transform hover:scale-[1.02] ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"}`}>
+                                <div
+                                  key={b._id}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }}
+                                  className={`text-[10px] font-bold px-1.5 py-1 rounded-lg border truncate cursor-pointer transition-transform hover:scale-[1.02] shadow-2xs ${
+                                    statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"
+                                  }`}
+                                >
                                   {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || t("common.guest", "Guest") : (b.guestName || t("common.guest", "Guest"))}
                                   {b.serviceIds && b.serviceIds.length > 0
                                     ? ` · ${b.serviceIds.length === 1 ? b.serviceIds[0].name : `${b.serviceIds[0].name} +${b.serviceIds.length - 1}`}`
@@ -236,65 +281,80 @@ export default function CalendarPage() {
                 </div>
               </div>
             ) : (
-              /* NEW DAY VIEW */
-              <div className="flex-1 overflow-auto bg-[#FAFAFA]/30 relative">
-                <div className="w-max min-w-full p-6">
-                  {/* Day Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                      <button onClick={() => setViewMode("Week")} className="text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors bg-white px-3 py-1.5 border border-border/60 rounded-lg shadow-sm">
-                        <ChevronLeft className="w-4 h-4" /> {t("calendar.backToWeek")}
+              /* CLEAN VERTICAL DAY AGENDA VIEW */
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/30">
+                <div className="max-w-3xl mx-auto space-y-4">
+                  {/* Day Navigation Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("Week")}
+                        className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors bg-slate-100 px-3 py-1.5 rounded-xl cursor-pointer"
+                      >
+                        <ChevronLeft className="w-4 h-4" /> {t("calendar.backToWeek", "Back to Week")}
                       </button>
-                      <h3 className="text-xl font-bold text-foreground">
+                      <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
                         {t(`calendar.${DAYS[currentDate.getDay()].toLowerCase()}`)}, {t(`calendar.${MONTHS[currentDate.getMonth()].toLowerCase()}`)} {currentDate.getDate()}, {currentDate.getFullYear()}
                       </h3>
                     </div>
                   </div>
 
-                  {/* Horizontal Timeline */}
-                  <div className="bg-white border border-border/60 rounded-xl shadow-sm flex">
-                    {HOURS.map((hour, idx) => {
+                  {/* Vertical Timetable List */}
+                  <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden divide-y divide-slate-100">
+                    {HOURS.map((hour) => {
                       const slotBookings = getBookingsForSlot(currentDate, hour);
                       const isBreak = isBreakSlot(currentDate, hour);
                       return (
-                        <div key={hour} className={`flex-1 min-w-[140px] flex flex-col ${idx !== HOURS.length - 1 ? 'border-r border-border/40' : ''}`}>
-                          {/* Time Header */}
-                          <div className={`text-center py-3 bg-[#FAFAFA] border-b border-border/40 text-xs font-bold uppercase tracking-wider ${isBreak ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div key={hour} className="flex items-start transition-colors hover:bg-slate-50/40">
+                          {/* Hour Label */}
+                          <div className="w-16 sm:w-20 py-3.5 pr-3 text-right text-xs font-extrabold text-slate-400 shrink-0 bg-slate-50/50 border-r border-slate-100">
                             {hour}:00
                           </div>
 
-                          {/* Bookings Area */}
-                          <div className={`flex-1 min-h-[400px] p-2 flex flex-col gap-2 relative transition-colors group ${isBreak ? 'bg-slate-50/80 hover:bg-slate-100/50' : 'hover:bg-slate-50/50'}`}>
+                          {/* Hourly Slot Details */}
+                          <div className={`flex-1 p-2.5 sm:p-3 min-h-[64px] flex flex-col justify-center gap-2 relative ${isBreak ? 'bg-slate-100/60' : ''}`}>
                             {isBreak && slotBookings.length === 0 && (
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest rotate-[-90deg]">{t("calendar.break")}</span>
+                              <div className="flex items-center gap-2 text-xs font-extrabold text-slate-400 uppercase tracking-wider py-1">
+                                <span className="bg-slate-200 px-2 py-0.5 rounded-md text-[10px]">{t("calendar.break", "Break")}</span>
                               </div>
                             )}
-                            <div className="relative z-10 flex flex-col gap-2">
-                              {slotBookings.map(b => (
-                                <div key={b._id} onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-sm transition-transform hover:scale-[1.02] cursor-pointer`}>
-                                  <div className="truncate font-bold mb-0.5">{b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || "Guest" : (b.guestName || "Guest")}</div>
-                                  <div className="truncate text-[10px] opacity-90">
-                                    {b.serviceIds && b.serviceIds.length > 0
-                                      ? b.serviceIds.map((s: any) => s.name).join(', ')
-                                      : (b.serviceId ? (b.serviceId as any).name : "")
-                                    }
-                                  </div>
-                                  {b.specialistId && (
-                                    <div className="truncate text-[10px] opacity-75 mt-1 border-t border-current/10 pt-1">
-                                      {(b.specialistId as any).name}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
 
-                            {/* Empty State placeholder on hover */}
-                            {!isBreak && slotBookings.length === 0 && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">{t("calendar.addSlot")}</span>
+                            {slotBookings.length > 0 ? (
+                              <div className="space-y-2">
+                                {slotBookings.map((b) => (
+                                  <div
+                                    key={b._id}
+                                    onClick={() => setSelectedBooking(b)}
+                                    className={`p-3 rounded-xl border ${statusColors[b.status] || "bg-blue-50 border-blue-200 text-blue-700"} shadow-2xs transition-all hover:scale-[1.01] cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2`}
+                                  >
+                                    <div>
+                                      <span className="font-extrabold text-sm block">
+                                        {b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || t("common.guest", "Guest") : (b.guestName || t("common.guest", "Guest"))}
+                                      </span>
+                                      <span className="text-xs opacity-90 font-medium block mt-0.5">
+                                        {b.serviceIds && b.serviceIds.length > 0
+                                          ? b.serviceIds.map((s: any) => s.name).join(', ')
+                                          : (b.serviceId ? (b.serviceId as any).name : "")
+                                        }
+                                      </span>
+                                      {b.specialistId && (
+                                        <span className="text-[11px] opacity-75 font-semibold block mt-0.5">
+                                          {t("common.with", "with")} {(b.specialistId as any).name}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-white/70 self-start sm:self-auto shrink-0 border border-current/10">
+                                      {t(`common.${b.status}` as any, b.status)}
+                                    </span>
+                                  </div>
+                                ))}
                               </div>
-                            )}
+                            ) : !isBreak ? (
+                              <div className="text-xs text-slate-300 font-medium py-1">
+                                {t("calendar.noBookingsForSlot", "Available")}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       )
@@ -307,47 +367,53 @@ export default function CalendarPage() {
 
           {/* Right Sidebar: Pending Requests */}
           <div className="w-full lg:w-80 shrink-0">
-            <div className="bg-white rounded-2xl border border-border/60 shadow-sm p-5 h-full">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-foreground">{t("dashboard.bookingRequests", "Booking Requests")}</h3>
-                <span className="bg-[#FEF2F2] text-[#FF4444] text-xs font-bold px-2 py-0.5 rounded-full">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-4 sm:p-5 h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">{t("dashboard.bookingRequests", "Booking Requests")}</h3>
+                <span className="bg-[#FFF0F0] text-[#FF3B30] text-xs font-extrabold px-2.5 py-0.5 rounded-full border border-rose-100">
                   {pendingBookings.length}
                 </span>
               </div>
 
               {pendingBookings.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">{t("dashboard.noRequests", "No pending requests")}</p>
+                <p className="text-xs sm:text-sm text-slate-400 text-center py-8 italic">{t("dashboard.noRequests", "No pending requests")}</p>
               ) : (
-                <div className="space-y-4 overflow-auto max-h-[calc(100vh-260px)]">
+                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-260px)]">
                   {pendingBookings.map(b => {
                     const name = b.userId ? `${b.userId.name} ${b.userId.surname || ""}`.trim() || t("common.guest") : (b.guestName || t("common.guest"))
                     const localeStr = i18n.language === 'am' ? 'hy-AM' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
                     const time = new Date(b.startTime).toLocaleString(localeStr, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                     const isEnded = new Date(b.endTime).getTime() < new Date().getTime();
                     return (
-                      <div key={b._id} onClick={() => setSelectedBooking(b)} className="p-4 bg-[#FAFAFA] rounded-xl border border-border/50 cursor-pointer transition-transform hover:scale-[1.02] hover:bg-white shadow-sm">
-                        <p className="font-bold text-sm text-foreground">{name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                      <div
+                        key={b._id}
+                        onClick={() => setSelectedBooking(b)}
+                        className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-100 hover:border-slate-200 cursor-pointer transition-all hover:bg-white shadow-2xs"
+                      >
+                        <p className="font-extrabold text-sm text-slate-900">{name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
                           {b.serviceIds && b.serviceIds.length > 0
                             ? b.serviceIds.map(s => s.name).join(', ')
-                            : (b.serviceId?.name || "Service")
+                            : (b.serviceId?.name || t("common.service", "Service"))
                           }
                         </p>
                         {b.specialistId?.name && (
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1">{t("common.with")} {b.specialistId.name}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">{t("common.with", "with")} {b.specialistId.name}</p>
                         )}
-                        <p className="text-xs text-[#FF4444] font-medium mt-1">{time}</p>
+                        <p className="text-xs text-[#FF3B30] font-bold mt-1.5">{time}</p>
                         {!isEnded && (
                           <div className="flex gap-2 mt-3">
                             <button
+                              type="button"
                               onClick={(e) => { e.stopPropagation(); updateStatus(b._id, "confirmed"); }}
-                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-xl transition-colors cursor-pointer"
                             >
                               <CheckCircle className="w-3.5 h-3.5" /> {t("dashboard.accept", "Accept")}
                             </button>
                             <button
+                              type="button"
                               onClick={(e) => { e.stopPropagation(); updateStatus(b._id, "declined"); }}
-                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors"
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 rounded-xl transition-colors cursor-pointer"
                             >
                               <XCircle className="w-3.5 h-3.5" /> {t("dashboard.decline", "Decline")}
                             </button>

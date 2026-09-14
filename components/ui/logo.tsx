@@ -14,6 +14,7 @@ export function Logo({ className, width = 160, height = 44 }: LogoProps) {
       width={width}
       height={height}
       className={`object-contain max-w-full shrink-0 ${className || "h-7 sm:h-9 md:h-10 w-auto"}`}
+      style={{ width: "auto" }}
       priority
     />
   )
